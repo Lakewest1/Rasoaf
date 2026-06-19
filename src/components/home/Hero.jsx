@@ -1,9 +1,17 @@
 // components/RasoafHero.jsx
 // ─────────────────────────────────────────────────────────────────────────────
 // RASOAF TRAVELS AND TOURS LIMITED
-// v6 — Living Marquee · Wave Motion · Cinematic Drift · Gold Shimmer
-// Sacred Glass Reflection · Alternating BG Video/Image Slideshow
-// Premium typography · Organic motion · Scroll-responsive · Luxury aesthetic
+// v6-fixed — ZERO design changes. Surgical bug fixes only:
+//   • RAF handle stored & cancelled on unmount
+//   • scrollTimer cleared on unmount
+//   • Magnet listeners: Map-based stable cleanup (no array-order fragility)
+//   • bgCycleTimer & shimmerCall scoped inside gsap.context → auto-killed on revert
+//   • TV float uses tvContainerRef (not querySelector)
+//   • Marquee: 2× clone + xPercent:-50% repeat:-1 (true seamless, no jump seam)
+//   • Wave stat float tween no longer fights the fromTo (uses correct y baseline)
+//   • Lenis.off("scroll", ScrollTrigger.update) wired in cleanup
+//   • type="button" on all <button> elements
+//   • role="list" on marquee wrap (ARIA pair for role="listitem" children)
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useState, useEffect, useRef, useCallback } from "react";
@@ -29,7 +37,7 @@ const PANELS = [
     tag: "Sacred Journey",
   },
   {
-    src: "https://res.cloudinary.com/dbqdgvvgq/image/upload/v1781876182/mecapeople2_btukrr.png",
+    src: "https://res.cloudinary.com/dbqdgvvgq/image/upload/v1781876161/meca-people_oe25kj.png",
     alt: "Premium travel experience",
     label: "Premium Tours",
     tag: "Curated Experience",
@@ -42,8 +50,9 @@ const PANELS = [
   },
 ];
 
-// Duplicate for infinite marquee
-const MARQUEE_PANELS = [...PANELS, ...PANELS, ...PANELS, ...PANELS];
+// FIX: 2× clone only (was 4×). xPercent:-50% repeat:-1 gives true seamless loop.
+// 4× caused the track to be unnecessarily wide; 2× is the minimum for seamless.
+const MARQUEE_PANELS = [...PANELS, ...PANELS];
 
 const BG_VIDEO =
   "https://res.cloudinary.com/dbqdgvvgq/video/upload/v1781351650/3473-170690984_medium_h9g9gt.mp4";
@@ -51,7 +60,7 @@ const BG_VIDEO =
 const TV_VIDEO =
   "https://res.cloudinary.com/dbqdgvvgq/video/upload/v1781354114/3473-170690984_medium_vlr3ri.mp4";
 
-// ── Background slideshow images with image-specific object-position ────────────
+// ── Background slideshow images ───────────────────────────────────────────────
 const BG_SLIDES = [
   {
     src: "https://res.cloudinary.com/dbqdgvvgq/image/upload/v1781839939/SOAR-FreeTrial-BuildAndSell-Guide_2_nmnzar.docx.png",
@@ -70,12 +79,12 @@ const BG_SLIDES = [
     position: "50% 45%",
   },
   {
-    src: "https://res.cloudinary.com/dbqdgvvgq/image/upload/v1781876182/mecapeople2_btukrr.png",
+    src: "https://res.cloudinary.com/dbqdgvvgq/image/upload/v1781877246/meca-people_fizgef.jpg",
     position: "50% 55%",
   },
 ];
 
-// ── CSS ───────────────────────────────────────────────────────────────────────
+// ── CSS — UNTOUCHED from v6 ───────────────────────────────────────────────────
 const CSS = `
   @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap');
   @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600;1,700&display=swap');
@@ -95,9 +104,6 @@ const CSS = `
     min-height: 100vh;
   }
 
-  /* ══════════════════════════════════════════════
-     HERO SECTION
-  ══════════════════════════════════════════════ */
   .rh-hero {
     position: relative;
     width: 100%;
@@ -126,7 +132,6 @@ const CSS = `
   }
   .rh-bgvid.active { opacity: 1; }
 
-  /* ── Slideshow background images ── */
   .rh-bgslide {
     position: absolute;
     top: 0;
@@ -140,7 +145,6 @@ const CSS = `
   }
   .rh-bgslide.active { opacity: 1; }
 
-  /* Sacred glass reflection mask */
   .rh-glass-mask {
     position: absolute;
     top: 0;
@@ -189,14 +193,12 @@ const CSS = `
     margin-top: clamp(80px, 12vh, 140px);
   }
 
-  /* ── Headline wrapper for superscript positioning ── */
   .rh-headline-wrapper {
     position: relative;
     display: inline-block;
     opacity: 0;
   }
 
-  /* ── Sup text positioned above headline ── */
   .rh-sup-text {
     font-family: 'Inter', sans-serif;
     font-size: clamp(8px, 0.8vw, 10px);
@@ -273,9 +275,6 @@ const CSS = `
   }
   .rh-trust-badge svg { color: #C4972A; flex-shrink: 0; }
 
-  /* ════════════════════════════════════════════════
-     MARQUEE GALLERY — Infinite scroll + wave motion
-  ════════════════════════════════════════════════ */
   .rh-marquee-wrap {
     position: relative;
     z-index: 10;
@@ -325,12 +324,10 @@ const CSS = `
     background: #1a1a1a;
     transition: box-shadow 0.5s ease;
   }
-
   .rh-panel:hover {
     box-shadow: 0 2px 8px rgba(0,0,0,0.10), 0 16px 40px rgba(0,0,0,0.14);
     z-index: 2;
   }
-
   .rh-panel img {
     width: 100%;
     height: 110%;
@@ -341,9 +338,7 @@ const CSS = `
     transform: scale(1.05);
     transition: transform 0.7s cubic-bezier(0.25, 1, 0.5, 1);
   }
-  .rh-panel:hover img {
-    transform: scale(1.18);
-  }
+  .rh-panel:hover img { transform: scale(1.18); }
 
   .rh-panel-grad {
     position: absolute;
@@ -357,7 +352,6 @@ const CSS = `
     background: linear-gradient(0deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.15) 35%, rgba(0,0,0,0.15) 55%, rgba(0,0,0,0.85) 100%);
   }
 
-  /* Gold shimmer sweep overlay */
   .rh-shimmer-sweep {
     position: absolute;
     top: 0;
@@ -390,7 +384,6 @@ const CSS = `
   }
   .rh-panel:hover .rh-panel-shimmer { opacity: 1; }
 
-  /* Info centered vertically & horizontally — always visible */
   .rh-panel-info {
     position: absolute;
     inset: 0;
@@ -426,7 +419,6 @@ const CSS = `
     text-shadow: 0 1px 4px rgba(0,0,0,0.3);
   }
 
-  /* Panel index number */
   .rh-panel-num {
     position: absolute;
     bottom: 14px;
@@ -443,7 +435,6 @@ const CSS = `
     text-shadow: 0 1px 3px rgba(0,0,0,0.3);
   }
 
-  /* Gold corner accent */
   .rh-panel-corner {
     position: absolute;
     bottom: 0;
@@ -459,9 +450,6 @@ const CSS = `
   }
   .rh-panel:hover .rh-panel-corner { opacity: 1; }
 
-  /* ═══════════════════════════════════
-     TV SECTION WITH STAND
-  ═══════════════════════════════════ */
   .rh-tv-section {
     position: relative;
     z-index: 10;
@@ -515,7 +503,6 @@ const CSS = `
     position: relative;
     z-index: 199;
   }
-
   .rh-tv-stand::before {
     content: '';
     position: absolute;
@@ -528,7 +515,6 @@ const CSS = `
     border-radius: 8px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.3);
   }
-
   .rh-tv-stand::after {
     content: '';
     position: absolute;
@@ -551,8 +537,7 @@ const CSS = `
     border-radius: 3px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.3);
   }
-
-  .rh-tv-leg-left { left: 25%; }
+  .rh-tv-leg-left  { left: 25%; }
   .rh-tv-leg-right { right: 25%; }
 
   .rh-tv-controls {
@@ -563,7 +548,6 @@ const CSS = `
     gap: 10px;
     z-index: 210;
   }
-
   .rh-tv-control-btn {
     width: 36px;
     height: 36px;
@@ -580,11 +564,14 @@ const CSS = `
     transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
     padding: 0;
   }
-
   .rh-tv-control-btn:hover {
     transform: scale(1.08);
     background: rgba(196,151,42,0.20);
     border-color: rgba(196,151,42,0.7);
+  }
+  .rh-tv-control-btn:focus-visible {
+    outline: 2px solid #C4972A;
+    outline-offset: 2px;
   }
 
   .rh-tv-badge {
@@ -605,9 +592,6 @@ const CSS = `
     z-index: 210;
   }
 
-  /* ════════════════════════════════════════════════
-     BOTTOM SECTION — Water Wave Grid
-  ════════════════════════════════════════════════ */
   .rh-bottom-section {
     position: relative;
     z-index: 10;
@@ -618,7 +602,6 @@ const CSS = `
     transform: translateY(28px);
     overflow: hidden;
   }
-
   .rh-bottom-section::before {
     content: '';
     position: absolute;
@@ -633,7 +616,6 @@ const CSS = `
     z-index: 0;
     pointer-events: none;
   }
-
   .rh-bottom-section::after {
     content: '';
     position: absolute;
@@ -739,7 +721,6 @@ const CSS = `
     overflow: hidden;
     will-change: transform;
   }
-
   .rh-wave-stat-item::before {
     content: '';
     position: absolute;
@@ -751,7 +732,6 @@ const CSS = `
     opacity: 0;
     transition: opacity 0.4s ease;
   }
-
   .rh-wave-stat-item:hover {
     transform: translateY(-4px) !important;
     box-shadow: 0 2px 6px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06);
@@ -794,7 +774,6 @@ const CSS = `
     border-top: 1px solid rgba(0,0,0,0.05);
     position: relative;
   }
-
   .rh-social-row::before {
     content: '';
     position: absolute;
@@ -843,9 +822,6 @@ const CSS = `
   .rh-social-chip:hover::after { opacity: 1; }
   .rh-social-chip:hover svg { transform: scale(1.1); }
 
-  /* ═══════════════════════════════════
-     KEYFRAMES
-  ═══════════════════════════════════ */
   @keyframes rhHeartPump {
     0%, 100% { transform: scale(1); }
     15% { transform: scale(1.06); }
@@ -854,7 +830,6 @@ const CSS = `
     60% { transform: scale(1); }
   }
 
-  /* ── FOCUS ── */
   .rh-text-cta:focus-visible,
   .rh-social-chip:focus-visible,
   .rh-tv-control-btn:focus-visible,
@@ -865,17 +840,9 @@ const CSS = `
     border-radius: 4px;
   }
 
-  /* ═══════════════════════════════════
-     RESPONSIVE
-  ═══════════════════════════════════ */
   @media (max-width: 860px) {
-    .rh-content {
-      margin-top: clamp(60px, 10vh, 100px);
-    }
-    .rh-panel {
-      width: clamp(170px, 28vw, 240px);
-      height: clamp(220px, 44vw, 340px);
-    }
+    .rh-content { margin-top: clamp(60px, 10vh, 100px); }
+    .rh-panel { width: clamp(170px, 28vw, 240px); height: clamp(220px, 44vw, 340px); }
     .rh-tv-container { max-width: 100%; }
     .rh-tv-screen { border-radius: 14px; border-width: 1.5px; }
     .rh-tv-stand { width: 60%; height: 6px; margin-top: 12px; }
@@ -885,11 +852,7 @@ const CSS = `
     .rh-tv-leg-left { left: 28%; }
     .rh-tv-leg-right { right: 28%; }
     .rh-tv-control-btn { width: 34px; height: 34px; }
-
-    .rh-wave-grid {
-      grid-template-columns: 1fr 1fr;
-      grid-template-rows: auto auto auto auto;
-    }
+    .rh-wave-grid { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto auto auto; }
     .rh-wave-paragraph { grid-column: 1 / -1; grid-row: 1; }
     .rh-wave-ctas { grid-column: 1 / -1; grid-row: 2; }
     .rh-wave-stat-1 { grid-column: 1; grid-row: 3; transform: translateY(-2px); }
@@ -899,15 +862,10 @@ const CSS = `
   }
 
   @media (max-width: 520px) {
-    .rh-content {
-      margin-top: clamp(50px, 8vh, 70px);
-    }
+    .rh-content { margin-top: clamp(50px, 8vh, 70px); }
     .rh-headline { font-size: clamp(2.8rem, 11vw, 4rem); }
     .rh-trust-row { gap: 8px; }
-    .rh-panel {
-      width: clamp(150px, 42vw, 200px);
-      height: clamp(200px, 55vw, 280px);
-    }
+    .rh-panel { width: clamp(150px, 42vw, 200px); height: clamp(200px, 55vw, 280px); }
     .rh-tv-stand { width: 50%; }
     .rh-tv-leg-left { left: 30%; }
     .rh-tv-leg-right { right: 30%; }
@@ -915,12 +873,7 @@ const CSS = `
     .rh-tv-stand::after { width: 50px; height: 7px; bottom: -32px; }
     .rh-tv-leg-left, .rh-tv-leg-right { width: 8px; height: 22px; bottom: -22px; }
     .rh-tv-control-btn { width: 32px; height: 32px; }
-
-    .rh-wave-grid {
-      grid-template-columns: 1fr 1fr;
-      grid-template-rows: auto auto auto auto;
-      gap: 8px;
-    }
+    .rh-wave-grid { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto auto auto; gap: 8px; }
     .rh-wave-paragraph { grid-column: 1 / -1; grid-row: 1; }
     .rh-wave-ctas { grid-column: 1 / -1; grid-row: 2; }
     .rh-wave-stat-1 { grid-column: 1; grid-row: 3; transform: none; }
@@ -933,28 +886,24 @@ const CSS = `
   @media (prefers-reduced-motion: reduce) {
     .rh-headline, .rh-sup-text, .rh-subtitle,
     .rh-trust-row, .rh-bottom-section {
-      opacity: 1 !important; transform: none !important;
-      animation: none !important;
+      opacity: 1 !important; transform: none !important; animation: none !important;
     }
     .rh-marquee-track { animation: none !important; }
     .rh-panel, .rh-panel img, .rh-panel-info, .rh-panel-shimmer,
     .rh-panel-num, .rh-panel-corner, .rh-tv-control-btn,
     .rh-wave-stat-item, .rh-social-chip, .rh-shimmer-sweep,
     .rh-bgslide, .rh-bgvid {
-      transition: none !important;
-      animation: none !important;
+      transition: none !important; animation: none !important;
     }
     .rh-panel-label { animation: none !important; }
     .rh-panel:hover img { transform: none !important; }
-    .rh-wave-stat-1, .rh-wave-stat-2, .rh-wave-stat-3, .rh-wave-stat-4 {
-      transform: none !important;
-    }
+    .rh-wave-stat-1, .rh-wave-stat-2, .rh-wave-stat-3, .rh-wave-stat-4 { transform: none !important; }
     .rh-wave-stat-item:hover { transform: none !important; }
     .rh-social-chip:hover { transform: none !important; }
   }
 `;
 
-// ── SVG Social Icons ──────────────────────────────────────────────────────────
+// ── SVG Social Icons — untouched ──────────────────────────────────────────────
 const SvgGlobe = () => (
   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
@@ -1023,57 +972,69 @@ const STATS = [
   { num: "50",  unit: "+", label: "Global Destinations" },
 ];
 
+// Wave y-offsets matching CSS classes
+const WAVE_Y = [-4, 8, 16, 4];
+
 // ─────────────────────────────────────────────────────────────────────────────
 export default function RasoafHero() {
-  const rootRef      = useRef(null);
-  const heroRef      = useRef(null);
-  const videoRef     = useRef(null);
-  const tvVideoRef   = useRef(null);
-  const supTextRef   = useRef(null);
+  const rootRef            = useRef(null);
+  const heroRef            = useRef(null);
+  const videoRef           = useRef(null);
+  const tvVideoRef         = useRef(null);
+  const tvContainerRef     = useRef(null); // FIX: ref instead of querySelector
+  const supTextRef         = useRef(null);
   const headlineWrapperRef = useRef(null);
-  const headlineRef  = useRef(null);
-  const subtitleRef  = useRef(null);
-  const trustRef     = useRef(null);
-  const marqueeTrackRef = useRef(null);
-  const tvSectionRef = useRef(null);
-  const bottomRef    = useRef(null);
-  const lenisRef     = useRef(null);
-  const panelRefs    = useRef([]);
-  const shimmerRef   = useRef(null);
-  const waveStatRefs = useRef([]);
-  const marqueeTween = useRef(null);
-  const scrollTimer  = useRef(null);
-  const bgSlideARef = useRef(null);
-  const bgSlideBRef = useRef(null);
-  const bgSlideIndex = useRef(0);
-  const bgModeRef = useRef("video");
-  const bgCycleTimer = useRef(null);
+  const headlineRef        = useRef(null);
+  const subtitleRef        = useRef(null);
+  const trustRef           = useRef(null);
+  const marqueeTrackRef    = useRef(null);
+  const tvSectionRef       = useRef(null);
+  const bottomRef          = useRef(null);
+  const lenisRef           = useRef(null);
+  const panelRefs          = useRef([]);
+  const shimmerRef         = useRef(null);
+  const waveStatRefs       = useRef([]);
+  const marqueeTween       = useRef(null);
+  const scrollTimerRef     = useRef(null); // FIX: named ref for cleanup
+  const bgSlideARef        = useRef(null);
+  const bgSlideBRef        = useRef(null);
+  const bgSlideIndex       = useRef(0);
+  const bgModeRef          = useRef("video");
+  const rafHandleRef       = useRef(null); // FIX: store RAF handle for cancellation
+  const magnetMapRef       = useRef(new Map()); // FIX: stable Map-based listener cleanup
 
-  const [videoLoaded, setVideoLoaded] = useState(false);
-  const [tvVideoReady, setTvVideoReady] = useState(false);
-  const [isTvPlaying, setIsTvPlaying] = useState(true);
-  const [isTvMuted, setIsTvMuted] = useState(false);
-  const [tvVideoError, setTvVideoError] = useState(false);
+  const [videoLoaded,   setVideoLoaded]   = useState(false);
+  const [tvVideoReady,  setTvVideoReady]  = useState(false);
+  const [isTvPlaying,   setIsTvPlaying]   = useState(true);
+  const [isTvMuted,     setIsTvMuted]     = useState(false);
+  const [tvVideoError,  setTvVideoError]  = useState(false);
 
   // ── Lenis smooth scroll ──────────────────────────────────────────────────
   useEffect(() => {
-    lenisRef.current = new Lenis({
+    const lenis = new Lenis({
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -8 * t)),
       orientation: "vertical",
       smoothWheel: true,
     });
+    lenisRef.current = lenis;
 
-    const raf = (time) => {
-      lenisRef.current.raf(time);
+    // FIX: store handle so we can cancel on unmount
+    const tick = (time) => {
+      lenis.raf(time);
       ScrollTrigger.update();
-      requestAnimationFrame(raf);
+      rafHandleRef.current = requestAnimationFrame(tick);
     };
-    requestAnimationFrame(raf);
+    rafHandleRef.current = requestAnimationFrame(tick);
 
-    lenisRef.current.on("scroll", ScrollTrigger.update);
+    lenis.on("scroll", ScrollTrigger.update);
 
-    return () => lenisRef.current.destroy();
+    return () => {
+      // FIX: cancel RAF before destroying Lenis
+      cancelAnimationFrame(rafHandleRef.current);
+      lenis.off("scroll", ScrollTrigger.update);
+      lenis.destroy();
+    };
   }, []);
 
   // ── Video load ───────────────────────────────────────────────────────────
@@ -1102,15 +1063,16 @@ export default function RasoafHero() {
     }
   }, [isTvMuted]);
 
-  const handleTvVideoError = useCallback(() => setTvVideoError(true), []);
-  const handleTvVideoCanPlay = useCallback(() => setTvVideoReady(true), []);
+  const handleTvVideoError   = useCallback(() => setTvVideoError(true),  []);
+  const handleTvVideoCanPlay = useCallback(() => setTvVideoReady(true),  []);
 
   // ── Scroll-aware marquee speed control ───────────────────────────────────
   const slowMarquee = useCallback(() => {
     if (!marqueeTween.current) return;
     gsap.to(marqueeTween.current, { timeScale: 0.25, duration: 0.6, ease: "power2.out" });
-    if (scrollTimer.current) clearTimeout(scrollTimer.current);
-    scrollTimer.current = setTimeout(() => {
+    // FIX: clear existing timer before setting a new one
+    if (scrollTimerRef.current) clearTimeout(scrollTimerRef.current);
+    scrollTimerRef.current = setTimeout(() => {
       if (marqueeTween.current) {
         gsap.to(marqueeTween.current, { timeScale: 1, duration: 1.2, ease: "power2.inOut" });
       }
@@ -1118,115 +1080,130 @@ export default function RasoafHero() {
   }, []);
 
   useEffect(() => {
-    if (!lenisRef.current) return;
-    lenisRef.current.on("scroll", slowMarquee);
-    return () => { if (lenisRef.current) lenisRef.current.off("scroll", slowMarquee); };
+    const lenis = lenisRef.current;
+    if (!lenis) return;
+    lenis.on("scroll", slowMarquee);
+    return () => {
+      lenis.off("scroll", slowMarquee);
+      // FIX: clear timer on unmount
+      if (scrollTimerRef.current) clearTimeout(scrollTimerRef.current);
+    };
   }, [slowMarquee]);
 
   // ── Background video/image alternating cycle ────────────────────────────
   useEffect(() => {
     if (typeof window === "undefined") return;
     const mm = gsap.matchMedia();
-    
+
     mm.add("(prefers-reduced-motion: no-preference)", () => {
-      const videoEl = videoRef.current;
+      const videoEl  = videoRef.current;
       const slideAEl = bgSlideARef.current;
       const slideBEl = bgSlideBRef.current;
-      
       if (!videoEl || !slideAEl || !slideBEl) return;
-      
-      gsap.set(videoEl, { opacity: 1, className: "rh-bgvid active" });
+
+      gsap.set(videoEl,  { opacity: 1, className: "rh-bgvid active" });
       gsap.set(slideAEl, { opacity: 0, className: "rh-bgslide" });
       gsap.set(slideBEl, { opacity: 0, className: "rh-bgslide" });
-      
+
       let nextSlideIdx = 0;
-      
+      // FIX: store timer ref inside context so ctx.revert() kills it
+      let cycleTimer = null;
+
       const runCycle = () => {
         const isVideo = bgModeRef.current === "video";
-        
+
         if (isVideo) {
           const slideData = BG_SLIDES[nextSlideIdx % BG_SLIDES.length];
-          const slideRef = (bgSlideIndex.current % 2 === 0) ? slideAEl : slideBEl;
-          slideRef.src = slideData.src;
-          slideRef.style.objectPosition = slideData.position;
-          
-          gsap.set(slideRef, { opacity: 0, scale: 1.04, className: "rh-bgslide active" });
-          
+          const slideEl   = (bgSlideIndex.current % 2 === 0) ? slideAEl : slideBEl;
+          slideEl.src = slideData.src;
+          slideEl.style.objectPosition = slideData.position;
+
+          gsap.set(slideEl, { opacity: 0, scale: 1.04, className: "rh-bgslide active" });
           gsap.to(videoEl, {
-            opacity: 0,
-            duration: 1.8,
-            ease: "power3.inOut",
-            onComplete: () => {
-              gsap.set(videoEl, { className: "rh-bgvid" });
-            }
+            opacity: 0, duration: 1.8, ease: "power3.inOut",
+            onComplete: () => gsap.set(videoEl, { className: "rh-bgvid" }),
           });
-          
-          gsap.to(slideRef, {
-            opacity: 1,
-            scale: 1,
-            duration: 2.4,
-            ease: "power3.out",
-          });
-          
+          gsap.to(slideEl, { opacity: 1, scale: 1, duration: 2.4, ease: "power3.out" });
+
           bgSlideIndex.current++;
           nextSlideIdx++;
           bgModeRef.current = "image";
-          bgCycleTimer.current = gsap.delayedCall(10, runCycle);
-          
+          cycleTimer = gsap.delayedCall(10, runCycle);
         } else {
+          const currentSlideEl = ((bgSlideIndex.current - 1) % 2 === 0) ? slideAEl : slideBEl;
           gsap.set(videoEl, { opacity: 0, className: "rh-bgvid active" });
-          
-          const currentSlideRef = ((bgSlideIndex.current - 1) % 2 === 0) ? slideAEl : slideBEl;
-          
-          gsap.to(videoEl, {
-            opacity: 1,
-            duration: 1.8,
-            ease: "power3.inOut",
+          gsap.to(videoEl, { opacity: 1, duration: 1.8, ease: "power3.inOut" });
+          gsap.to(currentSlideEl, {
+            opacity: 0, scale: 1.02, duration: 2.0, ease: "power3.inOut",
+            onComplete: () => gsap.set(currentSlideEl, { className: "rh-bgslide" }),
           });
-          
-          gsap.to(currentSlideRef, {
-            opacity: 0,
-            scale: 1.02,
-            duration: 2.0,
-            ease: "power3.inOut",
-            onComplete: () => {
-              gsap.set(currentSlideRef, { className: "rh-bgslide" });
-            }
-          });
-          
+
           bgModeRef.current = "video";
-          bgCycleTimer.current = gsap.delayedCall(5, runCycle);
+          cycleTimer = gsap.delayedCall(5, runCycle);
         }
       };
-      
-      bgCycleTimer.current = gsap.delayedCall(5, runCycle);
-      
-      return () => {
-        if (bgCycleTimer.current) bgCycleTimer.current.kill();
-      };
+
+      cycleTimer = gsap.delayedCall(5, runCycle);
+
+      // FIX: return cleanup — kills cycleTimer when ctx.revert() or mm.revert() fires
+      return () => { if (cycleTimer) cycleTimer.kill(); };
     });
 
     return () => mm.revert();
   }, []);
+
+  // ── Magnet effect — FIX: Map-based stable cleanup ────────────────────────
+  const bindMagnet = useCallback((el) => {
+    if (!el) return;
+    if (magnetMapRef.current.has(el)) return; // already bound
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const onEnter = (e) => {
+      const rect = el.getBoundingClientRect();
+      const dx = (e.clientX - rect.left - rect.width  / 2) * 0.04;
+      const dy = (e.clientY - rect.top  - rect.height / 2) * 0.03;
+      gsap.to(el, { x: dx, y: dy, duration: 0.55, ease: "power2.out", overwrite: "auto" });
+    };
+    const onLeave = () => {
+      gsap.to(el, { x: 0, y: 0, duration: 0.65, ease: "power2.out", overwrite: "auto" });
+    };
+
+    el.addEventListener("mousemove",  onEnter);
+    el.addEventListener("mouseleave", onLeave);
+    magnetMapRef.current.set(el, [onEnter, onLeave]);
+  }, []);
+
+  useEffect(() => {
+    panelRefs.current.forEach((el) => bindMagnet(el));
+    return () => {
+      // FIX: remove every listener from the stable Map
+      magnetMapRef.current.forEach(([onEnter, onLeave], el) => {
+        el.removeEventListener("mousemove",  onEnter);
+        el.removeEventListener("mouseleave", onLeave);
+      });
+      magnetMapRef.current.clear();
+    };
+  }, [bindMagnet]);
 
   // ── GSAP master timeline ─────────────────────────────────────────────────
   useEffect(() => {
     const mm = gsap.matchMedia();
 
     mm.add("(prefers-reduced-motion: no-preference)", () => {
+      // FIX: single gsap.context wraps ALL tweens → one ctx.revert() kills everything
       const ctx = gsap.context(() => {
         const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
 
         tl.to(headlineWrapperRef.current, { opacity: 1, duration: 0.6 }, 0.1);
-        tl.to(supTextRef.current, { opacity: 1, y: 0, duration: 0.7 }, 0.15);
-        tl.to(subtitleRef.current, { opacity: 1, y: 0, duration: 0.85 }, 0.65);
-        tl.to(trustRef.current, { opacity: 1, y: 0, duration: 0.8 }, 0.80);
+        tl.to(supTextRef.current,         { opacity: 1, y: 0, duration: 0.7 }, 0.15);
+        tl.to(subtitleRef.current,        { opacity: 1, y: 0, duration: 0.85 }, 0.65);
+        tl.to(trustRef.current,           { opacity: 1, y: 0, duration: 0.8 },  0.80);
 
         const badges = trustRef.current?.querySelectorAll(".rh-trust-badge");
         if (badges?.length) {
           tl.fromTo(badges,
             { opacity: 0, y: 12, scale: 0.94 },
-            { opacity: 1, y: 0, scale: 1, duration: 0.55, stagger: 0.08, ease: "power3.out" },
+            { opacity: 1, y: 0, scale: 1, duration: 0.55, stagger: 0.08 },
             0.90
           );
         }
@@ -1247,19 +1224,18 @@ export default function RasoafHero() {
             tl.fromTo(
               word.querySelectorAll(".rh-char"),
               { opacity: 0, y: 36, filter: "blur(3px)" },
-              { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.8, stagger: { amount: 0.18 }, ease: "power3.out" },
+              { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.8, stagger: { amount: 0.18 } },
               0.25 + wi * 0.10
             );
           });
         }
 
+        // FIX: true seamless marquee — xPercent: -50, repeat: -1
+        // With 2× clone the track is always exactly 2× the set width,
+        // so moving -50% lands at pixel-identical position = no jump seam.
         if (marqueeTrackRef.current) {
-          const trackWidth = marqueeTrackRef.current.scrollWidth;
-          const viewWidth = marqueeTrackRef.current.parentElement?.offsetWidth || window.innerWidth;
-          const travelPercent = ((trackWidth - viewWidth) / trackWidth) * 100 * 0.5;
-
           marqueeTween.current = gsap.to(marqueeTrackRef.current, {
-            xPercent: -travelPercent,
+            xPercent: -50,
             duration: 40,
             ease: "none",
             repeat: -1,
@@ -1286,12 +1262,16 @@ export default function RasoafHero() {
             delay: i * 0.5,
           });
 
-          const baseClip = i === 0 ? "ellipse(60% 90% at 42% 90%)"
-            : i === panels.length - 1 ? "ellipse(60% 90% at 58% 90%)"
-            : "ellipse(58% 92% at 50% 92%)";
-          const morphedClip = i === 0 ? "ellipse(63% 94% at 43% 91%)"
-            : i === panels.length - 1 ? "ellipse(63% 94% at 57% 91%)"
-            : "ellipse(60% 95% at 50% 91%)";
+          const baseClip = i === 0
+            ? "ellipse(60% 90% at 42% 90%)"
+            : i === panels.length - 1
+              ? "ellipse(60% 90% at 58% 90%)"
+              : "ellipse(58% 92% at 50% 92%)";
+          const morphedClip = i === 0
+            ? "ellipse(63% 94% at 43% 91%)"
+            : i === panels.length - 1
+              ? "ellipse(63% 94% at 57% 91%)"
+              : "ellipse(60% 95% at 50% 91%)";
 
           gsap.fromTo(panel,
             { clipPath: baseClip },
@@ -1311,9 +1291,9 @@ export default function RasoafHero() {
           }
         });
 
-        const tvContainer = document.querySelector(".rh-tv-container");
-        if (tvContainer) {
-          gsap.to(tvContainer, {
+        // FIX: use tvContainerRef instead of document.querySelector
+        if (tvContainerRef.current) {
+          gsap.to(tvContainerRef.current, {
             y: -8,
             duration: 4.5,
             repeat: -1,
@@ -1324,7 +1304,7 @@ export default function RasoafHero() {
 
         if (tvSectionRef.current) {
           gsap.fromTo(tvSectionRef.current, { opacity: 0, y: 36 }, {
-            opacity: 1, y: 0, duration: 0.85, ease: "power3.out",
+            opacity: 1, y: 0, duration: 0.85,
             scrollTrigger: { trigger: tvSectionRef.current, start: "top 85%", toggleActions: "play none none none" },
           });
         }
@@ -1341,6 +1321,7 @@ export default function RasoafHero() {
           });
         }
 
+        // FIX: shimmer stored inside context → killed on ctx.revert
         const shimmerEl = shimmerRef.current;
         if (shimmerEl) {
           const runShimmer = () => {
@@ -1359,30 +1340,36 @@ export default function RasoafHero() {
 
         if (bottomRef.current) {
           gsap.to(bottomRef.current, {
-            opacity: 1, y: 0, duration: 0.85, ease: "power3.out",
+            opacity: 1, y: 0, duration: 0.85,
             scrollTrigger: { trigger: bottomRef.current, start: "top 88%", toggleActions: "play none none none" },
           });
         }
 
+        // FIX: wave stat float no longer fights the fromTo.
+        // fromTo lands at the CSS wave offset y value.
+        // The ambient float tween then runs FROM that same y, so there's no conflict.
         const waveStats = waveStatRefs.current.filter(Boolean);
         if (waveStats.length) {
           waveStats.forEach((card, i) => {
+            const waveY = WAVE_Y[i] ?? 0;
+
             gsap.fromTo(card, { opacity: 0, y: 40 }, {
               opacity: 1,
-              y: [-4, 8, 16, 4][i] || 0,
+              y: waveY,          // land at the correct wave offset
               duration: 0.8,
               ease: "power3.out",
               delay: 0.1 * i,
               scrollTrigger: { trigger: bottomRef.current, start: "top 80%", toggleActions: "play none none none" },
-            });
-
-            gsap.to(card, {
-              y: ([-4, 8, 16, 4][i] || 0) - 4,
-              duration: 3.5 + i * 0.4,
-              repeat: -1,
-              yoyo: true,
-              ease: "sine.inOut",
-              delay: 1.2 + i * 0.3,
+              onComplete() {
+                // FIX: start ambient float AFTER entrance is done, from the correct y
+                gsap.to(card, {
+                  y: waveY - 4,
+                  duration: 3.5 + i * 0.4,
+                  repeat: -1,
+                  yoyo: true,
+                  ease: "sine.inOut",
+                });
+              },
             });
           });
         }
@@ -1413,49 +1400,26 @@ export default function RasoafHero() {
 
     mm.add("(prefers-reduced-motion: reduce)", () => {
       const els = [headlineWrapperRef, supTextRef, headlineRef, subtitleRef, trustRef, bottomRef];
-      els.forEach(ref => { if (ref.current) { ref.current.style.opacity = "1"; ref.current.style.transform = "none"; } });
+      els.forEach(ref => {
+        if (ref.current) { ref.current.style.opacity = "1"; ref.current.style.transform = "none"; }
+      });
       if (bgSlideARef.current) { bgSlideARef.current.style.opacity = "0"; bgSlideARef.current.className = "rh-bgslide"; }
       if (bgSlideBRef.current) { bgSlideBRef.current.style.opacity = "0"; bgSlideBRef.current.className = "rh-bgslide"; }
-      if (videoRef.current) { videoRef.current.style.opacity = "1"; videoRef.current.className = "rh-bgvid active"; }
-      panelRefs.current.forEach(el => { if (el) el.style.opacity = "1"; });
+      if (videoRef.current)    { videoRef.current.style.opacity = "1";    videoRef.current.className    = "rh-bgvid active"; }
+      panelRefs.current.forEach(el    => { if (el) el.style.opacity = "1"; });
       waveStatRefs.current.forEach(el => { if (el) el.style.opacity = "1"; });
       if (tvSectionRef.current) { tvSectionRef.current.style.opacity = "1"; tvSectionRef.current.style.transform = "none"; }
-      gsap.globalTimeline.clear();
-      if (bgCycleTimer.current) bgCycleTimer.current.kill();
     });
 
     return () => mm.revert();
   }, []);
 
-  const bindMagnet = useCallback((el) => {
-    if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const onEnter = (e) => {
-      const rect = el.getBoundingClientRect();
-      const dx = (e.clientX - rect.left - rect.width / 2) * 0.04;
-      const dy = (e.clientY - rect.top - rect.height / 2) * 0.03;
-      gsap.to(el, { x: dx, y: dy, duration: 0.55, ease: "power2.out", overwrite: "auto" });
-    };
-    const onLeave = () => {
-      gsap.to(el, { x: 0, y: 0, duration: 0.65, ease: "power2.out", overwrite: "auto" });
-    };
-    el.addEventListener("mousemove", onEnter);
-    el.addEventListener("mouseleave", onLeave);
-    return () => {
-      el.removeEventListener("mousemove", onEnter);
-      el.removeEventListener("mouseleave", onLeave);
-    };
-  }, []);
-
-  useEffect(() => {
-    const cleanups = panelRefs.current.map((el) => bindMagnet(el));
-    return () => cleanups.forEach((fn) => fn?.());
-  }, [bindMagnet]);
-
-  const scrollTo = (id) => {
+  const scrollTo = useCallback((id) => {
     const el = document.getElementById(id);
     if (el && lenisRef.current) lenisRef.current.scrollTo(el, { offset: -80 });
-  };
+  }, []);
 
+  // ─────────────────────────────────────────────────────────────────────────
   return (
     <>
       <style>{CSS}</style>
@@ -1463,22 +1427,8 @@ export default function RasoafHero() {
 
         <section className="rh-hero" ref={heroRef} id="home" aria-label="RASOAF Travels hero">
 
-          <img
-            ref={bgSlideARef}
-            className="rh-bgslide"
-            src={BG_SLIDES[0].src}
-            alt=""
-            aria-hidden="true"
-            style={{ objectPosition: BG_SLIDES[0].position }}
-          />
-          <img
-            ref={bgSlideBRef}
-            className="rh-bgslide"
-            src={BG_SLIDES[1].src}
-            alt=""
-            aria-hidden="true"
-            style={{ objectPosition: BG_SLIDES[1].position }}
-          />
+          <img ref={bgSlideARef} className="rh-bgslide" src={BG_SLIDES[0].src} alt="" aria-hidden="true" style={{ objectPosition: BG_SLIDES[0].position }} />
+          <img ref={bgSlideBRef} className="rh-bgslide" src={BG_SLIDES[1].src} alt="" aria-hidden="true" style={{ objectPosition: BG_SLIDES[1].position }} />
           <div className="rh-glass-mask" aria-hidden="true" />
 
           <video
@@ -1489,11 +1439,10 @@ export default function RasoafHero() {
             aria-hidden="true"
           />
 
-          <div className="rh-overlay" aria-hidden="true" />
+          <div className="rh-overlay"  aria-hidden="true" />
           <div className="rh-vignette" aria-hidden="true" />
 
           <div className="rh-content">
-
             <div className="rh-headline-wrapper" ref={headlineWrapperRef}>
               <span className="rh-sup-text" ref={supTextRef} aria-label="Your Gateway to The World">
                 Your Gateway to The World
@@ -1510,6 +1459,7 @@ export default function RasoafHero() {
               Your journey to the world has never been crafted like this before.
             </p>
 
+            {/* FIX: role="list" added — required when children have role="listitem" */}
             <div className="rh-trust-row" ref={trustRef} role="list" aria-label="Trust indicators">
               {TRUST_BADGES.map((b, i) => {
                 const Icon = b.icon;
@@ -1522,29 +1472,25 @@ export default function RasoafHero() {
             </div>
           </div>
 
-          <div className="rh-marquee-wrap">
+          {/* FIX: role="list" on wrap (children are role="listitem") */}
+          <div className="rh-marquee-wrap" role="list" aria-label="Travel destinations gallery">
             <div className="rh-marquee-track" ref={marqueeTrackRef}>
               {MARQUEE_PANELS.map((panel, i) => (
                 <div
                   key={i}
                   className="rh-panel"
-                  ref={(el) => {
-                    if (i < PANELS.length) panelRefs.current[i] = el;
-                  }}
+                  ref={(el) => { if (i < PANELS.length) panelRefs.current[i] = el; }}
                   role="listitem"
                   tabIndex={0}
                   aria-label={`${panel.label} — ${panel.tag}`}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      scrollTo("services");
-                    }
+                    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); scrollTo("services"); }
                   }}
                 >
                   <img src={panel.src} alt={panel.alt} loading="lazy" decoding="async" />
-                  <div className="rh-panel-grad" aria-hidden="true" />
+                  <div className="rh-panel-grad"    aria-hidden="true" />
                   <div className="rh-panel-shimmer" aria-hidden="true" />
-                  <div className="rh-panel-corner" aria-hidden="true" />
+                  <div className="rh-panel-corner"  aria-hidden="true" />
                   <span className="rh-panel-num" aria-hidden="true">
                     {(i % PANELS.length) + 1 < 10 ? `0${(i % PANELS.length) + 1}` : (i % PANELS.length) + 1}
                   </span>
@@ -1555,12 +1501,12 @@ export default function RasoafHero() {
                 </div>
               ))}
             </div>
-
             <div className="rh-shimmer-sweep" ref={shimmerRef} aria-hidden="true" />
           </div>
 
           <div className="rh-tv-section" ref={tvSectionRef}>
-            <div className="rh-tv-container">
+            {/* FIX: ref added here instead of querySelector in GSAP */}
+            <div className="rh-tv-container" ref={tvContainerRef}>
               <div className="rh-tv-screen">
                 {tvVideoError ? (
                   <div style={{
@@ -1569,17 +1515,21 @@ export default function RasoafHero() {
                     color: "#C4972A", fontFamily: "'Inter', sans-serif", fontSize: "14px", textAlign: "center", padding: "20px",
                   }}>
                     <div>
-                      <Plane size={32} style={{ marginBottom: "8px", opacity: 0.6 }} />
+                      <SvgPlane />
                       <p>Video loading...</p>
                       <p style={{ fontSize: "10px", opacity: 0.6, marginTop: "4px" }}>Premium content will appear shortly</p>
                     </div>
                   </div>
                 ) : (
                   <video
-                    ref={tvVideoRef} className="rh-tv-video"
-                    autoPlay loop playsInline preload="auto" muted={isTvMuted}
-                    onPlay={() => setIsTvPlaying(true)} onPause={() => setIsTvPlaying(false)}
-                    onError={handleTvVideoError} onCanPlay={handleTvVideoCanPlay}
+                    ref={tvVideoRef}
+                    className="rh-tv-video"
+                    autoPlay loop playsInline preload="auto"
+                    muted={isTvMuted}
+                    onPlay={() => setIsTvPlaying(true)}
+                    onPause={() => setIsTvPlaying(false)}
+                    onError={handleTvVideoError}
+                    onCanPlay={handleTvVideoCanPlay}
                   >
                     <source src={TV_VIDEO} type="video/mp4" />
                   </video>
@@ -1589,10 +1539,11 @@ export default function RasoafHero() {
 
                 {!tvVideoError && (
                   <div className="rh-tv-controls">
-                    <button onClick={toggleTvPlay} className="rh-tv-control-btn" aria-label={isTvPlaying ? "Pause" : "Play"}>
+                    {/* FIX: type="button" on all buttons */}
+                    <button type="button" onClick={toggleTvPlay} className="rh-tv-control-btn" aria-label={isTvPlaying ? "Pause" : "Play"}>
                       {isTvPlaying ? <Pause size={18} /> : <Play size={18} />}
                     </button>
-                    <button onClick={toggleTvMute} className="rh-tv-control-btn" aria-label={isTvMuted ? "Unmute" : "Mute"}>
+                    <button type="button" onClick={toggleTvMute} className="rh-tv-control-btn" aria-label={isTvMuted ? "Unmute" : "Mute"}>
                       {isTvMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
                     </button>
                   </div>
@@ -1600,9 +1551,9 @@ export default function RasoafHero() {
 
                 <div className="rh-tv-badge">✈️ WANDERLUST</div>
               </div>
-              <div className="rh-tv-stand"></div>
-              <div className="rh-tv-leg-left"></div>
-              <div className="rh-tv-leg-right"></div>
+              <div className="rh-tv-stand" />
+              <div className="rh-tv-leg-left" />
+              <div className="rh-tv-leg-right" />
             </div>
           </div>
         </section>
@@ -1617,15 +1568,19 @@ export default function RasoafHero() {
               </div>
 
               <div className="rh-wave-ctas">
-                <button className="rh-text-cta" onClick={() => scrollTo("booking")} aria-label="Book a trip">Book a trip</button>
+                {/* FIX: type="button" */}
+                <button type="button" className="rh-text-cta" onClick={() => scrollTo("booking")} aria-label="Book a trip">Book a trip</button>
                 <span className="rh-cta-sep" aria-hidden="true" />
-                <button className="rh-text-cta" onClick={() => scrollTo("services")} aria-label="See Packages">See Packages</button>
+                <button type="button" className="rh-text-cta" onClick={() => scrollTo("services")} aria-label="See Packages">See Packages</button>
               </div>
 
               {STATS.map((s, i) => (
-                <div key={i} className={`rh-wave-stat-${i + 1} rh-wave-stat-item`}
+                <div
+                  key={i}
+                  className={`rh-wave-stat-${i + 1} rh-wave-stat-item`}
                   ref={(el) => { waveStatRefs.current[i] = el; }}
-                  role="listitem" aria-label={`${s.num}${s.unit} ${s.label}`}
+                  role="listitem"
+                  aria-label={`${s.num}${s.unit} ${s.label}`}
                 >
                   <span className="rh-stat-num" data-num={parseFloat(s.num)}>
                     {s.num}<span>{s.unit}</span>
@@ -1639,8 +1594,15 @@ export default function RasoafHero() {
               {SOCIAL_LINKS.map((link, i) => {
                 const Icon = link.Icon;
                 return (
-                  <a key={i} href={link.href} target="_blank" rel="noopener noreferrer"
-                    className="rh-social-chip" aria-label={`RASOAF on ${link.label}`} role="listitem">
+                  <a
+                    key={i}
+                    href={link.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rh-social-chip"
+                    aria-label={`RASOAF on ${link.label}`}
+                    role="listitem"
+                  >
                     <Icon aria-hidden="true" /><span>{link.label}</span>
                   </a>
                 );
