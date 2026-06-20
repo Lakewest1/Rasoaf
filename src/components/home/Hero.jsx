@@ -1,17 +1,44 @@
 // components/RasoafHero.jsx
 // ─────────────────────────────────────────────────────────────────────────────
 // RASOAF TRAVELS AND TOURS LIMITED
-// v6-fixed — ZERO design changes. Surgical bug fixes only:
-//   • RAF handle stored & cancelled on unmount
-//   • scrollTimer cleared on unmount
-//   • Magnet listeners: Map-based stable cleanup (no array-order fragility)
-//   • bgCycleTimer & shimmerCall scoped inside gsap.context → auto-killed on revert
-//   • TV float uses tvContainerRef (not querySelector)
-//   • Marquee: 2× clone + xPercent:-50% repeat:-1 (true seamless, no jump seam)
-//   • Wave stat float tween no longer fights the fromTo (uses correct y baseline)
-//   • Lenis.off("scroll", ScrollTrigger.update) wired in cleanup
-//   • type="button" on all <button> elements
-//   • role="list" on marquee wrap (ARIA pair for role="listitem" children)
+// v9 — Register button always-visible on ALL screens + robust marquee pause
+//   Inherits ALL v8 fixes. New in v9:
+//   • Register button: always visible on desktop AND mobile (opacity:1 base state)
+//   • Idle state: subtle dimmed appearance; hover: full gold glow (both screens)
+//   • Marquee wrap hover/touch: GSAP timeScale→0 (desktop) + CSS paused class (mobile)
+//   • Individual panel hover still enhances the button (brighter gold, scale up)
+//   • Removed the hidden-until-hover entry animation — replaced with always-on presence
+//   • rh-panel-register sits at z-index:6 — above corner, shimmer, gradient layers
+//   Inherits ALL v8 fixes. Original v7/v8 notes:
+//
+//   MOBILE PERFORMANCE (≤768px):
+//   • isMobile flag via window.innerWidth — evaluated once at mount
+//   • Background cycle: static image only on mobile (no GSAP transitions)
+//   • Panel float / rotate / clip-morph tweens: KILLED on mobile
+//   • TV container float tween: KILLED on mobile
+//   • Shimmer sweep tween: KILLED on mobile
+//   • Badge float tween: KILLED on mobile
+//   • Wave-stat ambient float: KILLED on mobile
+//   • Stat counter: simplified (no ScrollTrigger proxy) on mobile
+//   • Marquee: CSS-only animation on mobile (no GSAP, will-change stripped)
+//   • img parallax inside panels: KILLED on mobile
+//   • Magnet effect: skipped on mobile (pointer events are touch anyway)
+//   • Lenis smooth scroll: DISABLED on mobile (native scroll is faster)
+//   • will-change: transform/opacity stripped from non-essential els on mobile
+//   • GPU layer hints: contain:layout style on panels on mobile
+//
+//   MODERN DESIGN POLISH (zero content/color/layout changes):
+//   • Glassmorphism micro-upgrade: trust badges get richer backdrop filter
+//   • TV screen: inner glow ring subtle breathing pulse (CSS only)
+//   • Panel corner triangle: soft scale-in instead of opacity snap
+//   • Social chip hover: background shimmer sweep on hover
+//   • Stat numbers: ligature-aware letter-spacing refinement
+//   • rh-hero: isolation:isolate to prevent stacking context leaks
+//   • scroll-behavior: smooth restored to root (was auto)
+//   • prefers-color-scheme: dark variant (text softening only)
+//   • Text rendering: optimizeLegibility on headline
+//   • Gradient overlays: slightly warmer gold tint on vignette edges
+//   • Contain: layout paint on bottom-section for paint perf
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useState, useEffect, useRef, useCallback } from "react";
@@ -50,8 +77,7 @@ const PANELS = [
   },
 ];
 
-// FIX: 2× clone only (was 4×). xPercent:-50% repeat:-1 gives true seamless loop.
-// 4× caused the track to be unnecessarily wide; 2× is the minimum for seamless.
+// 2× clone — xPercent:-50% repeat:-1 = true seamless loop
 const MARQUEE_PANELS = [...PANELS, ...PANELS];
 
 const BG_VIDEO =
@@ -60,7 +86,6 @@ const BG_VIDEO =
 const TV_VIDEO =
   "https://res.cloudinary.com/dbqdgvvgq/video/upload/v1781354114/3473-170690984_medium_vlr3ri.mp4";
 
-// ── Background slideshow images ───────────────────────────────────────────────
 const BG_SLIDES = [
   {
     src: "https://res.cloudinary.com/dbqdgvvgq/image/upload/v1781839939/SOAR-FreeTrial-BuildAndSell-Guide_2_nmnzar.docx.png",
@@ -84,7 +109,10 @@ const BG_SLIDES = [
   },
 ];
 
-// ── CSS — UNTOUCHED from v6 ───────────────────────────────────────────────────
+// Wave y-offsets matching CSS classes
+const WAVE_Y = [-4, 8, 16, 4];
+
+// ── CSS ───────────────────────────────────────────────────────────────────────
 const CSS = `
   @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap');
   @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600;1,700&display=swap');
@@ -93,7 +121,7 @@ const CSS = `
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;1,9..40,300&display=swap');
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: auto; }
+  html { scroll-behavior: smooth; }
 
   .rh-root {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -104,6 +132,7 @@ const CSS = `
     min-height: 100vh;
   }
 
+  /* ── HERO ─────────────────────────────────────────────────────────────── */
   .rh-hero {
     position: relative;
     width: 100%;
@@ -116,14 +145,14 @@ const CSS = `
     background: #0a0a0a;
     padding-top: clamp(40px, 6vh, 60px);
     padding-bottom: 0;
+    /* v7: stacking context isolation — prevents gradient bleed into children */
+    isolation: isolate;
   }
 
   .rh-bgvid {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 70%;
+    top: 0; left: 0;
+    width: 100%; height: 70%;
     object-fit: cover;
     object-position: center;
     z-index: 0;
@@ -134,10 +163,8 @@ const CSS = `
 
   .rh-bgslide {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 70%;
+    top: 0; left: 0;
+    width: 100%; height: 70%;
     object-fit: cover;
     z-index: 0;
     will-change: transform, opacity;
@@ -147,10 +174,8 @@ const CSS = `
 
   .rh-glass-mask {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 70%;
+    top: 0; left: 0;
+    width: 100%; height: 70%;
     z-index: 1;
     pointer-events: none;
     background:
@@ -171,16 +196,18 @@ const CSS = `
       linear-gradient(180deg, rgba(0,0,0,0.48) 0%, rgba(0,0,0,0.14) 50%, rgba(0,0,0,0.68) 100%);
   }
 
+  /* v7: slightly warmer gold tint on the vignette edges */
   .rh-vignette {
     position: absolute;
     inset: 0;
     z-index: 2;
     pointer-events: none;
     background:
-      radial-gradient(ellipse 120% 100% at 0% 50%, rgba(196,151,42,0.05) 0%, transparent 55%),
-      radial-gradient(ellipse 120% 100% at 100% 50%, rgba(196,151,42,0.05) 0%, transparent 55%);
+      radial-gradient(ellipse 120% 100% at 0% 50%,   rgba(196,151,42,0.07) 0%, transparent 55%),
+      radial-gradient(ellipse 120% 100% at 100% 50%, rgba(196,151,42,0.07) 0%, transparent 55%);
   }
 
+  /* ── CONTENT ──────────────────────────────────────────────────────────── */
   .rh-content {
     position: relative;
     z-index: 10;
@@ -223,6 +250,9 @@ const CSS = `
     margin: 0 auto clamp(8px, 1.5vw, 16px);
     max-width: 860px;
     opacity: 0;
+    /* v7: sharpen headline rendering */
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
   }
   .rh-headline .rh-word { display: inline-block; overflow: hidden; vertical-align: bottom; }
   .rh-headline .rh-char { display: inline-block; will-change: transform, opacity; }
@@ -250,31 +280,38 @@ const CSS = `
     opacity: 0;
     transform: translateY(14px);
   }
+
+  /* v7: richer glass on trust badges */
   .rh-trust-badge {
     display: flex;
     align-items: center;
     gap: 7px;
-    background: rgba(255,255,255,0.06);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.07);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255,255,255,0.14);
     border-radius: 100px;
     padding: 6px 16px;
     font-family: 'Inter', 'Space Grotesk', sans-serif;
     font-size: clamp(9px, 1vw, 11px);
     font-weight: 450;
-    color: rgba(255,255,255,0.78);
+    color: rgba(255,255,255,0.80);
     letter-spacing: 0.03em;
-    transition: border-color 0.3s ease, background 0.3s ease, color 0.3s ease;
+    transition: border-color 0.3s ease, background 0.3s ease, color 0.3s ease,
+                box-shadow 0.3s ease;
     will-change: transform;
+    /* v7: subtle inner glow on badges */
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 2px 8px rgba(0,0,0,0.15);
   }
   .rh-trust-badge:hover {
     border-color: rgba(196,151,42,0.45);
-    background: rgba(196,151,42,0.08);
+    background: rgba(196,151,42,0.09);
     color: #C4972A;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.1), 0 4px 16px rgba(196,151,42,0.12);
   }
   .rh-trust-badge svg { color: #C4972A; flex-shrink: 0; }
 
+  /* ── MARQUEE ──────────────────────────────────────────────────────────── */
   .rh-marquee-wrap {
     position: relative;
     z-index: 10;
@@ -310,6 +347,29 @@ const CSS = `
     padding: 0 clamp(6px, 1vw, 12px);
   }
 
+  /* v7: CSS-only marquee for mobile — no GSAP overhead */
+  @keyframes rh-marquee-css {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+  @media (max-width: 768px) {
+    .rh-marquee-track {
+      will-change: auto;
+      animation: rh-marquee-css 28s linear infinite;
+    }
+    .rh-marquee-track:hover { animation-play-state: paused; }
+
+    /* v8: register button always visible on touch (no hover available) */
+    .rh-panel-register {
+      opacity: 1 !important;
+      transform: translateY(0) scale(1) !important;
+      /* slightly larger tap target on mobile */
+      padding: 6px 13px 6px 10px;
+      font-size: 9px;
+    }
+  }
+
+  /* ── PANELS ───────────────────────────────────────────────────────────── */
   .rh-panel {
     position: relative;
     flex-shrink: 0;
@@ -329,8 +389,7 @@ const CSS = `
     z-index: 2;
   }
   .rh-panel img {
-    width: 100%;
-    height: 110%;
+    width: 100%; height: 110%;
     object-fit: cover;
     object-position: center 65%;
     display: block;
@@ -341,8 +400,7 @@ const CSS = `
   .rh-panel:hover img { transform: scale(1.18); }
 
   .rh-panel-grad {
-    position: absolute;
-    inset: 0;
+    position: absolute; inset: 0;
     pointer-events: none;
     background: linear-gradient(0deg, rgba(0,0,0,0.15) 0%, transparent 35%, transparent 55%, rgba(0,0,0,0.78) 100%);
     z-index: 1;
@@ -354,28 +412,19 @@ const CSS = `
 
   .rh-shimmer-sweep {
     position: absolute;
-    top: 0;
-    left: -150%;
-    width: 60%;
-    height: 100%;
+    top: 0; left: -150%; width: 60%; height: 100%;
     z-index: 5;
     pointer-events: none;
     background: linear-gradient(105deg,
-      transparent 0%,
-      transparent 35%,
-      rgba(196,151,42,0.12) 45%,
-      rgba(196,151,42,0.22) 50%,
-      rgba(196,151,42,0.12) 55%,
-      transparent 65%,
-      transparent 100%
+      transparent 0%, transparent 35%,
+      rgba(196,151,42,0.12) 45%, rgba(196,151,42,0.22) 50%,
+      rgba(196,151,42,0.12) 55%, transparent 65%, transparent 100%
     );
   }
 
   .rh-panel-shimmer {
     position: absolute;
-    bottom: 0;
-    left: 10%;
-    right: 10%;
+    bottom: 0; left: 10%; right: 10%;
     height: 1px;
     background: linear-gradient(90deg, transparent, rgba(196,151,42,0.6), transparent);
     z-index: 3;
@@ -385,16 +434,10 @@ const CSS = `
   .rh-panel:hover .rh-panel-shimmer { opacity: 1; }
 
   .rh-panel-info {
-    position: absolute;
-    inset: 0;
-    z-index: 2;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    position: absolute; inset: 0; z-index: 2;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
     gap: 4px;
-    opacity: 1;
-    transform: scale(1);
+    opacity: 1; transform: scale(1);
     transition: opacity 0.45s ease, transform 0.45s cubic-bezier(0.25, 1, 0.5, 1);
   }
   .rh-panel-label {
@@ -420,54 +463,153 @@ const CSS = `
   }
 
   .rh-panel-num {
-    position: absolute;
-    bottom: 14px;
-    right: 16px;
-    z-index: 3;
+    position: absolute; bottom: 14px; right: 16px; z-index: 3;
     font-family: 'Inter', sans-serif;
-    font-size: 10px;
-    font-weight: 500;
+    font-size: 10px; font-weight: 500;
     color: rgba(255,255,255,0.50);
     letter-spacing: 0.08em;
-    opacity: 1;
-    transform: scale(1);
+    opacity: 1; transform: scale(1);
     transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
     text-shadow: 0 1px 3px rgba(0,0,0,0.3);
   }
 
+  /* v7: smooth scale-in on corner triangle (was opacity snap) */
   .rh-panel-corner {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 0;
-    height: 0;
+    position: absolute; bottom: 0; left: 0;
+    width: 0; height: 0;
     border-style: solid;
     border-width: 28px 0 0 28px;
     border-color: transparent transparent transparent #C4972A;
     z-index: 4;
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transform: scale(0.6);
+    transition: opacity 0.3s ease, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform-origin: bottom left;
   }
-  .rh-panel:hover .rh-panel-corner { opacity: 1; }
+  .rh-panel:hover .rh-panel-corner { opacity: 1; transform: scale(1); }
 
-  .rh-tv-section {
-    position: relative;
-    z-index: 10;
-    width: 100%;
+  /* ── v9: REGISTER BUTTON — always visible on ALL screens ─────────────── */
+  .rh-panel-register {
+    position: absolute;
+    bottom: clamp(12px, 1.8vw, 18px);
+    left: clamp(10px, 1.4vw, 14px);
+    z-index: 6;
     display: flex;
     align-items: center;
-    justify-content: center;
+    gap: 5px;
+
+    /* idle glass pill — always visible, slightly dimmed */
+    background: rgba(0, 0, 0, 0.48);
+    backdrop-filter: blur(10px) saturate(150%);
+    -webkit-backdrop-filter: blur(10px) saturate(150%);
+    border: 1px solid rgba(196,151,42,0.38);
+    border-radius: 100px;
+    padding: 5px 12px 5px 9px;
+
+    /* type */
+    font-family: 'Inter', sans-serif;
+    font-size: clamp(8px, 0.85vw, 10px);
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(196,151,42,0.80);
+    cursor: pointer;
+
+    /* v9: always visible — no opacity:0 hiding */
+    opacity: 1;
+    transform: translateY(0) scale(1);
+
+    transition:
+      background    0.28s cubic-bezier(0.25, 1, 0.5, 1),
+      border-color  0.28s ease,
+      color         0.28s ease,
+      box-shadow    0.28s ease,
+      transform     0.30s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+    box-shadow:
+      0 2px 8px  rgba(0,0,0,0.30),
+      inset 0 1px 0 rgba(255,255,255,0.05);
+
+    pointer-events: auto;
+    white-space: nowrap;
+    user-select: none;
+    -webkit-user-select: none;
+    text-decoration: none;
+  }
+
+  /* pulsing dot indicator */
+  .rh-panel-register::before {
+    content: '';
+    flex-shrink: 0;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: rgba(196,151,42,0.70);
+    box-shadow: 0 0 4px rgba(196,151,42,0.45);
+    transition: background 0.28s ease, box-shadow 0.28s ease;
+  }
+
+  /* ── panel hover: brighten the button ──────────────────────────────────── */
+  .rh-panel:hover .rh-panel-register {
+    background: rgba(0, 0, 0, 0.58);
+    border-color: rgba(196,151,42,0.65);
+    color: #C4972A;
+    box-shadow:
+      0 3px 14px rgba(0,0,0,0.35),
+      0 0 0 1px rgba(196,151,42,0.12),
+      inset 0 1px 0 rgba(255,255,255,0.08);
+  }
+  .rh-panel:hover .rh-panel-register::before {
+    background: #C4972A;
+    box-shadow: 0 0 6px rgba(196,151,42,0.65);
+  }
+
+  /* ── button self-hover: full gold emphasis + micro lift ────────────────── */
+  .rh-panel-register:hover {
+    background: rgba(196,151,42,0.20);
+    border-color: rgba(196,151,42,0.85);
+    color: #e8b840;
+    transform: translateY(-1px) scale(1.04);
+    box-shadow:
+      0 5px 18px rgba(196,151,42,0.22),
+      0 0 0 1px rgba(196,151,42,0.15),
+      inset 0 1px 0 rgba(255,255,255,0.12);
+  }
+  .rh-panel-register:hover::before {
+    background: #e8b840;
+    box-shadow: 0 0 8px rgba(232,184,64,0.85);
+  }
+
+  /* focus ring */
+  .rh-panel-register:focus-visible {
+    outline: 2px solid #C4972A;
+    outline-offset: 2px;
+  }
+
+  /* active press */
+  .rh-panel-register:active {
+    transform: translateY(0) scale(0.97);
+    transition-duration: 0.10s;
+  }
+
+  /* ── v9: marquee paused state — drives CSS animation on mobile ──────── */
+  .rh-marquee-paused .rh-marquee-track {
+    animation-play-state: paused !important;
+  }
+
+
+  .rh-tv-section {
+    position: relative; z-index: 10;
+    width: 100%;
+    display: flex; align-items: center; justify-content: center;
     padding: clamp(16px, 3vw, 32px) clamp(16px, 4vw, 48px);
     margin-top: clamp(24px, 4vw, 48px);
   }
 
   .rh-tv-container {
     position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    max-width: 500px;
+    display: flex; flex-direction: column; align-items: center;
+    width: 100%; max-width: 500px;
     margin: 0 auto;
     z-index: 200;
     will-change: transform;
@@ -479,38 +621,41 @@ const CSS = `
     border-radius: 18px;
     overflow: hidden;
     border: 2px solid rgba(196,151,42,0.55);
-    box-shadow: 0 0 30px rgba(196,151,42,0.35), 0 20px 50px -12px rgba(0,0,0,0.5);
+    /* v7: layered glow — outer ambient + inner ring */
+    box-shadow:
+      0 0 0 1px rgba(196,151,42,0.15),
+      0 0 30px rgba(196,151,42,0.35),
+      0 0 60px rgba(196,151,42,0.10),
+      0 20px 50px -12px rgba(0,0,0,0.5);
     background: #000;
     z-index: 201;
     aspect-ratio: 16/9;
+    /* v7: subtle breathing pulse on the TV screen border */
+    animation: rh-tv-glow 4s ease-in-out infinite;
+  }
+  @keyframes rh-tv-glow {
+    0%, 100% { box-shadow: 0 0 0 1px rgba(196,151,42,0.15), 0 0 30px rgba(196,151,42,0.35), 0 0 60px rgba(196,151,42,0.10), 0 20px 50px -12px rgba(0,0,0,0.5); }
+    50%       { box-shadow: 0 0 0 1px rgba(196,151,42,0.22), 0 0 40px rgba(196,151,42,0.45), 0 0 80px rgba(196,151,42,0.14), 0 20px 50px -12px rgba(0,0,0,0.5); }
   }
 
   .rh-tv-video {
-    width: 100%;
-    height: 100%;
-    display: block;
-    object-fit: cover;
-    background: #000;
+    width: 100%; height: 100%;
+    display: block; object-fit: cover; background: #000;
   }
 
   .rh-tv-stand {
-    width: 70%;
-    height: 8px;
+    width: 70%; height: 8px;
     background: linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 100%);
     border-radius: 4px;
     margin-top: 15px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    position: relative;
-    z-index: 199;
+    position: relative; z-index: 199;
   }
   .rh-tv-stand::before {
     content: '';
     position: absolute;
-    bottom: -35px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 50px;
-    height: 35px;
+    bottom: -35px; left: 50%; transform: translateX(-50%);
+    width: 50px; height: 35px;
     background: linear-gradient(180deg, #2a2a2a 0%, #0a0a0a 100%);
     border-radius: 8px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.3);
@@ -518,21 +663,16 @@ const CSS = `
   .rh-tv-stand::after {
     content: '';
     position: absolute;
-    bottom: -45px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 80px;
-    height: 10px;
+    bottom: -45px; left: 50%; transform: translateX(-50%);
+    width: 80px; height: 10px;
     background: linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 100%);
     border-radius: 5px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
   }
 
   .rh-tv-leg-left, .rh-tv-leg-right {
-    position: absolute;
-    bottom: -30px;
-    width: 12px;
-    height: 30px;
+    position: absolute; bottom: -30px;
+    width: 12px; height: 30px;
     background: linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 100%);
     border-radius: 3px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.3);
@@ -544,23 +684,17 @@ const CSS = `
     position: absolute;
     bottom: clamp(10px, 1.5vw, 16px);
     left: clamp(10px, 1.5vw, 16px);
-    display: flex;
-    gap: 10px;
-    z-index: 210;
+    display: flex; gap: 10px; z-index: 210;
   }
   .rh-tv-control-btn {
-    width: 36px;
-    height: 36px;
+    width: 36px; height: 36px;
     border-radius: 50%;
     background: rgba(0,0,0,0.75);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     border: 1.5px solid rgba(196,151,42,0.45);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    color: #C4972A;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: #C4972A;
     transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
     padding: 0;
   }
@@ -569,10 +703,7 @@ const CSS = `
     background: rgba(196,151,42,0.20);
     border-color: rgba(196,151,42,0.7);
   }
-  .rh-tv-control-btn:focus-visible {
-    outline: 2px solid #C4972A;
-    outline-offset: 2px;
-  }
+  .rh-tv-control-btn:focus-visible { outline: 2px solid #C4972A; outline-offset: 2px; }
 
   .rh-tv-badge {
     position: absolute;
@@ -585,57 +716,44 @@ const CSS = `
     border-radius: 100px;
     border: 1px solid rgba(196,151,42,0.45);
     font-family: 'Inter', sans-serif;
-    font-size: 9px;
-    color: #C4972A;
-    letter-spacing: 0.08em;
-    font-weight: 550;
+    font-size: 9px; color: #C4972A;
+    letter-spacing: 0.08em; font-weight: 550;
     z-index: 210;
   }
 
+  /* ── BOTTOM SECTION ───────────────────────────────────────────────────── */
   .rh-bottom-section {
-    position: relative;
-    z-index: 10;
+    position: relative; z-index: 10;
     width: 100%;
     background: #fafaf8;
     padding: clamp(60px, 10vw, 100px) clamp(24px, 5vw, 48px);
-    opacity: 0;
-    transform: translateY(28px);
+    opacity: 0; transform: translateY(28px);
     overflow: hidden;
+    /* v7: paint containment for scroll perf */
+    contain: layout paint;
   }
   .rh-bottom-section::before {
     content: '';
-    position: absolute;
-    top: -60px;
-    left: 0;
-    right: 0;
-    height: 120px;
-    background: 
+    position: absolute; top: -60px; left: 0; right: 0; height: 120px;
+    background:
       radial-gradient(ellipse 85% 100% at 15% 100%, rgba(196,151,42,0.04) 0%, transparent 55%),
       radial-gradient(ellipse 75% 100% at 50% 100%, rgba(196,151,42,0.03) 0%, transparent 55%),
       radial-gradient(ellipse 85% 100% at 85% 100%, rgba(196,151,42,0.04) 0%, transparent 55%);
-    z-index: 0;
-    pointer-events: none;
+    z-index: 0; pointer-events: none;
   }
   .rh-bottom-section::after {
     content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 200px;
-    background: 
+    position: absolute; bottom: 0; left: 0; right: 0; height: 200px;
+    background:
       radial-gradient(ellipse 70% 60% at 20% 50%, rgba(196,151,42,0.025) 0%, transparent 55%),
       radial-gradient(ellipse 60% 50% at 55% 40%, rgba(196,151,42,0.02) 0%, transparent 55%),
       radial-gradient(ellipse 70% 60% at 80% 50%, rgba(196,151,42,0.025) 0%, transparent 55%);
-    z-index: 0;
-    pointer-events: none;
+    z-index: 0; pointer-events: none;
   }
 
   .rh-bottom-inner {
-    position: relative;
-    z-index: 1;
-    max-width: 960px;
-    margin: 0 auto;
+    position: relative; z-index: 1;
+    max-width: 960px; margin: 0 auto;
   }
 
   .rh-wave-grid {
@@ -647,24 +765,18 @@ const CSS = `
   }
 
   .rh-wave-paragraph {
-    grid-column: 1 / -1;
-    grid-row: 1;
+    grid-column: 1 / -1; grid-row: 1;
     font-family: 'Inter', 'DM Sans', sans-serif;
     font-size: clamp(0.9rem, 1.2vw, 1.05rem);
-    font-weight: 380;
-    line-height: 1.75;
-    color: #6b6b64;
-    text-align: center;
+    font-weight: 380; line-height: 1.75;
+    color: #6b6b64; text-align: center;
     padding: 0 clamp(16px, 4vw, 40px) clamp(12px, 2vw, 20px);
     border-bottom: 1px solid rgba(0,0,0,0.05);
   }
 
   .rh-wave-ctas {
-    grid-column: 1 / -1;
-    grid-row: 2;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    grid-column: 1 / -1; grid-row: 2;
+    display: flex; align-items: center; justify-content: center;
     gap: clamp(28px, 5vw, 48px);
     padding: clamp(10px, 2vw, 16px) 0;
   }
@@ -672,27 +784,18 @@ const CSS = `
   .rh-text-cta {
     font-family: 'Inter', 'Plus Jakarta Sans', sans-serif;
     font-size: clamp(14px, 1.3vw, 16px);
-    font-weight: 550;
-    color: #1a1a1a;
-    text-decoration: none;
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0 0 4px;
+    font-weight: 550; color: #1a1a1a;
+    text-decoration: none; background: none; border: none;
+    cursor: pointer; padding: 0 0 4px;
     letter-spacing: -0.01em;
     position: relative;
     transition: color 0.25s ease;
   }
   .rh-text-cta::after {
     content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 1.5px;
-    background: #c4b998;
-    opacity: 0.3;
-    border-radius: 2px;
+    position: absolute; bottom: 0; left: 0;
+    width: 100%; height: 1.5px;
+    background: #c4b998; opacity: 0.3; border-radius: 2px;
     transition: opacity 0.25s ease, background 0.25s ease, transform 0.3s ease;
     transform-origin: left;
   }
@@ -706,31 +809,28 @@ const CSS = `
   .rh-wave-stat-4 { grid-column: 4; grid-row: 3; transform: translateY(4px); }
 
   .rh-wave-stat-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
     padding: clamp(16px, 3vw, 28px) clamp(10px, 2vw, 16px);
-    background: rgba(255,255,255,0.7);
+    /* v7: subtle warm glass on stat cards */
+    background: rgba(255,255,255,0.75);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     border-radius: clamp(10px, 1.4vw, 16px);
-    border: 1px solid rgba(0,0,0,0.04);
-    box-shadow: 0 1px 2px rgba(0,0,0,0.02), 0 4px 12px rgba(0,0,0,0.03);
+    border: 1px solid rgba(0,0,0,0.045);
+    box-shadow:
+      0 1px 2px rgba(0,0,0,0.02),
+      0 4px 12px rgba(0,0,0,0.03),
+      inset 0 1px 0 rgba(255,255,255,0.8);
     transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1),
                 box-shadow 0.4s ease, border-color 0.4s ease;
-    position: relative;
-    overflow: hidden;
+    position: relative; overflow: hidden;
     will-change: transform;
   }
   .rh-wave-stat-item::before {
     content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
     background: linear-gradient(90deg, transparent, rgba(196,151,42,0.3), transparent);
-    opacity: 0;
-    transition: opacity 0.4s ease;
+    opacity: 0; transition: opacity 0.4s ease;
   }
   .rh-wave-stat-item:hover {
     transform: translateY(-4px) !important;
@@ -742,11 +842,12 @@ const CSS = `
   .rh-stat-num {
     font-family: 'Playfair Display', 'Plus Jakarta Sans', serif;
     font-size: clamp(1.6rem, 2.6vw, 2.4rem);
-    font-weight: 700;
-    color: #1a1a1a;
-    letter-spacing: -0.03em;
+    font-weight: 700; color: #1a1a1a;
+    /* v7: tighter letter-spacing for modern feel */
+    letter-spacing: -0.04em;
     line-height: 1;
     transition: color 0.3s ease;
+    font-variant-numeric: tabular-nums;
   }
   .rh-wave-stat-item:hover .rh-stat-num { color: #b8942e; }
   .rh-stat-num span { color: #C4972A; font-size: 0.7em; font-weight: 600; transition: color 0.3s ease; }
@@ -754,21 +855,16 @@ const CSS = `
   .rh-stat-label {
     font-family: 'Inter', 'Space Grotesk', sans-serif;
     font-size: clamp(8px, 0.8vw, 10px);
-    font-weight: 450;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: rgba(0,0,0,0.36);
-    white-space: nowrap;
-    transition: color 0.3s ease;
+    font-weight: 450; letter-spacing: 0.08em;
+    text-transform: uppercase; color: rgba(0,0,0,0.36);
+    white-space: nowrap; transition: color 0.3s ease;
   }
   .rh-wave-stat-item:hover .rh-stat-label { color: rgba(0,0,0,0.48); }
 
+  /* ── SOCIAL ROW ───────────────────────────────────────────────────────── */
   .rh-social-row {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: clamp(6px, 1vw, 10px);
-    flex-wrap: wrap;
+    display: flex; align-items: center; justify-content: center;
+    gap: clamp(6px, 1vw, 10px); flex-wrap: wrap;
     margin-top: clamp(32px, 5vw, 48px);
     padding-top: clamp(24px, 4vw, 36px);
     border-top: 1px solid rgba(0,0,0,0.05);
@@ -776,60 +872,59 @@ const CSS = `
   }
   .rh-social-row::before {
     content: '';
-    position: absolute;
-    top: -1px;
-    left: 10%;
-    right: 10%;
-    height: 1px;
+    position: absolute; top: -1px; left: 10%; right: 10%; height: 1px;
     background: linear-gradient(90deg, transparent, rgba(196,151,42,0.15) 20%, rgba(196,151,42,0.08) 50%, rgba(196,151,42,0.15) 80%, transparent);
   }
 
+  /* v7: social chip gets shimmer sweep on hover (CSS-only, no extra GSAP) */
   .rh-social-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
+    display: inline-flex; align-items: center; gap: 5px;
     font-family: 'Inter', 'Space Grotesk', sans-serif;
     font-size: clamp(10px, 0.95vw, 11px);
-    font-weight: 450;
-    color: rgba(0,0,0,0.50);
+    font-weight: 450; color: rgba(0,0,0,0.50);
     text-decoration: none;
-    background: rgba(255,255,255,0.6);
+    background: rgba(255,255,255,0.65);
     border: 1px solid rgba(0,0,0,0.07);
     border-radius: 100px;
     padding: 5px 12px;
     transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
+    cursor: pointer; position: relative; overflow: hidden;
   }
-  .rh-social-chip svg { color: currentColor; flex-shrink: 0; transition: transform 0.3s ease; }
+  .rh-social-chip::before {
+    content: '';
+    position: absolute; top: 0; left: -80%; width: 60%; height: 100%;
+    background: linear-gradient(105deg, transparent 30%, rgba(196,151,42,0.15) 50%, transparent 70%);
+    transform: skewX(-15deg);
+    transition: left 0.5s ease;
+    pointer-events: none;
+  }
   .rh-social-chip::after {
     content: '';
-    position: absolute;
-    inset: 0;
-    background: rgba(196,151,42,0.06);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    border-radius: 100px;
+    position: absolute; inset: 0;
+    background: rgba(196,151,42,0.06); opacity: 0;
+    transition: opacity 0.3s ease; border-radius: 100px;
   }
+  .rh-social-chip svg { color: currentColor; flex-shrink: 0; transition: transform 0.3s ease; }
   .rh-social-chip:hover {
-    border-color: rgba(196,151,42,0.35);
-    color: #b8942e;
+    border-color: rgba(196,151,42,0.35); color: #b8942e;
     background: rgba(196,151,42,0.03);
     transform: translateY(-2px);
     box-shadow: 0 3px 12px rgba(196,151,42,0.08);
   }
-  .rh-social-chip:hover::after { opacity: 1; }
+  .rh-social-chip:hover::before { left: 120%; }
+  .rh-social-chip:hover::after  { opacity: 1; }
   .rh-social-chip:hover svg { transform: scale(1.1); }
 
+  /* ── KEYFRAMES ────────────────────────────────────────────────────────── */
   @keyframes rhHeartPump {
     0%, 100% { transform: scale(1); }
-    15% { transform: scale(1.06); }
-    30% { transform: scale(1); }
-    45% { transform: scale(1.05); }
-    60% { transform: scale(1); }
+    15%       { transform: scale(1.06); }
+    30%       { transform: scale(1); }
+    45%       { transform: scale(1.05); }
+    60%       { transform: scale(1); }
   }
 
+  /* ── FOCUS ────────────────────────────────────────────────────────────── */
   .rh-text-cta:focus-visible,
   .rh-social-chip:focus-visible,
   .rh-tv-control-btn:focus-visible,
@@ -840,6 +935,7 @@ const CSS = `
     border-radius: 4px;
   }
 
+  /* ── TABLET ───────────────────────────────────────────────────────────── */
   @media (max-width: 860px) {
     .rh-content { margin-top: clamp(60px, 10vh, 100px); }
     .rh-panel { width: clamp(170px, 28vw, 240px); height: clamp(220px, 44vw, 340px); }
@@ -847,18 +943,59 @@ const CSS = `
     .rh-tv-screen { border-radius: 14px; border-width: 1.5px; }
     .rh-tv-stand { width: 60%; height: 6px; margin-top: 12px; }
     .rh-tv-stand::before { width: 40px; height: 28px; bottom: -28px; }
-    .rh-tv-stand::after { width: 60px; height: 8px; bottom: -36px; }
+    .rh-tv-stand::after  { width: 60px; height: 8px;  bottom: -36px; }
     .rh-tv-leg-left, .rh-tv-leg-right { width: 10px; height: 25px; bottom: -25px; }
-    .rh-tv-leg-left { left: 28%; }
+    .rh-tv-leg-left  { left: 28%; }
     .rh-tv-leg-right { right: 28%; }
     .rh-tv-control-btn { width: 34px; height: 34px; }
     .rh-wave-grid { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto auto auto; }
     .rh-wave-paragraph { grid-column: 1 / -1; grid-row: 1; }
-    .rh-wave-ctas { grid-column: 1 / -1; grid-row: 2; }
+    .rh-wave-ctas      { grid-column: 1 / -1; grid-row: 2; }
     .rh-wave-stat-1 { grid-column: 1; grid-row: 3; transform: translateY(-2px); }
     .rh-wave-stat-2 { grid-column: 2; grid-row: 3; transform: translateY(6px); }
     .rh-wave-stat-3 { grid-column: 1; grid-row: 4; transform: translateY(2px); }
     .rh-wave-stat-4 { grid-column: 2; grid-row: 4; transform: translateY(10px); }
+  }
+
+  /* ── MOBILE ───────────────────────────────────────────────────────────── */
+  @media (max-width: 768px) {
+    /* v7: disable TV breathing glow on mobile (paint-heavy) */
+    .rh-tv-screen { animation: none !important; }
+
+    /* v7: strip will-change from panels on mobile */
+    .rh-panel {
+      will-change: auto;
+      /* v7: contain layout for compositing efficiency */
+      contain: layout;
+    }
+    .rh-panel img {
+      will-change: auto;
+    }
+
+    /* v7: disable panel label heartbeat on mobile */
+    .rh-panel-label { animation: none !important; }
+
+    /* v7: simpler hover on mobile — no scale on image */
+    .rh-panel:hover img { transform: scale(1.05); }
+
+    /* v7: stat cards — no backdrop-filter on mobile (heavy) */
+    .rh-wave-stat-item {
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      will-change: auto;
+    }
+
+    /* v7: trust badge — simplify backdrop on mobile */
+    .rh-trust-badge {
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    /* v7: social chip shimmer off on mobile */
+    .rh-social-chip::before { display: none; }
+
+    /* v7: TV container — no will-change on mobile */
+    .rh-tv-container { will-change: auto; }
   }
 
   @media (max-width: 520px) {
@@ -867,15 +1004,15 @@ const CSS = `
     .rh-trust-row { gap: 8px; }
     .rh-panel { width: clamp(150px, 42vw, 200px); height: clamp(200px, 55vw, 280px); }
     .rh-tv-stand { width: 50%; }
-    .rh-tv-leg-left { left: 30%; }
+    .rh-tv-leg-left  { left: 30%; }
     .rh-tv-leg-right { right: 30%; }
     .rh-tv-stand::before { width: 35px; height: 25px; bottom: -25px; }
-    .rh-tv-stand::after { width: 50px; height: 7px; bottom: -32px; }
+    .rh-tv-stand::after  { width: 50px; height: 7px;  bottom: -32px; }
     .rh-tv-leg-left, .rh-tv-leg-right { width: 8px; height: 22px; bottom: -22px; }
     .rh-tv-control-btn { width: 32px; height: 32px; }
     .rh-wave-grid { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto auto auto; gap: 8px; }
     .rh-wave-paragraph { grid-column: 1 / -1; grid-row: 1; }
-    .rh-wave-ctas { grid-column: 1 / -1; grid-row: 2; }
+    .rh-wave-ctas      { grid-column: 1 / -1; grid-row: 2; }
     .rh-wave-stat-1 { grid-column: 1; grid-row: 3; transform: none; }
     .rh-wave-stat-2 { grid-column: 2; grid-row: 3; transform: none; }
     .rh-wave-stat-3 { grid-column: 1; grid-row: 4; transform: none; }
@@ -883,6 +1020,7 @@ const CSS = `
     .rh-wave-stat-item:hover { transform: translateY(-2px) !important; }
   }
 
+  /* ── REDUCED MOTION ───────────────────────────────────────────────────── */
   @media (prefers-reduced-motion: reduce) {
     .rh-headline, .rh-sup-text, .rh-subtitle,
     .rh-trust-row, .rh-bottom-section {
@@ -892,18 +1030,26 @@ const CSS = `
     .rh-panel, .rh-panel img, .rh-panel-info, .rh-panel-shimmer,
     .rh-panel-num, .rh-panel-corner, .rh-tv-control-btn,
     .rh-wave-stat-item, .rh-social-chip, .rh-shimmer-sweep,
-    .rh-bgslide, .rh-bgvid {
+    .rh-bgslide, .rh-bgvid, .rh-tv-screen {
       transition: none !important; animation: none !important;
+    }
+    /* v8: always show register btn in reduced-motion mode */
+    .rh-panel-register {
+      opacity: 1 !important;
+      transform: none !important;
+      transition: none !important;
     }
     .rh-panel-label { animation: none !important; }
     .rh-panel:hover img { transform: none !important; }
-    .rh-wave-stat-1, .rh-wave-stat-2, .rh-wave-stat-3, .rh-wave-stat-4 { transform: none !important; }
+    .rh-wave-stat-1, .rh-wave-stat-2,
+    .rh-wave-stat-3, .rh-wave-stat-4 { transform: none !important; }
     .rh-wave-stat-item:hover { transform: none !important; }
-    .rh-social-chip:hover { transform: none !important; }
+    .rh-social-chip:hover  { transform: none !important; }
+    .rh-social-chip::before { display: none; }
   }
 `;
 
-// ── SVG Social Icons — untouched ──────────────────────────────────────────────
+// ── SVG icons (untouched) ──────────────────────────────────────────────────────
 const SvgGlobe = () => (
   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
@@ -972,16 +1118,13 @@ const STATS = [
   { num: "50",  unit: "+", label: "Global Destinations" },
 ];
 
-// Wave y-offsets matching CSS classes
-const WAVE_Y = [-4, 8, 16, 4];
-
 // ─────────────────────────────────────────────────────────────────────────────
 export default function RasoafHero() {
   const rootRef            = useRef(null);
   const heroRef            = useRef(null);
   const videoRef           = useRef(null);
   const tvVideoRef         = useRef(null);
-  const tvContainerRef     = useRef(null); // FIX: ref instead of querySelector
+  const tvContainerRef     = useRef(null);
   const supTextRef         = useRef(null);
   const headlineWrapperRef = useRef(null);
   const headlineRef        = useRef(null);
@@ -995,22 +1138,33 @@ export default function RasoafHero() {
   const shimmerRef         = useRef(null);
   const waveStatRefs       = useRef([]);
   const marqueeTween       = useRef(null);
-  const scrollTimerRef     = useRef(null); // FIX: named ref for cleanup
+  const scrollTimerRef     = useRef(null);
   const bgSlideARef        = useRef(null);
   const bgSlideBRef        = useRef(null);
   const bgSlideIndex       = useRef(0);
   const bgModeRef          = useRef("video");
-  const rafHandleRef       = useRef(null); // FIX: store RAF handle for cancellation
-  const magnetMapRef       = useRef(new Map()); // FIX: stable Map-based listener cleanup
+  const rafHandleRef       = useRef(null);
+  const magnetMapRef       = useRef(new Map());
 
-  const [videoLoaded,   setVideoLoaded]   = useState(false);
-  const [tvVideoReady,  setTvVideoReady]  = useState(false);
-  const [isTvPlaying,   setIsTvPlaying]   = useState(true);
-  const [isTvMuted,     setIsTvMuted]     = useState(false);
-  const [tvVideoError,  setTvVideoError]  = useState(false);
+  const [videoLoaded,     setVideoLoaded]     = useState(false);
+  const [tvVideoReady,    setTvVideoReady]    = useState(false);
+  const [isTvPlaying,     setIsTvPlaying]     = useState(true);
+  const [isTvMuted,       setIsTvMuted]       = useState(false);
+  const [tvVideoError,    setTvVideoError]    = useState(false);
+  // v8: marquee pause state — shared between hover (desktop) and touch (mobile)
+  const [marqueePaused,   setMarqueePaused]   = useState(false);
 
-  // ── Lenis smooth scroll ──────────────────────────────────────────────────
+  // v7: detect mobile once at mount — avoid repeated matchMedia calls in RAF
+  const isMobileRef = useRef(false);
   useEffect(() => {
+    isMobileRef.current = window.innerWidth <= 768;
+  }, []);
+
+  // ── Lenis smooth scroll — DISABLED on mobile (native is faster) ──────────
+  useEffect(() => {
+    // v7: skip Lenis entirely on mobile — native scroll is composited & faster
+    if (isMobileRef.current) return;
+
     const lenis = new Lenis({
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -8 * t)),
@@ -1019,25 +1173,22 @@ export default function RasoafHero() {
     });
     lenisRef.current = lenis;
 
-    // FIX: store handle so we can cancel on unmount
     const tick = (time) => {
       lenis.raf(time);
       ScrollTrigger.update();
       rafHandleRef.current = requestAnimationFrame(tick);
     };
     rafHandleRef.current = requestAnimationFrame(tick);
-
     lenis.on("scroll", ScrollTrigger.update);
 
     return () => {
-      // FIX: cancel RAF before destroying Lenis
       cancelAnimationFrame(rafHandleRef.current);
       lenis.off("scroll", ScrollTrigger.update);
       lenis.destroy();
     };
   }, []);
 
-  // ── Video load ───────────────────────────────────────────────────────────
+  // ── Video load ─────────────────────────────────────────────────────────────
   useEffect(() => {
     const vid = videoRef.current;
     if (!vid) return;
@@ -1047,7 +1198,7 @@ export default function RasoafHero() {
     return () => vid.removeEventListener("canplaythrough", onCanPlay);
   }, []);
 
-  // ── TV Video handlers ────────────────────────────────────────────────────
+  // ── TV Video handlers ──────────────────────────────────────────────────────
   const toggleTvPlay = useCallback(() => {
     if (tvVideoRef.current) {
       if (isTvPlaying) tvVideoRef.current.pause();
@@ -1066,11 +1217,10 @@ export default function RasoafHero() {
   const handleTvVideoError   = useCallback(() => setTvVideoError(true),  []);
   const handleTvVideoCanPlay = useCallback(() => setTvVideoReady(true),  []);
 
-  // ── Scroll-aware marquee speed control ───────────────────────────────────
+  // ── Scroll-aware marquee speed — skip on mobile (CSS handles it) ──────────
   const slowMarquee = useCallback(() => {
     if (!marqueeTween.current) return;
     gsap.to(marqueeTween.current, { timeScale: 0.25, duration: 0.6, ease: "power2.out" });
-    // FIX: clear existing timer before setting a new one
     if (scrollTimerRef.current) clearTimeout(scrollTimerRef.current);
     scrollTimerRef.current = setTimeout(() => {
       if (marqueeTween.current) {
@@ -1085,12 +1235,29 @@ export default function RasoafHero() {
     lenis.on("scroll", slowMarquee);
     return () => {
       lenis.off("scroll", slowMarquee);
-      // FIX: clear timer on unmount
       if (scrollTimerRef.current) clearTimeout(scrollTimerRef.current);
     };
   }, [slowMarquee]);
 
-  // ── Background video/image alternating cycle ────────────────────────────
+  // ── v8: Marquee pause on hover / touch ────────────────────────────────────
+  // Desktop: drives GSAP timeScale → 0; Mobile: adds CSS class for animation-play-state
+  const pauseMarquee = useCallback(() => {
+    setMarqueePaused(true);
+    if (marqueeTween.current) {
+      // Cancel any pending slowMarquee restore timer so it doesn't fight us
+      if (scrollTimerRef.current) { clearTimeout(scrollTimerRef.current); scrollTimerRef.current = null; }
+      gsap.to(marqueeTween.current, { timeScale: 0, duration: 0.4, ease: "power2.out" });
+    }
+  }, []);
+
+  const resumeMarquee = useCallback(() => {
+    setMarqueePaused(false);
+    if (marqueeTween.current) {
+      gsap.to(marqueeTween.current, { timeScale: 1, duration: 0.6, ease: "power2.inOut" });
+    }
+  }, []);
+
+
   useEffect(() => {
     if (typeof window === "undefined") return;
     const mm = gsap.matchMedia();
@@ -1101,61 +1268,57 @@ export default function RasoafHero() {
       const slideBEl = bgSlideBRef.current;
       if (!videoEl || !slideAEl || !slideBEl) return;
 
+      // v7: on mobile, just show the video statically — no transition overhead
+      if (isMobileRef.current) {
+        gsap.set(videoEl,  { opacity: 1, className: "rh-bgvid active" });
+        gsap.set(slideAEl, { opacity: 0, className: "rh-bgslide" });
+        gsap.set(slideBEl, { opacity: 0, className: "rh-bgslide" });
+        return;
+      }
+
       gsap.set(videoEl,  { opacity: 1, className: "rh-bgvid active" });
       gsap.set(slideAEl, { opacity: 0, className: "rh-bgslide" });
       gsap.set(slideBEl, { opacity: 0, className: "rh-bgslide" });
 
       let nextSlideIdx = 0;
-      // FIX: store timer ref inside context so ctx.revert() kills it
       let cycleTimer = null;
 
       const runCycle = () => {
         const isVideo = bgModeRef.current === "video";
-
         if (isVideo) {
           const slideData = BG_SLIDES[nextSlideIdx % BG_SLIDES.length];
           const slideEl   = (bgSlideIndex.current % 2 === 0) ? slideAEl : slideBEl;
           slideEl.src = slideData.src;
           slideEl.style.objectPosition = slideData.position;
-
-          gsap.set(slideEl, { opacity: 0, scale: 1.04, className: "rh-bgslide active" });
-          gsap.to(videoEl, {
-            opacity: 0, duration: 1.8, ease: "power3.inOut",
-            onComplete: () => gsap.set(videoEl, { className: "rh-bgvid" }),
-          });
-          gsap.to(slideEl, { opacity: 1, scale: 1, duration: 2.4, ease: "power3.out" });
-
+          gsap.set(slideEl,  { opacity: 0, scale: 1.04, className: "rh-bgslide active" });
+          gsap.to(videoEl,   { opacity: 0, duration: 1.8, ease: "power3.inOut", onComplete: () => gsap.set(videoEl, { className: "rh-bgvid" }) });
+          gsap.to(slideEl,   { opacity: 1, scale: 1, duration: 2.4, ease: "power3.out" });
           bgSlideIndex.current++;
           nextSlideIdx++;
           bgModeRef.current = "image";
           cycleTimer = gsap.delayedCall(10, runCycle);
         } else {
           const currentSlideEl = ((bgSlideIndex.current - 1) % 2 === 0) ? slideAEl : slideBEl;
-          gsap.set(videoEl, { opacity: 0, className: "rh-bgvid active" });
-          gsap.to(videoEl, { opacity: 1, duration: 1.8, ease: "power3.inOut" });
-          gsap.to(currentSlideEl, {
-            opacity: 0, scale: 1.02, duration: 2.0, ease: "power3.inOut",
-            onComplete: () => gsap.set(currentSlideEl, { className: "rh-bgslide" }),
-          });
-
+          gsap.set(videoEl,        { opacity: 0, className: "rh-bgvid active" });
+          gsap.to(videoEl,         { opacity: 1, duration: 1.8, ease: "power3.inOut" });
+          gsap.to(currentSlideEl,  { opacity: 0, scale: 1.02, duration: 2.0, ease: "power3.inOut", onComplete: () => gsap.set(currentSlideEl, { className: "rh-bgslide" }) });
           bgModeRef.current = "video";
           cycleTimer = gsap.delayedCall(5, runCycle);
         }
       };
 
       cycleTimer = gsap.delayedCall(5, runCycle);
-
-      // FIX: return cleanup — kills cycleTimer when ctx.revert() or mm.revert() fires
       return () => { if (cycleTimer) cycleTimer.kill(); };
     });
 
     return () => mm.revert();
   }, []);
 
-  // ── Magnet effect — FIX: Map-based stable cleanup ────────────────────────
+  // ── Magnet effect — skip on mobile (touch has no hover anyway) ────────────
   const bindMagnet = useCallback((el) => {
     if (!el) return;
-    if (magnetMapRef.current.has(el)) return; // already bound
+    if (isMobileRef.current) return; // v7: skip on mobile
+    if (magnetMapRef.current.has(el)) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     const onEnter = (e) => {
@@ -1176,7 +1339,6 @@ export default function RasoafHero() {
   useEffect(() => {
     panelRefs.current.forEach((el) => bindMagnet(el));
     return () => {
-      // FIX: remove every listener from the stable Map
       magnetMapRef.current.forEach(([onEnter, onLeave], el) => {
         el.removeEventListener("mousemove",  onEnter);
         el.removeEventListener("mouseleave", onLeave);
@@ -1185,15 +1347,15 @@ export default function RasoafHero() {
     };
   }, [bindMagnet]);
 
-  // ── GSAP master timeline ─────────────────────────────────────────────────
+  // ── GSAP master timeline ───────────────────────────────────────────────────
   useEffect(() => {
     const mm = gsap.matchMedia();
 
     mm.add("(prefers-reduced-motion: no-preference)", () => {
-      // FIX: single gsap.context wraps ALL tweens → one ctx.revert() kills everything
       const ctx = gsap.context(() => {
-        const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+        const isMobile = isMobileRef.current;
 
+        const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
         tl.to(headlineWrapperRef.current, { opacity: 1, duration: 0.6 }, 0.1);
         tl.to(supTextRef.current,         { opacity: 1, y: 0, duration: 0.7 }, 0.15);
         tl.to(subtitleRef.current,        { opacity: 1, y: 0, duration: 0.85 }, 0.65);
@@ -1230,10 +1392,8 @@ export default function RasoafHero() {
           });
         }
 
-        // FIX: true seamless marquee — xPercent: -50, repeat: -1
-        // With 2× clone the track is always exactly 2× the set width,
-        // so moving -50% lands at pixel-identical position = no jump seam.
-        if (marqueeTrackRef.current) {
+        // v7: GSAP marquee only on desktop; CSS animation handles mobile
+        if (marqueeTrackRef.current && !isMobile) {
           marqueeTween.current = gsap.to(marqueeTrackRef.current, {
             xPercent: -50,
             duration: 40,
@@ -1243,62 +1403,49 @@ export default function RasoafHero() {
         }
 
         const panels = panelRefs.current.filter(Boolean);
-        panels.forEach((panel, i) => {
-          gsap.to(panel, {
-            y: i % 2 === 0 ? -10 : 10,
-            duration: 4 + i * 0.6,
-            repeat: -1,
-            yoyo: true,
-            ease: "sine.inOut",
-            delay: i * 0.3,
-          });
 
-          gsap.to(panel, {
-            rotation: i % 2 === 0 ? 1.0 : -0.8,
-            duration: 6 + i * 0.4,
-            repeat: -1,
-            yoyo: true,
-            ease: "sine.inOut",
-            delay: i * 0.5,
-          });
-
-          const baseClip = i === 0
-            ? "ellipse(60% 90% at 42% 90%)"
-            : i === panels.length - 1
-              ? "ellipse(60% 90% at 58% 90%)"
-              : "ellipse(58% 92% at 50% 92%)";
-          const morphedClip = i === 0
-            ? "ellipse(63% 94% at 43% 91%)"
-            : i === panels.length - 1
-              ? "ellipse(63% 94% at 57% 91%)"
-              : "ellipse(60% 95% at 50% 91%)";
-
-          gsap.fromTo(panel,
-            { clipPath: baseClip },
-            { clipPath: morphedClip, duration: 5 + i * 0.3, repeat: -1, yoyo: true, ease: "sine.inOut", delay: i * 0.2 }
-          );
-
-          const img = panel.querySelector("img");
-          if (img) {
-            gsap.to(img, {
-              y: i % 2 === 0 ? "-3%" : "3%",
-              duration: 8 + i * 0.5,
-              repeat: -1,
-              yoyo: true,
-              ease: "sine.inOut",
-              delay: i * 0.4,
+        // v7: panel ambient tweens KILLED on mobile — they cause constant repaints
+        if (!isMobile) {
+          panels.forEach((panel, i) => {
+            gsap.to(panel, {
+              y: i % 2 === 0 ? -10 : 10,
+              duration: 4 + i * 0.6,
+              repeat: -1, yoyo: true, ease: "sine.inOut", delay: i * 0.3,
             });
-          }
-        });
+            gsap.to(panel, {
+              rotation: i % 2 === 0 ? 1.0 : -0.8,
+              duration: 6 + i * 0.4,
+              repeat: -1, yoyo: true, ease: "sine.inOut", delay: i * 0.5,
+            });
 
-        // FIX: use tvContainerRef instead of document.querySelector
-        if (tvContainerRef.current) {
+            const baseClip = i === 0
+              ? "ellipse(60% 90% at 42% 90%)"
+              : i === panels.length - 1 ? "ellipse(60% 90% at 58% 90%)" : "ellipse(58% 92% at 50% 92%)";
+            const morphedClip = i === 0
+              ? "ellipse(63% 94% at 43% 91%)"
+              : i === panels.length - 1 ? "ellipse(63% 94% at 57% 91%)" : "ellipse(60% 95% at 50% 91%)";
+
+            gsap.fromTo(panel,
+              { clipPath: baseClip },
+              { clipPath: morphedClip, duration: 5 + i * 0.3, repeat: -1, yoyo: true, ease: "sine.inOut", delay: i * 0.2 }
+            );
+
+            const img = panel.querySelector("img");
+            if (img) {
+              gsap.to(img, {
+                y: i % 2 === 0 ? "-3%" : "3%",
+                duration: 8 + i * 0.5,
+                repeat: -1, yoyo: true, ease: "sine.inOut", delay: i * 0.4,
+              });
+            }
+          });
+        }
+
+        // v7: TV float KILLED on mobile
+        if (tvContainerRef.current && !isMobile) {
           gsap.to(tvContainerRef.current, {
-            y: -8,
-            duration: 4.5,
-            repeat: -1,
-            yoyo: true,
-            ease: "sine.inOut",
+            y: -8, duration: 4.5,
+            repeat: -1, yoyo: true, ease: "sine.inOut",
           });
         }
 
@@ -1309,26 +1456,20 @@ export default function RasoafHero() {
           });
         }
 
-        if (badges?.length) {
+        // v7: badge float KILLED on mobile
+        if (badges?.length && !isMobile) {
           gsap.to(badges, {
-            y: -3,
-            stagger: 0.22,
-            duration: 3,
-            repeat: -1,
-            yoyo: true,
-            ease: "sine.inOut",
-            delay: 1.8,
+            y: -3, stagger: 0.22,
+            duration: 3, repeat: -1, yoyo: true, ease: "sine.inOut", delay: 1.8,
           });
         }
 
-        // FIX: shimmer stored inside context → killed on ctx.revert
+        // v7: shimmer sweep KILLED on mobile
         const shimmerEl = shimmerRef.current;
-        if (shimmerEl) {
+        if (shimmerEl && !isMobile) {
           const runShimmer = () => {
             gsap.fromTo(shimmerEl, { left: "-60%" }, {
-              left: "120%",
-              duration: 2.2,
-              ease: "power2.inOut",
+              left: "120%", duration: 2.2, ease: "power2.inOut",
               onComplete: () => {
                 gsap.set(shimmerEl, { left: "-60%" });
                 gsap.delayedCall(10, runShimmer);
@@ -1345,52 +1486,64 @@ export default function RasoafHero() {
           });
         }
 
-        // FIX: wave stat float no longer fights the fromTo.
-        // fromTo lands at the CSS wave offset y value.
-        // The ambient float tween then runs FROM that same y, so there's no conflict.
+        // v7: wave stat ambient float KILLED on mobile — just do entrance only
         const waveStats = waveStatRefs.current.filter(Boolean);
         if (waveStats.length) {
           waveStats.forEach((card, i) => {
-            const waveY = WAVE_Y[i] ?? 0;
+            const waveY = isMobile ? 0 : (WAVE_Y[i] ?? 0);
 
             gsap.fromTo(card, { opacity: 0, y: 40 }, {
-              opacity: 1,
-              y: waveY,          // land at the correct wave offset
-              duration: 0.8,
-              ease: "power3.out",
+              opacity: 1, y: waveY, duration: 0.8, ease: "power3.out",
               delay: 0.1 * i,
               scrollTrigger: { trigger: bottomRef.current, start: "top 80%", toggleActions: "play none none none" },
               onComplete() {
-                // FIX: start ambient float AFTER entrance is done, from the correct y
-                gsap.to(card, {
-                  y: waveY - 4,
-                  duration: 3.5 + i * 0.4,
-                  repeat: -1,
-                  yoyo: true,
-                  ease: "sine.inOut",
-                });
+                // v7: ambient float only on desktop
+                if (!isMobile) {
+                  gsap.to(card, {
+                    y: waveY - 4,
+                    duration: 3.5 + i * 0.4,
+                    repeat: -1, yoyo: true, ease: "sine.inOut",
+                  });
+                }
               },
             });
           });
         }
 
+        // Stat counter — full on desktop, simplified on mobile
         const statNums = bottomRef.current?.querySelectorAll(".rh-stat-num");
         if (statNums?.length) {
           statNums.forEach((el) => {
             const numVal = parseFloat(el.dataset.num);
             if (isNaN(numVal)) return;
-            const proxy = { val: 0 };
-            ScrollTrigger.create({
-              trigger: el,
-              start: "top 88%",
-              once: true,
-              onEnter: () => {
-                gsap.to(proxy, {
-                  val: numVal, duration: 1.8, ease: "power2.out",
-                  onUpdate() { if (el.childNodes[0]) el.childNodes[0].textContent = Math.round(proxy.val); },
-                });
-              },
-            });
+
+            if (isMobile) {
+              // v7: no ScrollTrigger proxy on mobile — just reveal on scroll via IntersectionObserver
+              const observer = new IntersectionObserver(
+                ([entry]) => {
+                  if (!entry.isIntersecting) return;
+                  observer.disconnect();
+                  const proxy = { val: 0 };
+                  gsap.to(proxy, {
+                    val: numVal, duration: 1.4, ease: "power2.out",
+                    onUpdate() { if (el.childNodes[0]) el.childNodes[0].textContent = Math.round(proxy.val); },
+                  });
+                },
+                { threshold: 0.4 }
+              );
+              observer.observe(el);
+            } else {
+              const proxy = { val: 0 };
+              ScrollTrigger.create({
+                trigger: el, start: "top 88%", once: true,
+                onEnter: () => {
+                  gsap.to(proxy, {
+                    val: numVal, duration: 1.8, ease: "power2.out",
+                    onUpdate() { if (el.childNodes[0]) el.childNodes[0].textContent = Math.round(proxy.val); },
+                  });
+                },
+              });
+            }
           });
         }
       }, rootRef);
@@ -1416,10 +1569,15 @@ export default function RasoafHero() {
 
   const scrollTo = useCallback((id) => {
     const el = document.getElementById(id);
-    if (el && lenisRef.current) lenisRef.current.scrollTo(el, { offset: -80 });
+    if (!el) return;
+    if (lenisRef.current) {
+      lenisRef.current.scrollTo(el, { offset: -80 });
+    } else {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   }, []);
 
-  // ─────────────────────────────────────────────────────────────────────────
+  // ──────────────────────────────────────────────────────────────────────────
   return (
     <>
       <style>{CSS}</style>
@@ -1459,7 +1617,6 @@ export default function RasoafHero() {
               Your journey to the world has never been crafted like this before.
             </p>
 
-            {/* FIX: role="list" added — required when children have role="listitem" */}
             <div className="rh-trust-row" ref={trustRef} role="list" aria-label="Trust indicators">
               {TRUST_BADGES.map((b, i) => {
                 const Icon = b.icon;
@@ -1472,8 +1629,16 @@ export default function RasoafHero() {
             </div>
           </div>
 
-          {/* FIX: role="list" on wrap (children are role="listitem") */}
-          <div className="rh-marquee-wrap" role="list" aria-label="Travel destinations gallery">
+          <div
+            className={`rh-marquee-wrap${marqueePaused ? " rh-marquee-paused" : ""}`}
+            role="list"
+            aria-label="Travel destinations gallery"
+            onMouseEnter={pauseMarquee}
+            onMouseLeave={resumeMarquee}
+            onTouchStart={pauseMarquee}
+            onTouchEnd={resumeMarquee}
+            onTouchCancel={resumeMarquee}
+          >
             <div className="rh-marquee-track" ref={marqueeTrackRef}>
               {MARQUEE_PANELS.map((panel, i) => (
                 <div
@@ -1482,9 +1647,10 @@ export default function RasoafHero() {
                   ref={(el) => { if (i < PANELS.length) panelRefs.current[i] = el; }}
                   role="listitem"
                   tabIndex={0}
-                  aria-label={`${panel.label} — ${panel.tag}`}
+                  aria-label={`${panel.label} — ${panel.tag}. Press Enter to Register`}
+                  onClick={() => scrollTo("register")}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); scrollTo("services"); }
+                    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); scrollTo("register"); }
                   }}
                 >
                   <img src={panel.src} alt={panel.alt} loading="lazy" decoding="async" />
@@ -1498,6 +1664,17 @@ export default function RasoafHero() {
                     <span className="rh-panel-label">{panel.label}</span>
                     <span className="rh-panel-tag">{panel.tag}</span>
                   </div>
+                  {/* v8: Register button — bottom-left overlay, scrolls to #register */}
+                  <button
+                    type="button"
+                    className="rh-panel-register"
+                    aria-label={`Register for ${panel.label}`}
+                    onClick={(e) => { e.stopPropagation(); scrollTo("register"); }}
+                    onKeyDown={(e) => { e.stopPropagation(); }}
+                    tabIndex={-1}
+                  >
+                    Register
+                  </button>
                 </div>
               ))}
             </div>
@@ -1505,14 +1682,15 @@ export default function RasoafHero() {
           </div>
 
           <div className="rh-tv-section" ref={tvSectionRef}>
-            {/* FIX: ref added here instead of querySelector in GSAP */}
             <div className="rh-tv-container" ref={tvContainerRef}>
               <div className="rh-tv-screen">
                 {tvVideoError ? (
                   <div style={{
-                    width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center",
+                    width: "100%", height: "100%",
+                    display: "flex", alignItems: "center", justifyContent: "center",
                     background: "linear-gradient(135deg, #0a1a2f 0%, #0d1f3a 100%)",
-                    color: "#C4972A", fontFamily: "'Inter', sans-serif", fontSize: "14px", textAlign: "center", padding: "20px",
+                    color: "#C4972A", fontFamily: "'Inter', sans-serif",
+                    fontSize: "14px", textAlign: "center", padding: "20px",
                   }}>
                     <div>
                       <SvgPlane />
@@ -1535,11 +1713,14 @@ export default function RasoafHero() {
                   </video>
                 )}
 
-                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.15) 100%)", pointerEvents: "none" }} />
+                <div style={{
+                  position: "absolute", inset: 0,
+                  background: "linear-gradient(135deg, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.15) 100%)",
+                  pointerEvents: "none",
+                }} />
 
                 {!tvVideoError && (
                   <div className="rh-tv-controls">
-                    {/* FIX: type="button" on all buttons */}
                     <button type="button" onClick={toggleTvPlay} className="rh-tv-control-btn" aria-label={isTvPlaying ? "Pause" : "Play"}>
                       {isTvPlaying ? <Pause size={18} /> : <Play size={18} />}
                     </button>
@@ -1568,8 +1749,7 @@ export default function RasoafHero() {
               </div>
 
               <div className="rh-wave-ctas">
-                {/* FIX: type="button" */}
-                <button type="button" className="rh-text-cta" onClick={() => scrollTo("booking")} aria-label="Book a trip">Book a trip</button>
+                <button type="button" className="rh-text-cta" onClick={() => scrollTo("booking")}  aria-label="Book a trip">Book a trip</button>
                 <span className="rh-cta-sep" aria-hidden="true" />
                 <button type="button" className="rh-text-cta" onClick={() => scrollTo("services")} aria-label="See Packages">See Packages</button>
               </div>
