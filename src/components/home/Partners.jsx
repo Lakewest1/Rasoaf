@@ -1,741 +1,775 @@
-// components/home/Partners.jsx
-import { useRef, useState, useEffect } from "react";
-import { motion, useInView } from "framer-motion";
+// src/components/home/Partners.jsx
+// ─────────────────────────────────────────────────────────────────────────────
+// RASOAF Travels and Tours — Partners Section
+//
+// A premium trust reinforcement section featuring partner logos from airlines,
+// hotels, accreditation bodies, and travel authorities.
+//
+// Design: White/light background, grayscale logos with color on hover
+// Layout: Logo grid with optional auto-scrolling carousel
+// Animation: Fade-up on scroll, hover scale, infinite scroll
+// Responsive: 6 → 4 → 3 → 2 columns
+// ─────────────────────────────────────────────────────────────────────────────
 
+import { useRef, useEffect, useState, useCallback } from "react";
 import {
-  Star,
-  Trophy,
   Award,
-  BadgeCheck,
   Building2,
+  Globe,
+  Plane,
+  Hotel,
   Shield,
-  GraduationCap,
-  Handshake,
+  Users,
+  CheckCircle,
+  Star,
+  Crown,
   MapPin,
-  ShieldCheck,
-  Heart,
-  CheckCircle
+  Briefcase,
 } from "lucide-react";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// STRATEGY:
-//   Mobile (< 768px) — zero CSS animations, zero Framer Motion per card.
-//   Renders a native CSS scroll-snap marquee: one row of cards that auto-scrolls,
-//   pauses on hover, and uses native browser scrolling.
-//
-//   Desktop (≥ 768px) — original infinite marquee + float animations intact.
-// ─────────────────────────────────────────────────────────────────────────────
-
-function useReveal(threshold = 0.2) {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, amount: threshold });
-  return [ref, isInView];
-}
-
-// Detect mobile once — stable, no re-evaluation on resize
-const IS_MOBILE =
-  typeof window !== "undefined" && window.innerWidth < 768;
-
-// ─────────────────────────────────────────────────────────────────────────────
-// PARTNER DATA
-// ─────────────────────────────────────────────────────────────────────────────
+// ── Partners Data ──────────────────────────────────────────────────────────────
 const PARTNERS = [
   {
     id: 1,
-    name: "NHS England",
-    logo: "./src/images/NSH.jpeg",
-    fallbackIcon: Building2,
-    fallbackColor: "#005EB8",
-    website: "https://www.england.nhs.uk/",
+    name: "Saudi Arabian Airlines",
+    category: "Airline",
+    color: "#0a5a8c",
+    icon: Plane,
+    description: "Official flag carrier of Saudi Arabia",
   },
   {
     id: 2,
-    name: "CQC",
-    logo: "./src/images/cqc.jpeg",
-    fallbackIcon: ShieldCheck,
-    fallbackColor: "#00A859",
-    website: "https://www.cqc.org.uk/",
+    name: "Emirates Airlines",
+    category: "Airline",
+    color: "#d71921",
+    icon: Plane,
+    description: "Premier international airline",
   },
   {
     id: 3,
-    name: "DBS",
-     logo: "./src/images/dbs.jpeg",
-    fallbackIcon: Shield,
-    fallbackColor: "#C4972A",
-    website: "https://www.gov.uk/government/organisations/disclosure-and-barring-service",
+    name: "Etihad Airways",
+    category: "Airline",
+    color: "#8a1538",
+    icon: Plane,
+    description: "UAE's national airline",
   },
   {
     id: 4,
-    name: "Skills for Care",
-     logo: "./src/images/skillcare.jpeg",
-    fallbackIcon: GraduationCap,
-    fallbackColor: "#6C3B2A",
-    website: "https://www.skillsforcare.org.uk/",
+    name: "Qatar Airways",
+    category: "Airline",
+    color: "#8a1538",
+    icon: Plane,
+    description: "Award-winning international airline",
   },
   {
     id: 5,
-    name: "Lancashire County Council",
-     logo: "./src/images/lacashire.jpeg",
-    fallbackIcon: MapPin,
-    fallbackColor: "#4A6FA5",
-    website: "https://www.lancashire.gov.uk/",
+    name: "Hilton Hotels",
+    category: "Hotel",
+    color: "#1e3d5e",
+    icon: Hotel,
+    description: "Premium hotel accommodations",
   },
   {
     id: 6,
-    name: "Homecare Association",
-     logo: "./src/images/homecare.jpeg",
-    fallbackIcon: Heart,
-    fallbackColor: "#7B2D8E",
-    website: "https://www.homecareassociation.org.uk/",
+    name: "Marriott International",
+    category: "Hotel",
+    color: "#004b87",
+    icon: Hotel,
+    description: "Leading hospitality brand",
   },
   {
     id: 7,
-    name: "NCFE",
-    logo: "./src/images/ncfe.jpeg",
-    fallbackIcon: Award,
-    fallbackColor: "#E65100",
-    website: "https://www.ncfe.org.uk/",
+    name: "Ministry of Hajj & Umrah",
+    category: "Government Authority",
+    color: "#1a6e3a",
+    icon: Shield,
+    description: "Saudi Ministry of Hajj and Umrah",
+  },
+  {
+    id: 8,
+    name: "IATA",
+    category: "Accreditation",
+    color: "#004b8a",
+    icon: Award,
+    description: "International Air Transport Association",
+  },
+  {
+    id: 9,
+    name: "Saudi Tourism Authority",
+    category: "Government Authority",
+    color: "#1a6e3a",
+    icon: Globe,
+    description: "Official tourism body of Saudi Arabia",
+  },
+  {
+    id: 10,
+    name: "Accor Hotels",
+    category: "Hotel",
+    color: "#003366",
+    icon: Hotel,
+    description: "Global hospitality leader",
+  },
+  {
+    id: 11,
+    name: "Flydubai",
+    category: "Airline",
+    color: "#d71921",
+    icon: Plane,
+    description: "Dubai-based international airline",
+  },
+  {
+    id: 12,
+    name: "WTTC",
+    category: "Accreditation",
+    color: "#003366",
+    icon: Award,
+    description: "World Travel & Tourism Council",
   },
 ];
 
-// ─────────────────────────────────────────────────────────────────────────────
-// CSS — desktop animations, mobile marquee with auto-scroll
-// ─────────────────────────────────────────────────────────────────────────────
-const CSS = `
-  /* ============================================================ */
-  /* DESKTOP: Original marquee animation (≥768px) */
-  /* ============================================================ */
-  @media (min-width: 768px) {
-    @keyframes pt-marquee {
-      from { transform: translateX(0); }
-      to   { transform: translateX(-50%); }
-    }
-    .pt-track {
-      display: flex;
-      width: max-content;
-      will-change: transform;
-      animation: pt-marquee var(--pt-speed, 50s) linear infinite;
-    }
-    .pt-track:hover { animation-play-state: paused; }
+// ── Category Icons ────────────────────────────────────────────────────────────
+const CATEGORY_ICONS = {
+  Airline: Plane,
+  Hotel: Hotel,
+  "Government Authority": Shield,
+  Accreditation: Award,
+};
 
-    @keyframes pt-pop {
-      from { opacity: 0; transform: scale(0.6); }
-      to   { opacity: 1; transform: scale(1); }
-    }
-    @keyframes pt-float {
-      0%,100% { transform: translateY(0) rotateZ(0deg); }
-      25%     { transform: translateY(-4px) rotateZ(1deg); }
-      75%     { transform: translateY(4px) rotateZ(-1deg); }
-    }
-    .pt-card {
-      position: relative;
-      flex-shrink: 0;
-      cursor: pointer;
-      margin: 0 12px;
-      width: 120px;
-      height: 120px;
-      animation: pt-pop 0.45s cubic-bezier(0.22,1,0.36,1) both,
-                 pt-float 5s ease-in-out infinite;
-      animation-delay: calc(var(--i) * 0.15s), calc(var(--i) * 0.15s);
-    }
+// ── Hook: IntersectionObserver for scroll animation ──────────────────────
+function useInView(threshold = 0.1) {
+  const ref = useRef(null);
+  const [inView, setInView] = useState(false);
 
-    .pt-face {
-      position: absolute;
-      inset: 0;
-      border-radius: 20px;
-      background: #ffffff;
-      border: 1px solid rgba(0,0,0,0.08);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-      overflow: hidden;
-      transition: box-shadow 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
-    }
-    .pt-card:hover .pt-face {
-      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-      border-color: rgba(196,151,42,0.3);
-      transform: scale(1.05);
-    }
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
 
-    .pt-logo {
-      width: 56px;
-      height: 56px;
-      object-fit: contain;
-      margin-bottom: 10px;
-      filter: grayscale(100%);
-      transition: filter 0.3s ease, transform 0.3s ease;
-    }
-    .pt-card:hover .pt-logo {
-      filter: grayscale(0%);
-      transform: scale(1.05);
-    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setInView(true);
+          observer.unobserve(el);
+        }
+      },
+      { threshold }
+    );
 
-    .pt-fallback-icon {
-      width: 48px;
-      height: 48px;
-      margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      filter: grayscale(100%);
-      transition: filter 0.3s ease, transform 0.3s ease;
-    }
-    .pt-card:hover .pt-fallback-icon {
-      filter: grayscale(0%);
-      transform: scale(1.05);
-    }
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [threshold]);
 
-    .pt-label {
-      font-family: 'Inter', sans-serif;
-      font-weight: 600;
-      font-size: 10px;
-      color: #4a5568;
-      text-align: center;
-      padding: 0 8px;
-      line-height: 1.3;
-      transition: color 0.2s ease;
-    }
-    .pt-card:hover .pt-label { color: #C4972A; }
+  return [ref, inView];
+}
 
-    @keyframes pt-ring-cw  { to { transform: rotate(360deg);  } }
-    @keyframes pt-ring-ccw { to { transform: rotate(-360deg); } }
-    .pt-ring-cw {
-      position: absolute;
-      inset: -4px;
-      border-radius: 20px;
-      border: 1px solid rgba(196,151,42,0.1);
-      pointer-events: none;
-      animation: pt-ring-cw 12s linear infinite;
-    }
-    .pt-ring-ccw {
-      position: absolute;
-      inset: -8px;
-      border-radius: 24px;
-      border: 1px solid rgba(196,151,42,0.06);
-      pointer-events: none;
-      animation: pt-ring-ccw 15s linear infinite;
-    }
+// ── Helper: clamp for inline styles ─────────────────────────────────────────
+function clamp(min, pref, max) {
+  return `clamp(${min}px, ${pref}, ${max}px)`;
+}
 
-    @keyframes pt-hover-pulse {
-      from { transform: scale(1); opacity: 0.2; }
-      to   { transform: scale(1.3); opacity: 0; }
-    }
-    .pt-hover-pulse {
-      position: absolute;
-      inset: 0;
-      border-radius: 20px;
-      background: rgba(196,151,42,0.15);
-      pointer-events: none;
-      opacity: 0;
-    }
-    .pt-card:hover .pt-hover-pulse {
-      animation: pt-hover-pulse 0.8s ease-out infinite;
-    }
-
-    @keyframes pt-blob-a {
-      0%,100% { transform: translate(0, 0); }
-      25%     { transform: translate(12px, -16px); }
-      75%     { transform: translate(-12px, 16px); }
-    }
-    @keyframes pt-blob-b {
-      0%,100% { transform: translate(0, 0); }
-      25%     { transform: translate(-12px, 16px); }
-      75%     { transform: translate(12px, -16px); }
-    }
-    .pt-blob-a { animation: pt-blob-a 18s ease-in-out infinite; }
-    .pt-blob-b { animation: pt-blob-b 22s ease-in-out infinite; }
-  }
-
-  /* ============================================================ */
-  /* MOBILE MARQUEE — auto-scrolling marquee (pauses on hover) */
-  /* ============================================================ */
-  @media (max-width: 767px) {
-    @keyframes pt-mobile-marquee {
-      0% { transform: translateX(0); }
-      100% { transform: translateX(-50%); }
-    }
-    
-    .pt-mobile-marquee-container {
-      overflow: hidden;
-      position: relative;
-      width: 100%;
-      padding: 16px 0;
-    }
-    
-    .pt-mobile-track {
-      display: flex;
-      width: max-content;
-      animation: pt-mobile-marquee 40s linear infinite;
-    }
-    
-    .pt-mobile-track:hover {
-      animation-play-state: paused;
-    }
-    
-    .pt-mobile-card {
-      flex-shrink: 0;
-      cursor: pointer;
-      margin: 0 10px;
-      width: 100px;
-      height: 100px;
-      background: #ffffff;
-      border-radius: 16px;
-      border: 1px solid rgba(0,0,0,0.08);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    }
-    
-    .pt-mobile-card:active {
-      transform: scale(0.98);
-    }
-    
-    .pt-mobile-logo {
-      width: 42px;
-      height: 42px;
-      object-fit: contain;
-      margin-bottom: 8px;
-    }
-    
-    .pt-mobile-icon {
-      width: 38px;
-      height: 38px;
-      margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .pt-mobile-label {
-      font-family: 'Inter', sans-serif;
-      font-weight: 600;
-      font-size: 8.5px;
-      color: #4a5568;
-      text-align: center;
-      padding: 0 6px;
-      line-height: 1.3;
-    }
-    
-    /* Hide desktop elements on mobile */
-    .pt-track, .pt-card, .pt-ring-cw, .pt-ring-ccw, .pt-hover-pulse, .pt-blob-a, .pt-blob-b {
-      animation: none !important;
-      display: none !important;
-    }
-  }
-
-  /* Reduced motion */
-  @media (prefers-reduced-motion: reduce) {
-    .pt-track, .pt-mobile-track, .pt-card, .pt-ring-cw, .pt-ring-ccw,
-    .pt-hover-pulse, .pt-blob-a, .pt-blob-b {
-      animation: none !important;
-    }
-  }
-`;
-
-// ─────────────────────────────────────────────────────────────────────────────
-// DESKTOP CARD — original design, no changes
-// ─────────────────────────────────────────────────────────────────────────────
-function DesktopCard({ partner, index }) {
-  const [imgError, setImgError] = useState(false);
-  const FallbackIcon = partner.fallbackIcon;
-
-  const open = () => window.open(partner.website, "_blank", "noopener,noreferrer");
+// ── Partner Logo Card ──────────────────────────────────────────────────────
+function PartnerCard({ partner, index, inView }) {
+  const [hovered, setHovered] = useState(false);
+  const delay = 0.04 * (index % 8);
+  const Icon = partner.icon || Building2;
 
   return (
     <div
-      className="pt-card"
-      style={{ "--i": index }}
-      onClick={open}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") open(); }}
-      aria-label={`Visit ${partner.name} website`}
-    >
-      <div className="pt-face">
-        <div className="pt-hover-pulse" />
-        {!imgError ? (
-          <img
-            src={partner.logo}
-            alt={`${partner.name} logo`}
-            className="pt-logo"
-            onError={() => setImgError(true)}
-            loading="lazy"
-          />
-        ) : (
-          <div className="pt-fallback-icon">
-            <FallbackIcon size={40} strokeWidth={1.5} color={partner.fallbackColor} />
-          </div>
-        )}
-        <span className="pt-label">{partner.name}</span>
-        <div className="pt-ring-cw" />
-        <div className="pt-ring-ccw" />
-      </div>
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// MOBILE MARQUEE CARD — static, no animations, no hover effects
-// Auto-scrolling marquee that pauses on hover
-// ─────────────────────────────────────────────────────────────────────────────
-function MobileMarqueeCard({ partner }) {
-  const [imgError, setImgError] = useState(false);
-  const FallbackIcon = partner.fallbackIcon;
-
-  const open = () => window.open(partner.website, "_blank", "noopener,noreferrer");
-
-  return (
-    <div
-      className="pt-mobile-card"
-      onClick={open}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") open(); }}
-      aria-label={`Visit ${partner.name} website`}
-    >
-      {!imgError ? (
-        <img
-          src={partner.logo}
-          alt={`${partner.name} logo`}
-          className="pt-mobile-logo"
-          onError={() => setImgError(true)}
-          loading="lazy"
-        />
-      ) : (
-        <div className="pt-mobile-icon">
-          <FallbackIcon size={28} strokeWidth={1.5} color={partner.fallbackColor} />
-        </div>
-      )}
-      <span className="pt-mobile-label">{partner.name}</span>
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// MOBILE MARQUEE — auto-scrolling marquee with doubled items for seamless loop
-// ─────────────────────────────────────────────────────────────────────────────
-function MobileMarquee({ items }) {
-  // Double the items for seamless infinite scroll
-  const doubledItems = [...items, ...items];
-
-  return (
-    <div className="pt-mobile-marquee-container">
-      <div className="pt-mobile-track">
-        {doubledItems.map((partner, idx) => (
-          <MobileMarqueeCard key={`${partner.id}-${idx}`} partner={partner} />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// DESKTOP MARQUEE — original, no changes
-// ─────────────────────────────────────────────────────────────────────────────
-function DesktopMarquee({ items, isInView }) {
-  const doubled = [...items, ...items];
-
-  return (
-    <div
+      className="partner-card-wrapper"
       style={{
-        overflow: "hidden",
-        position: "relative",
-        width: "100%",
-        padding: "20px 0",
-        maskImage: "linear-gradient(to right, transparent, black 8%, black 92%, transparent)",
-        WebkitMaskImage: "linear-gradient(to right, transparent, black 8%, black 92%, transparent)",
+        opacity: inView ? 1 : 0,
+        transform: inView ? "translateY(0)" : "translateY(20px)",
+        transition: `
+          opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s,
+          transform 0.5s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s
+        `,
       }}
     >
-      {isInView && (
-        <div className="pt-track" style={{ "--pt-speed": "50s" }}>
-          {doubled.map((partner, idx) => (
-            <DesktopCard
-              key={`${partner.id}-${idx}`}
-              partner={partner}
-              index={idx % items.length}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Framer Motion variants — header only, unchanged
-// ─────────────────────────────────────────────────────────────────────────────
-const headerVariants = {
-  hidden: { opacity: 0, y: 50 },
-  visible: {
-    opacity: 1, y: 0,
-    transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1], staggerChildren: 0.15 },
-  },
-};
-const childVariants = {
-  hidden:  { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } },
-};
-const badgeContainerVariants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.5 } },
-};
-const badgeVariants = {
-  hidden:  { opacity: 0, y: 20, scale: 0.9 },
-  visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.5, type: "spring" } },
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
-// MAIN COMPONENT
-// ─────────────────────────────────────────────────────────────────────────────
-export default function Partners() {
-  const [ref, inView] = useReveal(0.15);
-
-  return (
-    <>
-      <style>{CSS}</style>
-
-      <section
-        ref={ref}
+      <div
+        className="partner-card"
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
         style={{
-          padding: "clamp(50px, 8vh, 80px) clamp(16px, 5vw, 80px)",
-          background: "#ffffff",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "clamp(16px, 2vw, 28px)",
+          background: hovered ? "#ffffff" : "rgba(255,255,255,0.6)",
+          borderRadius: "16px",
+          border: `1px solid ${hovered ? "rgba(196,151,42,0.15)" : "rgba(0,0,0,0.04)"}`,
+          boxShadow: hovered
+            ? "0 8px 32px rgba(0,0,0,0.06), 0 4px 16px rgba(196,151,42,0.06)"
+            : "0 2px 8px rgba(0,0,0,0.03), 0 1px 2px rgba(0,0,0,0.02)",
+          transform: hovered ? "translateY(-4px) scale(1.03)" : "translateY(0) scale(1)",
+          transition: "all 0.35s cubic-bezier(0.25, 1, 0.5, 1)",
+          cursor: "default",
+          height: "100%",
+          minHeight: "clamp(80px, 10vw, 120px)",
+          width: "100%",
           position: "relative",
           overflow: "hidden",
         }}
       >
-        {/* Animated background grid — desktop only */}
-        {!IS_MOBILE && (
-          <motion.div
-            animate={{ opacity: inView ? 0.03 : 0 }}
-            transition={{ duration: 1 }}
-            style={{
-              position: "absolute",
-              inset: 0,
-              backgroundImage: `
-                radial-gradient(circle at 20% 50%, rgba(196,151,42,0.06) 0%, transparent 50%),
-                repeating-linear-gradient(45deg, #C4972A 0px, #C4972A 1px, transparent 1px, transparent 30px)
-              `,
-              backgroundSize: "100% 100%, 30px 30px",
-              pointerEvents: "none",
-            }}
-          />
-        )}
-
-        {/* Background blobs — desktop only */}
-        {!IS_MOBILE && (
-          <>
-            <div
-              className="pt-blob-a"
-              style={{
-                position: "absolute",
-                top: "5%", right: "2%",
-                width: 280, height: 280,
-                borderRadius: "50%",
-                background: "radial-gradient(circle, rgba(196,151,42,0.03), transparent 70%)",
-                pointerEvents: "none",
-              }}
-            />
-            <div
-              className="pt-blob-b"
-              style={{
-                position: "absolute",
-                bottom: "5%", left: "2%",
-                width: 320, height: 320,
-                borderRadius: "50%",
-                background: "radial-gradient(circle, rgba(196,151,42,0.02), transparent 70%)",
-                pointerEvents: "none",
-              }}
-            />
-          </>
-        )}
-
-        {/* Top gold border */}
-        <motion.div
-          initial={{ scaleX: 0 }}
-          animate={inView ? { scaleX: 1 } : {}}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        {/* Icon Container - replaces image */}
+        <div
           style={{
-            position: "absolute", top: 0, left: 0, right: 0, height: 1,
-            background: "linear-gradient(90deg, transparent, #C4972A, #f0c060, #C4972A, transparent)",
-            transformOrigin: "left",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "8px",
+            transition: "all 0.4s cubic-bezier(0.25, 1, 0.5, 1)",
+            filter: hovered ? "grayscale(0%)" : "grayscale(30%)",
+            opacity: hovered ? 1 : 0.7,
           }}
-        />
-
-        {/* Bottom gold border */}
-        <motion.div
-          initial={{ scaleX: 0 }}
-          animate={inView ? { scaleX: 1 } : {}}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
-          style={{
-            position: "absolute", bottom: 0, left: 0, right: 0, height: 1,
-            background: "linear-gradient(90deg, transparent, #C4972A, #f0c060, #C4972A, transparent)",
-            transformOrigin: "right",
-          }}
-        />
-
-        <div style={{ maxWidth: 1200, margin: "0 auto", position: "relative", zIndex: 2 }}>
-
-          {/* Section header — Framer Motion, unchanged */}
-          <motion.div
-            variants={headerVariants}
-            initial="hidden"
-            animate={inView ? "visible" : "hidden"}
-            style={{ textAlign: "center", marginBottom: IS_MOBILE ? 32 : 56 }}
-          >
-            <motion.div
-              variants={childVariants}
-              style={{ display: "inline-flex", alignItems: "center", gap: 10, marginBottom: 16 }}
-            >
-              <motion.div
-                initial={{ width: 0 }}
-                animate={inView ? { width: 30 } : {}}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                style={{ height: 2, background: "#C4972A", borderRadius: 999 }}
-              />
-              <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 10, fontWeight: 700, letterSpacing: "4px", textTransform: "uppercase", color: "#C4972A" }}>
-                Trusted Partners
-              </span>
-              <motion.div
-                initial={{ width: 0 }}
-                animate={inView ? { width: 30 } : {}}
-                transition={{ duration: 0.6, delay: 0.4 }}
-                style={{ height: 2, background: "#C4972A", borderRadius: 999 }}
-              />
-            </motion.div>
-
-            <motion.h2
-              variants={childVariants}
-              style={{
-                fontFamily: "'Inter', sans-serif",
-                fontSize: "clamp(1.5rem, 3.5vw, 2.4rem)",
-                fontWeight: 800,
-                color: "#0f1d3d",
-                letterSpacing: "-0.02em",
-                marginBottom: 16,
-              }}
-            >
-              Trusted By Leading{" "}
-              <motion.span
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={inView ? { opacity: 1, scale: 1 } : {}}
-                transition={{ duration: 0.5, delay: 0.6, type: "spring" }}
-                style={{
-                  display: "inline-block",
-                  background: "linear-gradient(135deg, #C4972A, #e8b84a)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
-                }}
-              >
-                Organizations
-              </motion.span>
-            </motion.h2>
-
-            <motion.p
-              variants={childVariants}
-              style={{
-                fontFamily: "'Inter', sans-serif",
-                fontSize: 14,
-                color: "#4a5568",
-                maxWidth: 520,
-                margin: "0 auto",
-                lineHeight: 1.65,
-              }}
-            >
-              We're proud to work with and be recognized by industry leaders across healthcare
-            </motion.p>
-          </motion.div>
-
-          {/* ── CONDITIONAL RENDER: mobile marquee vs desktop marquee ── */}
-          {IS_MOBILE ? (
-            <MobileMarquee items={PARTNERS} />
-          ) : (
-            <DesktopMarquee items={PARTNERS} isInView={inView} />
-          )}
-
-          {/* Trust badges — unchanged */}
-          <motion.div
-            initial="hidden"
-            animate={inView ? "visible" : "hidden"}
-            variants={badgeContainerVariants}
+        >
+          <div
             style={{
+              width: "clamp(40px, 5vw, 56px)",
+              height: "clamp(40px, 5vw, 56px)",
+              borderRadius: "12px",
+              background: hovered ? partner.color : "#f0f0f0",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              marginTop: IS_MOBILE ? 32 : 56,
-              gap: IS_MOBILE ? 10 : 16,
-              flexWrap: "wrap",
+              transition: "all 0.4s cubic-bezier(0.25, 1, 0.5, 1)",
+              transform: hovered ? "scale(1.05)" : "scale(1)",
             }}
           >
-            <motion.div
-              variants={badgeVariants}
-              whileHover={IS_MOBILE ? {} : { scale: 1.03, y: -2 }}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                padding: IS_MOBILE ? "6px 14px" : "8px 20px",
-                background: "rgba(196,151,42,0.08)",
-                borderRadius: "50px",
-                cursor: "default",
-                border: "1px solid rgba(196,151,42,0.12)",
-              }}
-            >
-              <Trophy size={IS_MOBILE ? 13 : 16} style={{ color: "#C4972A" }} />
-              <span style={{ fontFamily: "'Inter', sans-serif", fontSize: IS_MOBILE ? 11 : 13, fontWeight: 600, color: "#C4972A" }}>
-                7+ Trusted Partnerships
-              </span>
-            </motion.div>
+            <Icon
+              size={clamp(20, 24, 28)}
+              color={hovered ? "#ffffff" : "#666666"}
+              strokeWidth={1.8}
+            />
+          </div>
+          <span
+            style={{
+              fontFamily: "'Inter', sans-serif",
+              fontSize: "clamp(10px, 0.9vw, 13px)",
+              fontWeight: 600,
+              color: hovered ? "#0a0a2e" : "#4a5568",
+              textAlign: "center",
+              transition: "color 0.3s ease",
+              lineHeight: 1.2,
+            }}
+          >
+            {partner.name}
+          </span>
+        </div>
 
-            <motion.div
-              variants={badgeVariants}
-              whileHover={IS_MOBILE ? {} : { scale: 1.03, y: -2 }}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                padding: IS_MOBILE ? "6px 14px" : "8px 20px",
-                background: "rgba(0,0,0,0.03)",
-                borderRadius: "50px",
-                cursor: "default",
-                border: "1px solid rgba(0,0,0,0.06)",
-              }}
-            >
-              <BadgeCheck size={IS_MOBILE ? 13 : 16} style={{ color: "#4a5568" }} />
-              <span style={{ fontFamily: "'Inter', sans-serif", fontSize: IS_MOBILE ? 11 : 13, fontWeight: 500, color: "#64748b" }}>
-                Full Compliance Certified
-              </span>
-            </motion.div>
+        {/* Hover Tooltip */}
+        {hovered && (
+          <div
+            style={{
+              position: "absolute",
+              bottom: "clamp(8px, 1vw, 14px)",
+              left: "50%",
+              transform: "translateX(-50%)",
+              fontFamily: "'Inter', sans-serif",
+              fontSize: "clamp(8px, 0.6vw, 10px)",
+              fontWeight: 500,
+              color: "#C4972A",
+              background: "rgba(255,255,255,0.95)",
+              padding: "4px 12px",
+              borderRadius: "50px",
+              boxShadow: "0 2px 10px rgba(0,0,0,0.06)",
+              whiteSpace: "nowrap",
+              animation: "tooltip-fade 0.3s ease",
+              border: "1px solid rgba(196,151,42,0.1)",
+            }}
+          >
+            {partner.description}
+          </div>
+        )}
 
-            <motion.div
-              variants={badgeVariants}
-              whileHover={IS_MOBILE ? {} : { scale: 1.03, y: -2 }}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                padding: IS_MOBILE ? "6px 14px" : "8px 20px",
-                background: "rgba(0,0,0,0.03)",
-                borderRadius: "50px",
-                cursor: "default",
-                border: "1px solid rgba(0,0,0,0.06)",
-              }}
-            >
-              <div style={{ display: "flex", gap: 2 }}>
-                {[1,2,3,4,5].map((_, i) => (
-                  <Star key={i} size={IS_MOBILE ? 10 : 12} fill="#f0c060" stroke="#f0c060" style={{ color: "#f0c060" }} />
-                ))}
+        {/* Category indicator */}
+        <div
+          style={{
+            position: "absolute",
+            top: "clamp(6px, 0.8vw, 10px)",
+            right: "clamp(6px, 0.8vw, 10px)",
+            fontFamily: "'Inter', sans-serif",
+            fontSize: "clamp(6px, 0.5vw, 8px)",
+            fontWeight: 500,
+            textTransform: "uppercase",
+            letterSpacing: "0.06em",
+            color: hovered ? "#C4972A" : "rgba(0,0,0,0.2)",
+            background: hovered ? "rgba(196,151,42,0.06)" : "rgba(0,0,0,0.03)",
+            padding: "2px 8px",
+            borderRadius: "50px",
+            transition: "all 0.3s ease",
+          }}
+        >
+          {partner.category}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Auto-Scrolling Carousel ──────────────────────────────────────────────────
+function PartnerCarousel({ partners, inView }) {
+  const containerRef = useRef(null);
+  const [isPaused, setIsPaused] = useState(false);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container || !inView) return;
+
+    let animationId;
+    let scrollPosition = 0;
+    const speed = 0.5;
+
+    const scroll = () => {
+      if (!isPaused) {
+        scrollPosition += speed;
+        if (scrollPosition >= container.scrollWidth / 2) {
+          scrollPosition = 0;
+        }
+        container.scrollLeft = scrollPosition;
+      }
+      animationId = requestAnimationFrame(scroll);
+    };
+
+    animationId = requestAnimationFrame(scroll);
+
+    return () => {
+      if (animationId) cancelAnimationFrame(animationId);
+    };
+  }, [inView, isPaused]);
+
+  // Duplicate partners for seamless loop
+  const carouselPartners = [...partners, ...partners];
+
+  return (
+    <div
+      ref={containerRef}
+      style={{
+        display: "flex",
+        overflow: "hidden",
+        gap: "clamp(16px, 2vw, 28px)",
+        padding: "clamp(12px, 1.5vw, 20px) 0",
+        scrollBehavior: "smooth",
+        WebkitOverflowScrolling: "touch",
+        position: "relative",
+        cursor: "grab",
+      }}
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+      onTouchStart={() => setIsPaused(true)}
+      onTouchEnd={() => setIsPaused(false)}
+    >
+      {carouselPartners.map((partner, index) => (
+        <div
+          key={`${partner.id}-${index}`}
+          style={{
+            flex: "0 0 auto",
+            width: "clamp(140px, 16vw, 200px)",
+          }}
+        >
+          <PartnerCard
+            partner={partner}
+            index={index}
+            inView={true}
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Partners — Main Component
+// ─────────────────────────────────────────────────────────────────────────────
+export default function Partners() {
+  const [sectionRef, inView] = useInView(0.08);
+  const [headerInView, setHeaderInView] = useState(false);
+  const [useCarousel, setUseCarousel] = useState(false);
+
+  useEffect(() => {
+    if (inView) {
+      const timer = setTimeout(() => setHeaderInView(true), 100);
+      return () => clearTimeout(timer);
+    }
+  }, [inView]);
+
+  // Check screen width for carousel mode
+  useEffect(() => {
+    const checkWidth = () => {
+      setUseCarousel(window.innerWidth < 768);
+    };
+    checkWidth();
+    window.addEventListener("resize", checkWidth);
+    return () => window.removeEventListener("resize", checkWidth);
+  }, []);
+
+  // Get unique categories for display
+  const categories = [...new Set(PARTNERS.map(p => p.category))];
+
+  return (
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400;1,600;1,700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,450;14..32,500;14..32,600;14..32,700;14..32,800&display=swap');
+
+        @keyframes tooltip-fade {
+          from { opacity: 0; transform: translateX(-50%) translateY(4px); }
+          to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        .partners-section {
+          padding: clamp(48px, 8vh, 80px) clamp(16px, 4vw, 48px);
+          background: linear-gradient(180deg, #FAF5E8 0%, #FFFDF7 50%, #FFFFFF 100%);
+          position: relative;
+          overflow: hidden;
+        }
+
+        .partners-section::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 1px;
+          background: linear-gradient(90deg, transparent, rgba(196,151,42,0.08), transparent);
+        }
+
+        .partners-container {
+          max-width: 1200px;
+          margin: 0 auto;
+          position: relative;
+          z-index: 1;
+        }
+
+        /* ── Section Header ────────────────────────────────────────────── */
+        .partners-header {
+          text-align: center;
+          margin-bottom: clamp(32px, 5vh, 48px);
+        }
+
+        .partners-header .eyebrow {
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          margin-bottom: 12px;
+        }
+
+        .partners-header .eyebrow-line {
+          width: clamp(24px, 3vw, 40px);
+          height: 1.5px;
+          background: #C4972A;
+          border-radius: 999px;
+        }
+
+        .partners-header .eyebrow-text {
+          font-family: 'Inter', sans-serif;
+          font-size: clamp(9px, 0.9vw, 11px);
+          font-weight: 700;
+          letter-spacing: 3px;
+          text-transform: uppercase;
+          color: #C4972A;
+        }
+
+        .partners-header h2 {
+          font-family: 'Playfair Display', Georgia, serif;
+          font-size: clamp(1.6rem, 3.5vw, 2.8rem);
+          font-weight: 700;
+          color: #0a0a2e;
+          letter-spacing: -0.02em;
+          line-height: 1.2;
+          margin-bottom: 12px;
+        }
+
+        .partners-header h2 .highlight {
+          color: #C4972A;
+          position: relative;
+        }
+
+        .partners-header h2 .highlight::after {
+          content: '';
+          position: absolute;
+          bottom: -2px;
+          left: 0;
+          right: 0;
+          height: 2.5px;
+          background: linear-gradient(90deg, #C4972A, rgba(196,151,42,0.2));
+          border-radius: 3px;
+        }
+
+        .partners-header p {
+          font-family: 'Inter', sans-serif;
+          font-size: clamp(14px, 1.2vw, 16px);
+          color: #5a5a6a;
+          max-width: 520px;
+          margin: 0 auto;
+          line-height: 1.7;
+          font-weight: 400;
+        }
+
+        .partners-header .header-animate {
+          opacity: ${headerInView ? 1 : 0};
+          transform: translateY(${headerInView ? 0 : 20}px);
+          transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+                      transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* ── Category Tags ──────────────────────────────────────────────── */
+        .category-tags {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          margin-bottom: clamp(28px, 4vh, 40px);
+        }
+
+        .category-tag {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          font-family: 'Inter', sans-serif;
+          font-size: clamp(10px, 0.8vw, 12px);
+          font-weight: 500;
+          color: #4a5568;
+          background: rgba(255,255,255,0.7);
+          padding: 4px 14px;
+          border-radius: 50px;
+          border: 1px solid rgba(0,0,0,0.04);
+          backdrop-filter: blur(4px);
+        }
+
+        .category-tag svg {
+          color: #C4972A;
+          width: 14px;
+          height: 14px;
+        }
+
+        /* ── Partners Grid ──────────────────────────────────────────────── */
+        .partners-grid {
+          display: grid;
+          grid-template-columns: repeat(6, 1fr);
+          gap: clamp(12px, 1.5vw, 20px);
+          align-items: stretch;
+        }
+
+        .partner-card-wrapper {
+          display: flex;
+          height: 100%;
+        }
+
+        /* ── Responsive ──────────────────────────────────────────────────── */
+
+        /* Tablet: 4 columns */
+        @media (max-width: 1024px) {
+          .partners-grid {
+            grid-template-columns: repeat(4, 1fr);
+            gap: clamp(12px, 1.8vw, 18px);
+          }
+        }
+
+        /* Small Tablet: 3 columns */
+        @media (max-width: 768px) {
+          .partners-section {
+            padding: clamp(36px, 5vh, 52px) clamp(14px, 3vw, 20px);
+          }
+          .partners-grid {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+          }
+          .partners-header h2 {
+            font-size: 1.4rem;
+          }
+          .partners-header p {
+            font-size: 13px;
+          }
+          .category-tags {
+            gap: 6px;
+          }
+          .category-tag {
+            font-size: 9px;
+            padding: 3px 10px;
+          }
+        }
+
+        /* Mobile: 2 columns */
+        @media (max-width: 480px) {
+          .partners-section {
+            padding: 28px 12px 40px;
+          }
+          .partners-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+          }
+        }
+
+        /* ── Carousel Mode ───────────────────────────────────────────────── */
+        .partners-carousel {
+          position: relative;
+          overflow: hidden;
+        }
+
+        .partners-carousel::before,
+        .partners-carousel::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          width: 60px;
+          z-index: 2;
+          pointer-events: none;
+        }
+
+        .partners-carousel::before {
+          left: 0;
+          background: linear-gradient(90deg, rgba(250,245,232,0.9) 0%, transparent 100%);
+        }
+
+        .partners-carousel::after {
+          right: 0;
+          background: linear-gradient(90deg, transparent 0%, rgba(250,245,232,0.9) 100%);
+        }
+
+        @media (max-width: 768px) {
+          .partners-carousel::before,
+          .partners-carousel::after {
+            width: 30px;
+          }
+        }
+
+        /* ── Reduced Motion ──────────────────────────────────────────────── */
+        @media (prefers-reduced-motion: reduce) {
+          .partner-card-wrapper {
+            opacity: 1 !important;
+            transform: none !important;
+            transition: none !important;
+          }
+          .partners-header .header-animate {
+            opacity: 1 !important;
+            transform: none !important;
+          }
+          .partner-card {
+            transition: none !important;
+          }
+          .partner-card:hover {
+            transform: none !important;
+          }
+          .partners-carousel .partner-card-wrapper {
+            animation: none !important;
+          }
+        }
+
+        /* ── Hover: no touch devices ────────────────────────────────────── */
+        @media (hover: none) {
+          .partner-card {
+            transform: none !important;
+          }
+          .partner-card:hover {
+            transform: none !important;
+          }
+          .partner-card .partner-tooltip {
+            display: none !important;
+          }
+        }
+      `}</style>
+
+      <section
+        ref={sectionRef}
+        className="partners-section"
+        aria-labelledby="partners-heading"
+        id="partners"
+      >
+        <div className="partners-container">
+          {/* Section Header */}
+          <div className="partners-header">
+            <div className="header-animate">
+              <div className="eyebrow">
+                <span className="eyebrow-line" aria-hidden="true" />
+                <span className="eyebrow-text">Trusted By Global Partners</span>
+                <span className="eyebrow-line" aria-hidden="true" />
               </div>
-              <span style={{ fontFamily: "'Inter', sans-serif", fontSize: IS_MOBILE ? 11 : 13, fontWeight: 500, color: "#64748b" }}>
-                Rated Excellent
-              </span>
-            </motion.div>
-          </motion.div>
 
+              <h2 id="partners-heading">
+                Our <span className="highlight">Trusted Partners</span>
+              </h2>
+
+              <p>
+                We collaborate with leading airlines, hotels, and accreditation
+                bodies to ensure you receive the highest quality service.
+              </p>
+            </div>
+          </div>
+
+          {/* Category Tags */}
+          <div className="category-tags">
+            {categories.map((category) => {
+              const Icon = CATEGORY_ICONS[category] || Building2;
+              return (
+                <span key={category} className="category-tag">
+                  <Icon size={14} />
+                  {category}
+                </span>
+              );
+            })}
+          </div>
+
+          {/* Partners Grid or Carousel */}
+          {useCarousel ? (
+            <div className="partners-carousel">
+              <PartnerCarousel partners={PARTNERS} inView={inView} />
+            </div>
+          ) : (
+            <div className="partners-grid">
+              {PARTNERS.map((partner, index) => (
+                <PartnerCard
+                  key={partner.id}
+                  partner={partner}
+                  index={index}
+                  inView={inView}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Bottom Divider */}
+          <div
+            style={{
+              marginTop: "clamp(40px, 6vh, 56px)",
+              display: "flex",
+              alignItems: "center",
+              gap: "clamp(12px, 2vw, 20px)",
+              opacity: inView ? 1 : 0,
+              transition: "opacity 0.8s ease 0.8s",
+            }}
+          >
+            <div
+              style={{
+                flex: 1,
+                height: 1,
+                background: "linear-gradient(90deg, transparent, rgba(196,151,42,0.08))",
+              }}
+            />
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                fontFamily: "'Inter', sans-serif",
+                fontSize: "clamp(10px, 0.8vw, 12px)",
+                fontWeight: 500,
+                color: "rgba(0,0,0,0.2)",
+              }}
+            >
+              <CheckCircle size={12} color="#C4972A" />
+              <span>200+ Partners Worldwide</span>
+            </div>
+            <div
+              style={{
+                flex: 1,
+                height: 1,
+                background: "linear-gradient(90deg, rgba(196,151,42,0.08), transparent)",
+              }}
+            />
+          </div>
         </div>
       </section>
     </>

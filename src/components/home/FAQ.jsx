@@ -1,920 +1,911 @@
-import { useState, useRef, useEffect } from "react";
-import { motion, useInView, useAnimation, AnimatePresence } from "framer-motion";
+// src/components/home/FAQ.jsx
+// ─────────────────────────────────────────────────────────────────────────────
+// RASOAF Travels and Tours — FAQ Section
+//
+// A premium FAQ section that addresses common concerns and removes hesitation
+// before booking a pilgrimage package.
+//
+// Design: Soft yellow background, black text, clean cards, gold accents
+// Layout: Two-column accordion on desktop, single column on mobile
+// Animation: Smooth expand/collapse with icon rotation
+// Responsive: 2 → 1 columns (desktop → tablet/mobile)
+// ─────────────────────────────────────────────────────────────────────────────
+
+import { useRef, useEffect, useState, useCallback } from "react";
 import {
+  ChevronDown,
+  ChevronUp,
   Search,
-  GraduationCap,
-  Zap,
-  Users,
-  CheckCircle,
-  DollarSign,
-  MapPin,
-  FolderOpen,
   MessageCircle,
-  ArrowRight,
-  Plus,
-  Minus,
-  Sparkles,
-  Clock,
-  Briefcase,
-  Shield,
-  CreditCard,
-  Compass,
   Phone,
   Mail,
-  ChevronDown
+  ArrowRight,
+  X,
 } from "lucide-react";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Premium FAQ Section — Enterprise-Grade Accordion with Advanced Animations
-// Features: Smooth expand/collapse, 3D hover effects, animated icons, staggered reveal
-// FIXED: Mobile view shows only 3 FAQs with "Show More" button to reduce scrolling
-// ─────────────────────────────────────────────────────────────────────────────
-
-function useReveal(threshold = 0.1) {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, amount: threshold, margin: "-50px 0px" });
-  return [ref, isInView];
-}
-
-const faqs = [
+// ── FAQ Data ──────────────────────────────────────────────────────────────────
+const FAQ_ITEMS = [
   {
     id: 1,
-    q: "Do I need experience to apply?",
-    a: "Not necessarily. If you have at least 5 months of care experience, you may be eligible for immediate start. For candidates without experience, we offer mandatory training including manual handling onsite and care certification to get you work-ready.",
-    category: "Application",
-    icon: GraduationCap,
+    category: "Visa & Documentation",
+    question: "What are the visa requirements for Hajj and Umrah?",
+    answer:
+      "For Hajj and Umrah, pilgrims are required to have a valid passport with at least 6 months validity from the date of travel. Saudi Arabia issues specific pilgrimage visas that are processed through authorized travel agencies like RASAOF Travels and Tours Limited. We handle the entire visa application process on your behalf, including document preparation, submission, and follow-up. Required documents typically include passport-sized photographs, completed application forms, vaccination certificates (Meningitis and COVID-19), and proof of accommodation and travel arrangements. Our team will guide you through every step of the process.",
   },
   {
     id: 2,
-    q: "How quickly can I be placed?",
-    a: "Candidates with relevant experience can often be placed within days of completing compliance checks. We work as fast as possible to match you with appropriate local shifts. Our record placement time is just 48 hours from application to first shift!",
-    category: "Placement",
-    icon: Zap,
+    category: "Payment & Pricing",
+    question: "What payment plans and installment options are available?",
+    answer:
+      "We understand that pilgrimage is a significant financial commitment. RASAOF Travels and Tours Limited offers flexible payment plans to make your journey more accessible. We provide installment payment options with a structured schedule that allows you to pay in stages leading up to your departure. A deposit is required to secure your booking, with the balance payable in agreed installments. We also accept various payment methods including bank transfers, credit/debit cards, and cash payments at our office. Contact our team for a personalized payment plan that suits your budget.",
   },
   {
     id: 3,
-    q: "What types of roles do you recruit for?",
-    a: "We recruit for Healthcare Care Assistants, Support Workers, Social Workers, RGN and RMN Nurses, Domestic Workers, and other care sector roles on both temporary and permanent basis. We have opportunities across all skill levels and specializations.",
-    category: "Roles",
-    icon: Users,
+    category: "Packages",
+    question: "What is included in each Hajj and Umrah package?",
+    answer:
+      "Our Hajj and Umrah packages are comprehensive and designed to provide a stress-free pilgrimage experience. Each package typically includes: return flights from your departure city, hotel accommodation in Makkah and Madinah, visa processing and fees, ground transportation between cities and holy sites, guided support from experienced tour leaders, meals as specified in the package, and 24/7 on-ground assistance. Premium packages include additional benefits such as 5-star hotels, private transportation, VIP access, and dedicated concierge services. We provide a detailed itinerary and inclusions list for each package before booking.",
   },
   {
     id: 4,
-    q: "Do you cover enhanced DBS checks?",
-    a: "Yes, we assist with the enhanced DBS application process. We guide you through every step to ensure you're fully compliant before your first shift. Our dedicated compliance team handles all paperwork and follows up with you throughout the process.",
-    category: "Compliance",
-    icon: Shield,
+    category: "Flights & Travel",
+    question: "How are flights arranged and which airlines do you use?",
+    answer:
+      "We arrange flights with reputable international airlines that offer direct or convenient connecting flights to Saudi Arabia. Our partnerships include major carriers such as Saudi Airlines, Emirates, Etihad, Qatar Airways, and other premium airlines. We carefully select flight schedules to minimize layover times and ensure a comfortable journey. Flight bookings are made in advance to secure the best rates and preferred seating. Our team coordinates group departures from major cities to ensure pilgrims travel together. For those requiring special assistance or traveling from other locations, we can arrange customized flight itineraries.",
   },
   {
     id: 5,
-    q: "What is the pay structure?",
-    a: "We offer competitive pay rates with both weekly and monthly payment options. Holiday pay is included and rates vary by role and grade. Contact us for specific salary information for your role. We also offer bonuses for referrals and long-term placements.",
-    category: "Pay",
-    icon: CreditCard,
+    category: "Support & Assistance",
+    question: "Is there elderly assistance and medical support available?",
+    answer:
+      "Absolutely. We prioritize the comfort and safety of all pilgrims, especially the elderly and those with medical needs. Our packages include dedicated support for elderly pilgrims, including wheelchair assistance at airports and holy sites, priority access where available, and accommodation close to the Haram. We also provide medical support through our partnerships with local healthcare providers and have trained staff available 24/7 to assist with any health concerns. We recommend that pilgrims with existing medical conditions consult their healthcare provider before travel and inform us of any special requirements in advance.",
   },
   {
     id: 6,
-    q: "What areas do you cover?",
-    a: "Our primary coverage is across the North-West of England, with a particular focus on Preston and surrounding Lancashire areas. Most of our shifts are local to where you live. We're expanding our coverage area based on demand.",
-    category: "Location",
-    icon: Compass,
+    category: "Documents",
+    question: "What documents are required for travel and religious purposes?",
+    answer:
+      "Pilgrims are required to provide the following documents: valid passport with 6+ months validity, passport-sized photographs (white background), completed visa application forms, vaccination certificates (Meningitis, COVID-19), proof of accommodation and travel arrangements, and medical fitness certificate (for pilgrims above 65 years). Additional documents may include marriage certificate (for women traveling with a mahram), birth certificates (for children), and travel insurance documents. Our team will provide you with a comprehensive checklist and assist you in preparing and verifying all required documentation before submission.",
+  },
+  {
+    id: 7,
+    category: "Booking",
+    question: "What is the booking process and timeline?",
+    answer:
+      "The booking process with RASAOF Travels and Tours Limited is simple and transparent. Here's how it works: 1. Initial consultation to understand your needs and preferences, 2. Package selection and proposal, 3. Deposit payment to secure your booking, 4. Document collection and visa processing, 5. Balance payment according to the installment schedule, 6. Pre-departure briefing and orientation, 7. Final travel arrangements and departure. The entire process typically takes 2-4 months depending on the package and season. We recommend booking early to secure the best rates and availability. Our team will guide you through each step.",
+  },
+  {
+    id: 8,
+    category: "Policy",
+    question: "What is the cancellation and refund policy?",
+    answer:
+      "We understand that circumstances can change. Our cancellation and refund policy is designed to be fair while accounting for costs incurred by the agency. Cancellation fees are calculated based on the time of cancellation and the services already booked. A full refund (less administrative fees) is available for cancellations made 60+ days before departure. Partial refunds are available for cancellations made 30-59 days before departure. Cancellations made within 30 days of departure may incur significant fees as airlines, hotels, and other services have already been confirmed. We recommend purchasing travel insurance to protect against unforeseen circumstances. Our team will provide you with the complete policy details before booking.",
   },
 ];
 
-// Detect mobile for responsive behavior
-const isMobile = () => {
-  if (typeof window === "undefined") return false;
-  return window.innerWidth < 768;
-};
+// ── Hook: IntersectionObserver for scroll animation ──────────────────────
+function useInView(threshold = 0.08) {
+  const ref = useRef(null);
+  const [inView, setInView] = useState(false);
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Premium FAQ Accordion Item Component
-// ─────────────────────────────────────────────────────────────────────────────
-function FAQItem({ faq, index, isInView, isOpen, onToggle, isMobileView }) {
-  const [isHovered, setIsHovered] = useState(false);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const contentRef = useRef(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setInView(true);
+          observer.unobserve(el);
+        }
+      },
+      { threshold }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [threshold]);
+
+  return [ref, inView];
+}
+
+// ── Helper: clamp for inline styles ─────────────────────────────────────────
+function clamp(min, pref, max) {
+  return `clamp(${min}px, ${pref}, ${max}px)`;
+}
+
+// ── FAQ Accordion Item ──────────────────────────────────────────────────────
+function FAQItem({ item, isOpen, onToggle, index, inView }) {
   const [height, setHeight] = useState(0);
-  const IconComponent = faq.icon;
+  const contentRef = useRef(null);
+  const delay = 0.05 * index;
 
   useEffect(() => {
     if (contentRef.current) {
-      setHeight(contentRef.current.scrollHeight);
+      setHeight(isOpen ? contentRef.current.scrollHeight : 0);
     }
-  }, [faq.a]);
-
-  const handleMouseMove = (e) => {
-    if (isMobileView) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    setMousePosition({
-      x: ((e.clientX - rect.left) / rect.width) * 100,
-      y: ((e.clientY - rect.top) / rect.height) * 100,
-    });
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 30, scale: 0.96 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      scale: 1,
-      transition: {
-        duration: 0.5,
-        delay: index * 0.08,
-        type: "spring",
-        stiffness: 100,
-        damping: 15,
-      },
-    },
-  };
+  }, [isOpen]);
 
   return (
-    <motion.div
-      variants={itemVariants}
-      initial="hidden"
-      animate={isInView ? "visible" : "hidden"}
-      onMouseEnter={() => !isMobileView && setIsHovered(true)}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={() => {
-        setIsHovered(false);
-        setMousePosition({ x: 0, y: 0 });
-      }}
+    <div
+      className="faq-item"
       style={{
-        position: "relative",
-        perspective: "1000px",
+        opacity: inView ? 1 : 0,
+        transform: inView ? "translateY(0)" : "translateY(20px)",
+        transition: `
+          opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s,
+          transform 0.5s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s
+        `,
+        background: isOpen ? "#ffffff" : "rgba(255,255,255,0.6)",
+        borderRadius: "16px",
+        border: `1px solid ${isOpen ? "rgba(196,151,42,0.2)" : "rgba(0,0,0,0.04)"}`,
+        boxShadow: isOpen
+          ? "0 4px 20px rgba(0,0,0,0.06), 0 2px 8px rgba(196,151,42,0.06)"
+          : "0 1px 4px rgba(0,0,0,0.02)",
+        transition: "all 0.3s cubic-bezier(0.25, 1, 0.5, 1)",
+        overflow: "hidden",
+        marginBottom: "clamp(10px, 1.2vw, 14px)",
+        backdropFilter: "blur(8px)",
+        WebkitBackdropFilter: "blur(8px)",
       }}
     >
-      <motion.div
-        animate={{
-          rotateX: isHovered && !isMobileView ? 3 : 0,
-          rotateY: isHovered && !isMobileView ? (mousePosition.x - 50) * 0.1 : 0,
-        }}
-        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      {/* Question Header */}
+      <button
+        className="faq-question"
+        onClick={() => onToggle(item.id)}
+        aria-expanded={isOpen}
+        aria-controls={`faq-answer-${item.id}`}
         style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "12px",
+          width: "100%",
+          padding: "clamp(16px, 2vw, 22px) clamp(18px, 2vw, 24px)",
+          background: "none",
+          border: "none",
+          cursor: "pointer",
+          fontFamily: "'Inter', sans-serif",
+          fontSize: "clamp(14px, 1.1vw, 16px)",
+          fontWeight: 600,
+          color: isOpen ? "#0a0a2e" : "#2d3748",
+          textAlign: "left",
+          transition: "color 0.3s ease",
           position: "relative",
-          background: "white",
-          borderRadius: "24px",
-          border: `1px solid ${isOpen ? "#C4972A" : isHovered && !isMobileView ? "rgba(196,151,42,0.25)" : "rgba(0,0,0,0.06)"}`,
-          boxShadow: isOpen
-            ? "0 12px 24px -8px rgba(196,151,42,0.15)"
-            : isHovered && !isMobileView
-            ? "0 8px 20px -8px rgba(0,0,0,0.08)"
-            : "0 1px 3px rgba(0,0,0,0.03)",
-          overflow: "hidden",
-          transition: "all 0.3s ease",
+        }}
+        onMouseEnter={(e) => {
+          if (!isOpen) {
+            e.currentTarget.style.color = "#0a0a2e";
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (!isOpen) {
+            e.currentTarget.style.color = "#2d3748";
+          }
         }}
       >
-        {/* Dynamic Spotlight Effect - desktop only */}
-        {!isMobileView && (
-          <motion.div
-            animate={{
-              opacity: isHovered ? 0.04 : 0,
-              background: `radial-gradient(circle at ${mousePosition.x}% ${mousePosition.y}%, rgba(196,151,42,0.8), transparent 60%)`,
-            }}
-            transition={{ duration: 0.2 }}
-            style={{
-              position: "absolute",
-              inset: 0,
-              pointerEvents: "none",
-              borderRadius: "24px",
-            }}
-          />
-        )}
-
-        {/* Question Button */}
-        <button
-          onClick={() => onToggle()}
+        <div
           style={{
-            width: "100%",
-            textAlign: "left",
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            padding: "clamp(20px, 4vw, 28px) clamp(24px, 5vw, 32px)",
             display: "flex",
-            justifyContent: "space-between",
             alignItems: "center",
-            gap: 16,
-            position: "relative",
-            zIndex: 2,
+            gap: "12px",
+            flex: 1,
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 16, flex: 1 }}>
-            {/* Animated Icon */}
-            <motion.div
-              animate={{
-                scale: isHovered && !isMobileView ? 1.08 : 1,
-                rotate: isHovered && !isMobileView ? [0, -5, 5, 0] : 0,
-              }}
-              transition={{ duration: 0.4 }}
-              style={{
-                width: 44,
-                height: 44,
-                borderRadius: "14px",
-                background: isOpen
-                  ? "linear-gradient(135deg, #C4972A, #8B6914)"
-                  : "rgba(196,151,42,0.08)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
-                transition: "background 0.3s ease",
-              }}
-            >
-              <IconComponent 
-                size={22} 
-                strokeWidth={1.6} 
-                style={{ color: isOpen ? "#fff" : "#C4972A" }} 
-              />
-            </motion.div>
-
-            {/* Question Text */}
-            <motion.span
-              animate={{
-                color: isOpen ? "#C4972A" : "#0f1d3d",
-                x: isHovered && !isMobileView ? 3 : 0,
-              }}
-              transition={{ duration: 0.3 }}
-              style={{
-                fontFamily: "'Inter', sans-serif",
-                fontWeight: 700,
-                fontSize: "clamp(14px, 1.5vw, 16px)",
-                flex: 1,
-                lineHeight: 1.4,
-              }}
-            >
-              {faq.q}
-            </motion.span>
-          </div>
-
-          {/* Animated Plus/Minus Icon */}
-          <motion.div
-            animate={{
-              rotate: isOpen ? 45 : 0,
-              scale: isHovered && !isMobileView ? 1.05 : 1,
-            }}
-            transition={{ duration: 0.3, type: "spring", stiffness: 300 }}
+          {/* Category badge */}
+          <span
             style={{
-              width: 32,
-              height: 32,
-              borderRadius: "50%",
-              background: isOpen || isHovered ? "rgba(196,151,42,0.1)" : "rgba(0,0,0,0.04)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
+              fontFamily: "'Inter', sans-serif",
+              fontSize: "clamp(8px, 0.6vw, 10px)",
+              fontWeight: 600,
+              textTransform: "uppercase",
+              letterSpacing: "0.06em",
+              color: "#C4972A",
+              background: "rgba(196,151,42,0.08)",
+              padding: "2px 10px",
+              borderRadius: "50px",
+              whiteSpace: "nowrap",
               flexShrink: 0,
-              transition: "background 0.3s ease",
             }}
           >
-            {isOpen ? (
-              <Minus size={16} strokeWidth={2.5} style={{ color: "#C4972A" }} />
-            ) : (
-              <Plus size={16} strokeWidth={2.5} style={{ color: isHovered ? "#C4972A" : "#64748b" }} />
-            )}
-          </motion.div>
-        </button>
+            {item.category}
+          </span>
+          <span>{item.question}</span>
+        </div>
 
-        {/* Answer Section with Smooth Animation */}
-        <AnimatePresence initial={false}>
-          {isOpen && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-              style={{ overflow: "hidden" }}
-            >
-              <div
-                ref={contentRef}
-                style={{
-                  padding: "0 24px 28px 24px",
-                  paddingLeft: "clamp(24px, 5vw, 88px)",
-                }}
-              >
-                <motion.div
-                  initial={{ y: -10, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.1, duration: 0.3 }}
-                  style={{
-                    fontFamily: "'Inter', sans-serif",
-                    color: "#4a5568",
-                    fontSize: "clamp(13px, 1.5vw, 14px)",
-                    lineHeight: 1.8,
-                    borderLeft: "3px solid #C4972A",
-                    paddingLeft: 20,
-                  }}
-                >
-                  {faq.a}
-                </motion.div>
-
-                {/* Category Tag */}
-                <motion.div
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.2, duration: 0.3 }}
-                  style={{
-                    marginTop: 16,
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 6,
-                    padding: "4px 12px",
-                    background: "rgba(196,151,42,0.08)",
-                    borderRadius: "20px",
-                  }}
-                >
-                  <FolderOpen size={11} style={{ color: "#C4972A" }} />
-                  <span
-                    style={{
-                      fontFamily: "'Inter', sans-serif",
-                      fontSize: 11,
-                      fontWeight: 500,
-                      color: "#C4972A",
-                    }}
-                  >
-                    {faq.category}
-                  </span>
-                </motion.div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Decorative Elements */}
-        <motion.div
-          animate={{
-            opacity: isOpen ? 1 : 0,
-            width: isOpen ? "100%" : "0%",
-          }}
-          transition={{ duration: 0.4 }}
+        {/* Icon */}
+        <div
           style={{
-            position: "absolute",
-            bottom: 0,
-            left: 0,
-            height: 2,
-            background: "linear-gradient(90deg, #C4972A, #f0c060)",
-            borderRadius: "0 0 24px 24px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: "28px",
+            height: "28px",
+            borderRadius: "50%",
+            background: isOpen ? "rgba(196,151,42,0.08)" : "rgba(0,0,0,0.03)",
+            transition: "all 0.3s ease",
+            flexShrink: 0,
+          }}
+        >
+          {isOpen ? (
+            <ChevronUp size={18} color="#C4972A" />
+          ) : (
+            <ChevronDown size={18} color="#6b6b7a" />
+          )}
+        </div>
+      </button>
+
+      {/* Answer Content */}
+      <div
+        id={`faq-answer-${item.id}`}
+        ref={contentRef}
+        style={{
+          maxHeight: isOpen ? `${height}px` : "0",
+          opacity: isOpen ? 1 : 0,
+          transition: "max-height 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.3s ease",
+          overflow: "hidden",
+        }}
+      >
+        <div
+          style={{
+            padding: "0 clamp(18px, 2vw, 24px) clamp(18px, 2vw, 24px)",
+            fontFamily: "'Inter', sans-serif",
+            fontSize: "clamp(13px, 1vw, 15px)",
+            fontWeight: 400,
+            color: "#4a5568",
+            lineHeight: 1.8,
+            borderTop: "1px solid rgba(0,0,0,0.04)",
+            paddingTop: "clamp(16px, 1.8vw, 20px)",
+          }}
+        >
+          {item.answer}
+        </div>
+      </div>
+
+      {/* Gold accent line - bottom when open */}
+      {isOpen && (
+        <div
+          style={{
+            height: "2px",
+            background: "linear-gradient(90deg, #C4972A, rgba(196,151,42,0.1))",
+            borderRadius: "0 0 16px 16px",
+            width: "100%",
           }}
         />
-      </motion.div>
-    </motion.div>
+      )}
+    </div>
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Main FAQ Component with Premium Features
-// ─────────────────────────────────────────────────────────────────────────────
-export default function FAQ() {
-  const [ref, inView] = useReveal(0.1);
-  const [openIndex, setOpenIndex] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filteredFaqs, setFilteredFaqs] = useState(faqs);
-  const [showAll, setShowAll] = useState(false);
-  const [isMobileView, setIsMobileView] = useState(false);
-  const headerControls = useAnimation();
-
-  // Detect mobile view
-  useEffect(() => {
-    const checkMobile = () => setIsMobileView(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
-
-  // Smooth scroll helper
-  const goToSection = (sectionId) => {
-    const el = document.getElementById(sectionId.toLowerCase());
-    if (el) {
-      const top = el.getBoundingClientRect().top + window.pageYOffset - 80;
-      window.scrollTo({ top, behavior: "smooth" });
-    }
-  };
-
-  useEffect(() => {
-    if (inView) {
-      headerControls.start("visible");
-    }
-  }, [inView, headerControls]);
-
-  useEffect(() => {
-    if (searchTerm) {
-      const filtered = faqs.filter(
-        (faq) =>
-          faq.q.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          faq.a.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          faq.category.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setFilteredFaqs(filtered);
-      // Reset showAll when searching
-      setShowAll(false);
-    } else {
-      setFilteredFaqs(faqs);
-    }
-  }, [searchTerm]);
-
-  // Determine which FAQs to display
-  const displayedFaqs = isMobileView && !searchTerm && !showAll
-    ? filteredFaqs.slice(0, 3)
-    : filteredFaqs;
-
-  const hasMoreFaqs = isMobileView && !searchTerm && filteredFaqs.length > 3;
-
-  const headerVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.7, staggerChildren: 0.15 },
-    },
-  };
-
-  const childVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
-  };
-
+// ── Search Bar ──────────────────────────────────────────────────────────────
+function SearchBar({ onSearch, onClear, query }) {
   return (
-    <section
-      ref={ref}
+    <div
       style={{
-        padding: "clamp(60px, 10vh, 100px) clamp(16px, 5vw, 80px)",
-        background: "#ffffff",
         position: "relative",
-        overflow: "hidden",
+        maxWidth: "480px",
+        margin: "0 auto clamp(28px, 4vh, 40px)",
       }}
     >
-      {/* Background Decorations */}
-      <div
+      <Search
+        size={18}
         style={{
           position: "absolute",
-          top: "10%",
-          right: "5%",
-          width: 300,
-          height: 300,
-          borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(196,151,42,0.02), transparent)",
-          pointerEvents: "none",
+          left: "16px",
+          top: "50%",
+          transform: "translateY(-50%)",
+          color: "#8a8a9a",
         }}
       />
-      <div
+      <input
+        type="text"
+        placeholder="Search for questions..."
+        value={query}
+        onChange={(e) => onSearch(e.target.value)}
         style={{
-          position: "absolute",
-          bottom: "10%",
-          left: "5%",
-          width: 250,
-          height: 250,
-          borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(196,151,42,0.015), transparent)",
-          pointerEvents: "none",
+          width: "100%",
+          padding: "clamp(12px, 1.2vw, 14px) 16px clamp(12px, 1.2vw, 14px) 46px",
+          fontFamily: "'Inter', sans-serif",
+          fontSize: "clamp(13px, 1vw, 15px)",
+          fontWeight: 400,
+          color: "#0a0a2e",
+          background: "rgba(255,255,255,0.8)",
+          backdropFilter: "blur(12px)",
+          WebkitBackdropFilter: "blur(12px)",
+          border: "1px solid rgba(0,0,0,0.06)",
+          borderRadius: "50px",
+          outline: "none",
+          transition: "all 0.3s ease",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
         }}
+        onFocus={(e) => {
+          e.currentTarget.style.borderColor = "rgba(196,151,42,0.3)";
+          e.currentTarget.style.boxShadow = "0 4px 16px rgba(196,151,42,0.06)";
+        }}
+        onBlur={(e) => {
+          e.currentTarget.style.borderColor = "rgba(0,0,0,0.06)";
+          e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.03)";
+        }}
+        aria-label="Search frequently asked questions"
       />
-
-      <div style={{ maxWidth: 900, margin: "0 auto", position: "relative", zIndex: 2 }}>
-        
-        {/* Section Header */}
-        <motion.div
-          variants={headerVariants}
-          initial="hidden"
-          animate={headerControls}
-          style={{ textAlign: "center", marginBottom: 48 }}
-        >
-          {/* Eyebrow */}
-          <motion.div variants={childVariants}>
-            <div
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 10,
-                marginBottom: 16,
-              }}
-            >
-              <div
-                style={{
-                  width: 30,
-                  height: 2,
-                  background: "#C4972A",
-                  borderRadius: 999,
-                }}
-              />
-              <span
-                style={{
-                  fontFamily: "'Inter', sans-serif",
-                  fontSize: 10,
-                  fontWeight: 700,
-                  letterSpacing: "4px",
-                  textTransform: "uppercase",
-                  color: "#C4972A",
-                }}
-              >
-                FAQ
-              </span>
-              <div
-                style={{
-                  width: 30,
-                  height: 2,
-                  background: "#C4972A",
-                  borderRadius: 999,
-                }}
-              />
-            </div>
-          </motion.div>
-
-          {/* Main Heading */}
-          <motion.h2
-            variants={childVariants}
-            style={{
-              fontFamily: "'Inter', sans-serif",
-              fontSize: "clamp(1.8rem, 3.5vw, 2.8rem)",
-              fontWeight: 800,
-              color: "#0f1d3d",
-              letterSpacing: "-0.02em",
-              marginBottom: 16,
-            }}
-          >
-            Common Questions{" "}
-            <span
-              style={{
-                background: "linear-gradient(135deg, #C4972A, #e8b84a)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-              }}
-            >
-              Answered
-            </span>
-          </motion.h2>
-
-          {/* Subtitle */}
-          <motion.p
-            variants={childVariants}
-            style={{
-              fontFamily: "'Inter', sans-serif",
-              fontSize: 14,
-              color: "#4a5568",
-              maxWidth: 500,
-              margin: "0 auto",
-              lineHeight: 1.65,
-            }}
-          >
-            Everything you need to know about working with EVS Healthcare
-          </motion.p>
-        </motion.div>
-
-        {/* Search Bar */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.5, delay: 0.4 }}
-          style={{ marginBottom: 32 }}
-        >
-          <div
-            style={{
-              position: "relative",
-              maxWidth: 400,
-              margin: "0 auto",
-            }}
-          >
-            <div
-              style={{
-                position: "absolute",
-                left: 16,
-                top: "50%",
-                transform: "translateY(-50%)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                pointerEvents: "none",
-              }}
-            >
-              <Search size={18} strokeWidth={1.8} style={{ color: "#94a3b8" }} />
-            </div>
-            <input
-              type="text"
-              placeholder="Search your question..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "14px 20px 14px 48px",
-                borderRadius: "60px",
-                border: "1px solid rgba(0,0,0,0.06)",
-                background: "#fff",
-                fontFamily: "'Inter', sans-serif",
-                fontSize: 14,
-                outline: "none",
-                transition: "all 0.3s ease",
-              }}
-              onFocus={(e) => {
-                e.target.style.borderColor = "#C4972A";
-                e.target.style.boxShadow = "0 0 0 3px rgba(196,151,42,0.08)";
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = "rgba(0,0,0,0.06)";
-                e.target.style.boxShadow = "none";
-              }}
-            />
-          </div>
-        </motion.div>
-
-        {/* FAQ Accordion Items */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          {displayedFaqs.length > 0 ? (
-            displayedFaqs.map((faq, idx) => (
-              <FAQItem
-                key={faq.id}
-                faq={faq}
-                index={idx}
-                isInView={inView}
-                isOpen={openIndex === idx}
-                onToggle={() => setOpenIndex(openIndex === idx ? null : idx)}
-                isMobileView={isMobileView}
-              />
-            ))
-          ) : (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              style={{
-                textAlign: "center",
-                padding: "60px 20px",
-                background: "#fff",
-                borderRadius: "24px",
-                border: "1px solid rgba(0,0,0,0.06)",
-              }}
-            >
-              <Search size={48} strokeWidth={1.5} style={{ color: "#94a3b8", opacity: 0.5, margin: "0 auto" }} />
-              <h3
-                style={{
-                  fontFamily: "'Inter', sans-serif",
-                  fontSize: 18,
-                  color: "#64748b",
-                  marginTop: 16,
-                }}
-              >
-                No questions found
-              </h3>
-              <p
-                style={{
-                  fontFamily: "'Inter', sans-serif",
-                  fontSize: 14,
-                  color: "#94a3b8",
-                  marginTop: 8,
-                }}
-              >
-                Try a different search term or browse all questions
-              </p>
-            </motion.div>
-          )}
-        </div>
-
-        {/* Show More / Show Less Button - Mobile Only */}
-        {hasMoreFaqs && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.5, delay: 0.5 }}
-            style={{ textAlign: "center", marginTop: 24 }}
-          >
-            <motion.button
-              onClick={() => setShowAll(!showAll)}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 8,
-                background: "transparent",
-                border: "1px solid rgba(196,151,42,0.3)",
-                color: "#C4972A",
-                padding: "12px 28px",
-                borderRadius: "40px",
-                fontFamily: "'Inter', sans-serif",
-                fontSize: 13,
-                fontWeight: 600,
-                cursor: "pointer",
-                transition: "all 0.2s ease",
-              }}
-            >
-              {showAll ? (
-                <>
-                  Show Less <ChevronDown size={14} style={{ transform: "rotate(180deg)" }} />
-                </>
-              ) : (
-                <>
-                  Show More Questions <ChevronDown size={14} />
-                </>
-              )}
-            </motion.button>
-            
-            {/* Hint text */}
-            <p
-              style={{
-                fontFamily: "'Inter', sans-serif",
-                fontSize: 11,
-                color: "#94a3b8",
-                marginTop: 10,
-              }}
-            >
-              {showAll 
-                ? `${filteredFaqs.length} questions displayed` 
-                : `Showing ${Math.min(3, filteredFaqs.length)} of ${filteredFaqs.length} questions`}
-            </p>
-          </motion.div>
-        )}
-
-        {/* Still Have Questions - PROPER CTA BANNER */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.6 }}
+      {query && (
+        <button
+          onClick={onClear}
           style={{
-            marginTop: 48,
-            padding: isMobileView ? "32px 20px" : "40px 32px",
-            background: "linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)",
-            borderRadius: "28px",
-            textAlign: "center",
-            border: "1px solid rgba(196,151,42,0.15)",
-            boxShadow: "0 4px 20px rgba(0,0,0,0.04)",
+            position: "absolute",
+            right: "16px",
+            top: "50%",
+            transform: "translateY(-50%)",
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            color: "#8a8a9a",
+            padding: "4px",
+            borderRadius: "50%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            transition: "all 0.3s ease",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "rgba(0,0,0,0.04)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "transparent";
+          }}
+          aria-label="Clear search"
+        >
+          <X size={16} />
+        </button>
+      )}
+    </div>
+  );
+}
+
+// ── CTA Section ──────────────────────────────────────────────────────────────
+function CTASection({ inView }) {
+  return (
+    <div
+      style={{
+        marginTop: "clamp(40px, 6vh, 56px)",
+        textAlign: "center",
+        opacity: inView ? 1 : 0,
+        transform: inView ? "translateY(0)" : "translateY(20px)",
+        transition: "opacity 0.6s ease 0.6s, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.6s",
+        padding: "clamp(32px, 4vh, 48px)",
+        background: "linear-gradient(135deg, #FFF9E6 0%, #FFF3D6 100%)",
+        borderRadius: "20px",
+        border: "1px solid rgba(196,151,42,0.1)",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: "16px",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
           }}
         >
           <div
             style={{
-              width: isMobileView ? 48 : 56,
-              height: isMobileView ? 48 : 56,
+              width: "40px",
+              height: "40px",
               borderRadius: "50%",
               background: "rgba(196,151,42,0.1)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              margin: "0 auto 16px",
               color: "#C4972A",
             }}
           >
-            <MessageCircle size={isMobileView ? 24 : 28} strokeWidth={1.5} />
+            <MessageCircle size={20} />
           </div>
-          
-          <h3
-            style={{
-              fontFamily: "'Inter', sans-serif",
-              fontSize: isMobileView ? "clamp(18px, 4vw, 20px)" : "clamp(20px, 4vw, 24px)",
-              fontWeight: 700,
-              color: "#0f1d3d",
-              marginBottom: 8,
-            }}
-          >
-            Still have questions?
-          </h3>
-          
-          <p
-            style={{
-              fontFamily: "'Inter', sans-serif",
-              fontSize: isMobileView ? 13 : 14,
-              color: "#64748b",
-              marginBottom: 24,
-              maxWidth: 450,
-              marginLeft: "auto",
-              marginRight: "auto",
-            }}
-          >
-            Our team responds within 2 hours on weekdays
-          </p>
-          
-          {/* DUAL CTA BUTTONS */}
-          <div
-            style={{
-              display: "flex",
-              gap: isMobileView ? 12 : 16,
-              justifyContent: "center",
-              flexWrap: "wrap",
-            }}
-          >
-            <motion.a
-              href="#contact"
-              onClick={(e) => {
-                e.preventDefault();
-                goToSection("contact");
-              }}
-              whileHover={{ scale: 1.02, y: -2 }}
-              whileTap={{ scale: 0.98 }}
+          <div>
+            <h4
               style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 8,
-                background: "linear-gradient(135deg, #C4972A, #8B6914)",
-                color: "#0f1d3d",
-                padding: isMobileView ? "12px 24px" : "14px 32px",
-                borderRadius: "50px",
-                fontFamily: "'Inter', sans-serif",
-                fontSize: isMobileView ? 13 : 14,
+                fontFamily: "'Playfair Display', Georgia, serif",
+                fontSize: "clamp(1.1rem, 1.6vw, 1.4rem)",
                 fontWeight: 700,
-                textDecoration: "none",
-                boxShadow: "0 4px 14px rgba(196,151,42,0.3)",
-                transition: "all 0.2s ease",
+                color: "#0a0a2e",
+                marginBottom: "2px",
               }}
             >
-              <Mail size={isMobileView ? 14 : 16} />
-              Send us a message
-              <ArrowRight size={isMobileView ? 12 : 14} />
-            </motion.a>
-            
-            <motion.a
-              href="tel:01772493994"
-              whileHover={{ scale: 1.02, y: -2 }}
-              whileTap={{ scale: 0.98 }}
+              Still Have Questions?
+            </h4>
+            <p
               style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 8,
-                background: "transparent",
-                color: "#0f1d3d",
-                padding: isMobileView ? "12px 24px" : "14px 32px",
-                borderRadius: "50px",
                 fontFamily: "'Inter', sans-serif",
-                fontSize: isMobileView ? 13 : 14,
-                fontWeight: 600,
-                textDecoration: "none",
-                border: "1.5px solid rgba(15,29,61,0.2)",
-                transition: "all 0.2s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "rgba(196,151,42,0.05)";
-                e.currentTarget.style.borderColor = "#C4972A";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "transparent";
-                e.currentTarget.style.borderColor = "rgba(15,29,61,0.2)";
+                fontSize: "clamp(13px, 1vw, 15px)",
+                color: "#5a5a6a",
+                marginBottom: 0,
               }}
             >
-              <Phone size={isMobileView ? 14 : 16} />
-              Call 01772 493994
-            </motion.a>
+              Our team is here to help you plan your perfect journey.
+            </p>
           </div>
-          
-          {/* Response time indicator */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 8,
-              marginTop: 20,
-              paddingTop: 16,
-              borderTop: "1px solid rgba(0,0,0,0.05)",
-              flexWrap: "wrap",
-            }}
-          >
-            <Clock size={12} style={{ color: "#94a3b8" }} />
-            <span
-              style={{
-                fontFamily: "'Inter', sans-serif",
-                fontSize: isMobileView ? 10 : 11,
-                color: "#94a3b8",
-              }}
-            >
-              Mon-Fri, 9am-6pm
-            </span>
-            <span style={{ color: "#cbd5e1", display: isMobileView ? "none" : "inline" }}>•</span>
-            <span
-              style={{
-                fontFamily: "'Inter', sans-serif",
-                fontSize: isMobileView ? 10 : 11,
-                color: "#94a3b8",
-              }}
-            >
-              Weekend emergency support available
-            </span>
-          </div>
-        </motion.div>
+        </div>
 
-        {/* Bottom Decorative Line */}
-        <motion.div
-          initial={{ opacity: 0, scaleX: 0 }}
-          animate={inView ? { opacity: 1, scaleX: 1 } : {}}
-          transition={{ duration: 0.8, delay: 0.7 }}
+        <div
           style={{
-            marginTop: 48,
             display: "flex",
+            flexWrap: "wrap",
             alignItems: "center",
             justifyContent: "center",
-            gap: 12,
+            gap: "12px",
           }}
         >
-          <div style={{ width: 60, height: 1, background: "rgba(196,151,42,0.3)", borderRadius: 999 }} />
-          <motion.div
-            animate={{
-              scale: [1, 1.3, 1],
-              opacity: [0.4, 1, 0.4],
-            }}
-            transition={{ duration: 2, repeat: Infinity }}
+          <a
+            href="#contact"
             style={{
-              width: 6,
-              height: 6,
-              borderRadius: "50%",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px",
+              fontFamily: "'Inter', sans-serif",
+              fontSize: "clamp(13px, 1vw, 15px)",
+              fontWeight: 600,
+              color: "#ffffff",
               background: "#C4972A",
+              padding: "clamp(10px, 1vw, 12px) clamp(24px, 2.5vw, 32px)",
+              borderRadius: "50px",
+              textDecoration: "none",
+              boxShadow: "0 4px 16px rgba(196,151,42,0.25)",
+              transition: "all 0.3s ease",
             }}
-          />
-          <div style={{ width: 60, height: 1, background: "rgba(196,151,42,0.3)", borderRadius: 999 }} />
-        </motion.div>
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "translateY(-2px)";
+              e.currentTarget.style.boxShadow = "0 8px 28px rgba(196,151,42,0.35)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow = "0 4px 16px rgba(196,151,42,0.25)";
+            }}
+          >
+            <span>Contact Us</span>
+            <ArrowRight size={16} />
+          </a>
+
+          <a
+            href="tel:+2341234567890"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px",
+              fontFamily: "'Inter', sans-serif",
+              fontSize: "clamp(13px, 1vw, 15px)",
+              fontWeight: 500,
+              color: "#0a0a2e",
+              background: "rgba(255,255,255,0.7)",
+              backdropFilter: "blur(8px)",
+              WebkitBackdropFilter: "blur(8px)",
+              padding: "clamp(10px, 1vw, 12px) clamp(20px, 2vw, 28px)",
+              borderRadius: "50px",
+              textDecoration: "none",
+              border: "1px solid rgba(0,0,0,0.06)",
+              transition: "all 0.3s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = "rgba(196,151,42,0.2)";
+              e.currentTarget.style.background = "rgba(255,255,255,0.9)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = "rgba(0,0,0,0.06)";
+              e.currentTarget.style.background = "rgba(255,255,255,0.7)";
+            }}
+          >
+            <Phone size={16} />
+            <span>Call Now</span>
+          </a>
+
+          <a
+            href="mailto:rasoaf24@gmail.com"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px",
+              fontFamily: "'Inter', sans-serif",
+              fontSize: "clamp(13px, 1vw, 15px)",
+              fontWeight: 500,
+              color: "#0a0a2e",
+              background: "rgba(255,255,255,0.7)",
+              backdropFilter: "blur(8px)",
+              WebkitBackdropFilter: "blur(8px)",
+              padding: "clamp(10px, 1vw, 12px) clamp(20px, 2vw, 28px)",
+              borderRadius: "50px",
+              textDecoration: "none",
+              border: "1px solid rgba(0,0,0,0.06)",
+              transition: "all 0.3s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = "rgba(196,151,42,0.2)";
+              e.currentTarget.style.background = "rgba(255,255,255,0.9)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = "rgba(0,0,0,0.06)";
+              e.currentTarget.style.background = "rgba(255,255,255,0.7)";
+            }}
+          >
+            <Mail size={16} />
+            <span>Email Us</span>
+          </a>
+        </div>
       </div>
-    </section>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FAQ — Main Component
+// ─────────────────────────────────────────────────────────────────────────────
+export default function FAQ() {
+  const [sectionRef, inView] = useInView(0.08);
+  const [headerInView, setHeaderInView] = useState(false);
+  const [openItemId, setOpenItemId] = useState(null); // Only one open at a time
+  const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    if (inView) {
+      const timer = setTimeout(() => setHeaderInView(true), 100);
+      return () => clearTimeout(timer);
+    }
+  }, [inView]);
+
+  // Toggle accordion item (only one open at a time)
+  const toggleItem = useCallback((id) => {
+    setOpenItemId((prev) => (prev === id ? null : id));
+  }, []);
+
+  // Filter FAQs based on search
+  const filteredFAQs = FAQ_ITEMS.filter(
+    (item) =>
+      item.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.answer.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.category.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Split into two columns for desktop
+  const midPoint = Math.ceil(filteredFAQs.length / 2);
+  const leftColumn = filteredFAQs.slice(0, midPoint);
+  const rightColumn = filteredFAQs.slice(midPoint);
+
+  const handleSearch = (query) => {
+    setSearchQuery(query);
+    // Close any open item when searching
+    if (query) {
+      setOpenItemId(null);
+    }
+  };
+
+  const handleClearSearch = () => {
+    setSearchQuery("");
+  };
+
+  return (
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400;1,600;1,700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,450;14..32,500;14..32,600;14..32,700;14..32,800&display=swap');
+
+        .faq-section {
+          padding: clamp(48px, 8vh, 80px) clamp(16px, 4vw, 48px);
+          background: linear-gradient(180deg, #FFF9E6 0%, #FFFDF7 50%, #FAF5E8 100%);
+          position: relative;
+          overflow: hidden;
+        }
+
+        .faq-section::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-image: 
+            radial-gradient(circle at 20% 40%, rgba(196,151,42,0.04) 0%, transparent 40%),
+            radial-gradient(circle at 80% 60%, rgba(196,151,42,0.04) 0%, transparent 40%);
+          pointer-events: none;
+          z-index: 0;
+        }
+
+        .faq-container {
+          max-width: 1200px;
+          margin: 0 auto;
+          position: relative;
+          z-index: 1;
+        }
+
+        /* ── Section Header ────────────────────────────────────────────── */
+        .faq-header {
+          text-align: center;
+          margin-bottom: clamp(32px, 5vh, 48px);
+        }
+
+        .faq-header .eyebrow {
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          margin-bottom: 12px;
+        }
+
+        .faq-header .eyebrow-line {
+          width: clamp(24px, 3vw, 40px);
+          height: 1.5px;
+          background: #C4972A;
+          border-radius: 999px;
+        }
+
+        .faq-header .eyebrow-text {
+          font-family: 'Inter', sans-serif;
+          font-size: clamp(9px, 0.9vw, 11px);
+          font-weight: 700;
+          letter-spacing: 3px;
+          text-transform: uppercase;
+          color: #C4972A;
+        }
+
+        .faq-header h2 {
+          font-family: 'Playfair Display', Georgia, serif;
+          font-size: clamp(1.6rem, 3.5vw, 2.8rem);
+          font-weight: 700;
+          color: #0a0a2e;
+          letter-spacing: -0.02em;
+          line-height: 1.2;
+          margin-bottom: 12px;
+        }
+
+        .faq-header h2 .highlight {
+          color: #C4972A;
+          position: relative;
+        }
+
+        .faq-header h2 .highlight::after {
+          content: '';
+          position: absolute;
+          bottom: -2px;
+          left: 0;
+          right: 0;
+          height: 2.5px;
+          background: linear-gradient(90deg, #C4972A, rgba(196,151,42,0.2));
+          border-radius: 3px;
+        }
+
+        .faq-header p {
+          font-family: 'Inter', sans-serif;
+          font-size: clamp(14px, 1.2vw, 16px);
+          color: #5a5a6a;
+          max-width: 520px;
+          margin: 0 auto;
+          line-height: 1.7;
+          font-weight: 400;
+        }
+
+        .faq-header .header-animate {
+          opacity: ${headerInView ? 1 : 0};
+          transform: translateY(${headerInView ? 0 : 20}px);
+          transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+                      transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* ── FAQ Grid ────────────────────────────────────────────────────── */
+        .faq-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: clamp(12px, 1.5vw, 18px);
+        }
+
+        .faq-column {
+          display: flex;
+          flex-direction: column;
+        }
+
+        /* ── No Results ──────────────────────────────────────────────────── */
+        .faq-no-results {
+          text-align: center;
+          padding: clamp(40px, 5vh, 60px);
+          font-family: 'Inter', sans-serif;
+          color: #5a5a6a;
+        }
+
+        .faq-no-results .icon {
+          font-size: 48px;
+          margin-bottom: 16px;
+        }
+
+        .faq-no-results p {
+          margin-bottom: 4px;
+          font-size: clamp(18px, 1.5vw, 22px);
+          font-weight: 600;
+        }
+
+        .faq-no-results .sub {
+          font-size: 14px;
+          color: #8a8a9a;
+        }
+
+        /* ── Responsive ──────────────────────────────────────────────────── */
+
+        /* Tablet: 1 column */
+        @media (max-width: 1024px) {
+          .faq-grid {
+            grid-template-columns: 1fr;
+            gap: 10px;
+          }
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+          .faq-section {
+            padding: clamp(36px, 5vh, 52px) clamp(14px, 3vw, 20px);
+          }
+          .faq-header h2 {
+            font-size: 1.4rem;
+          }
+          .faq-header p {
+            font-size: 13px;
+          }
+          .faq-grid {
+            gap: 10px;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .faq-section {
+            padding: 28px 12px 40px;
+          }
+          .faq-grid {
+            gap: 8px;
+          }
+        }
+
+        /* ── Reduced Motion ──────────────────────────────────────────────── */
+        @media (prefers-reduced-motion: reduce) {
+          .faq-item {
+            opacity: 1 !important;
+            transform: none !important;
+            transition: none !important;
+          }
+          .faq-header .header-animate {
+            opacity: 1 !important;
+            transform: none !important;
+          }
+          .faq-question {
+            transition: none !important;
+          }
+          .faq-item {
+            transition: none !important;
+          }
+        }
+
+        /* ── Hover: no touch devices ────────────────────────────────────── */
+        @media (hover: none) {
+          .faq-item {
+            transition: none !important;
+          }
+          .faq-question {
+            transition: none !important;
+          }
+        }
+      `}</style>
+
+      <section
+        ref={sectionRef}
+        className="faq-section"
+        aria-labelledby="faq-heading"
+        id="faq"
+      >
+        <div className="faq-container">
+          {/* Section Header */}
+          <div className="faq-header">
+            <div className="header-animate">
+              <div className="eyebrow">
+                <span className="eyebrow-line" aria-hidden="true" />
+                <span className="eyebrow-text">Frequently Asked Questions</span>
+                <span className="eyebrow-line" aria-hidden="true" />
+              </div>
+
+              <h2 id="faq-heading">
+                Your Questions, <span className="highlight">Answered</span>
+              </h2>
+
+              <p>
+                Everything you need to know about planning your Hajj, Umrah, or
+                international travel journey with us.
+              </p>
+            </div>
+          </div>
+
+          {/* Search Bar */}
+          <SearchBar
+            onSearch={handleSearch}
+            onClear={handleClearSearch}
+            query={searchQuery}
+          />
+
+          {/* FAQ Grid */}
+          {filteredFAQs.length > 0 ? (
+            <div className="faq-grid">
+              {/* Left Column */}
+              <div className="faq-column">
+                {leftColumn.map((item, index) => (
+                  <FAQItem
+                    key={item.id}
+                    item={item}
+                    isOpen={openItemId === item.id}
+                    onToggle={toggleItem}
+                    index={index}
+                    inView={inView}
+                  />
+                ))}
+              </div>
+
+              {/* Right Column */}
+              <div className="faq-column">
+                {rightColumn.map((item, index) => (
+                  <FAQItem
+                    key={item.id}
+                    item={item}
+                    isOpen={openItemId === item.id}
+                    onToggle={toggleItem}
+                    index={index + leftColumn.length}
+                    inView={inView}
+                  />
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="faq-no-results">
+              <div className="icon">🔍</div>
+              <p>No results found</p>
+              <p className="sub">Try adjusting your search terms</p>
+            </div>
+          )}
+
+          {/* CTA Section */}
+          <CTASection inView={inView} />
+
+          {/* Bottom Divider */}
+          <div
+            style={{
+              marginTop: "clamp(32px, 4vh, 48px)",
+              display: "flex",
+              alignItems: "center",
+              gap: "clamp(12px, 2vw, 20px)",
+              opacity: inView ? 1 : 0,
+              transition: "opacity 0.8s ease 0.8s",
+            }}
+          >
+            <div
+              style={{
+                flex: 1,
+                height: 1,
+                background: "linear-gradient(90deg, transparent, rgba(196,151,42,0.12))",
+              }}
+            />
+            <div
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: "50%",
+                background: "#C4972A",
+                opacity: 0.4,
+              }}
+            />
+            <div
+              style={{
+                flex: 1,
+                height: 1,
+                background: "linear-gradient(90deg, rgba(196,151,42,0.12), transparent)",
+              }}
+            />
+          </div>
+        </div>
+      </section>
+    </>
   );
 }

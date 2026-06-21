@@ -1,659 +1,614 @@
+// src/components/home/CTA.jsx
+// ─────────────────────────────────────────────────────────────────────────────
+// RASOAF Travels and Tours — CTA Section
+//
+// A premium full-width conversion section designed to convert users at the
+// decision stage into leads or consultations.
+//
+// Design: Soft gradient background (gold/yellow to white), center-aligned
+// Layout: Full-width hero-style with decorative blur elements
+// Animation: Fade-up on scroll with subtle scale
+// Responsive: Stacked buttons on mobile
+// ─────────────────────────────────────────────────────────────────────────────
+
 import { useRef, useEffect, useState } from "react";
-import { motion, useInView, useAnimation, useScroll, useTransform, AnimatePresence } from "framer-motion";
-import { 
-  Phone, 
-  Mail, 
-  Star, 
-  Building2, 
-  CheckCircle, 
+import {
+  Phone,
   MessageCircle,
+  Calendar,
   ArrowRight,
-  Sparkles,
   Shield,
-  Users,
-  Award,
-  ClipboardCheck,
-  BadgeCheck,
-  Heart
+  CheckCircle,
+  Sparkles,
 } from "lucide-react";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Premium CTA Section — Enterprise-Grade Call to Action
-// Features: 3D parallax, animated particles, floating elements, magnetic buttons
-// FIXED: NHS-compliant trust indicators (no unauthorised "NHS Approved" claims)
-// ─────────────────────────────────────────────────────────────────────────────
-
-function useReveal(threshold = 0.3) {
+// ── Hook: IntersectionObserver for scroll animation ──────────────────────
+function useInView(threshold = 0.15) {
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, amount: threshold, margin: "-50px 0px" });
-  return [ref, isInView];
+  const [inView, setInView] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setInView(true);
+          observer.unobserve(el);
+        }
+      },
+      { threshold }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [threshold]);
+
+  return [ref, inView];
+}
+
+// ── Helper: clamp for inline styles ─────────────────────────────────────────
+function clamp(min, pref, max) {
+  return `clamp(${min}px, ${pref}, ${max}px)`;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Magnetic Button Component with Advanced Haptics
-// ─────────────────────────────────────────────────────────────────────────────
-function MagneticButton({ children, href, variant = "primary", icon: IconComponent, onClick }) {
-  const buttonRef = useRef(null);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [isHovered, setIsHovered] = useState(false);
-
-  const handleMouseMove = (e) => {
-    if (!buttonRef.current) return;
-    const rect = buttonRef.current.getBoundingClientRect();
-    const x = (e.clientX - rect.left - rect.width / 2) * 0.3;
-    const y = (e.clientY - rect.top - rect.height / 2) * 0.3;
-    setPosition({ x, y });
-  };
-
-  const handleMouseLeave = () => {
-    setPosition({ x: 0, y: 0 });
-    setIsHovered(false);
-  };
-
-  const buttonStyles = {
-    primary: {
-      background: "linear-gradient(135deg, #ffffff, #fefaf5)",
-      color: "#0f1d3d",
-      boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
-      hoverShadow: "0 15px 40px rgba(0,0,0,0.25)",
-    },
-    secondary: {
-      background: "linear-gradient(135deg, #25D366, #128C7E)",
-      color: "#fff",
-      boxShadow: "0 8px 24px rgba(37,211,102,0.3)",
-      hoverShadow: "0 15px 40px rgba(37,211,102,0.4)",
-    },
-  };
-
-  const currentStyle = buttonStyles[variant];
-
-  return (
-    <motion.a
-      ref={buttonRef}
-      href={href}
-      target={variant === "secondary" ? "_blank" : "_self"}
-      rel={variant === "secondary" ? "noopener noreferrer" : ""}
-      onMouseMove={handleMouseMove}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={handleMouseLeave}
-      onClick={onClick}
-      animate={{
-        x: position.x,
-        y: position.y,
-        scale: isHovered ? 1.05 : 1,
-      }}
-      transition={{
-        type: "spring",
-        stiffness: 400,
-        damping: 25,
-      }}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 12,
-        background: currentStyle.background,
-        color: currentStyle.color,
-        padding: "16px 40px",
-        borderRadius: "60px",
-        fontFamily: "'Inter', sans-serif",
-        fontWeight: 700,
-        fontSize: "clamp(14px, 1.5vw, 15px)",
-        textDecoration: "none",
-        boxShadow: isHovered ? currentStyle.hoverShadow : currentStyle.boxShadow,
-        cursor: "pointer",
-        position: "relative",
-        overflow: "hidden",
-        transition: "box-shadow 0.3s ease",
-      }}
-    >
-      {/* Ripple Effect */}
-      <AnimatePresence>
-        {isHovered && (
-          <motion.span
-            initial={{ scale: 0, opacity: 0.5 }}
-            animate={{ scale: 4, opacity: 0 }}
-            exit={{ scale: 0, opacity: 0 }}
-            transition={{ duration: 0.6 }}
-            style={{
-              position: "absolute",
-              width: "100%",
-              height: "100%",
-              background: `radial-gradient(circle, rgba(255,255,255,0.3), transparent)`,
-              borderRadius: "60px",
-            }}
-          />
-        )}
-      </AnimatePresence>
-
-      {IconComponent && <IconComponent size={18} strokeWidth={1.8} />}
-      <span>{children}</span>
-      
-      {/* Arrow Animation on Hover */}
-      <motion.span
-        animate={{ x: isHovered ? 5 : 0 }}
-        transition={{ duration: 0.3 }}
-      >
-        <ArrowRight size={16} />
-      </motion.span>
-    </motion.a>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Main CTA Component with Premium Effects
+// CTA — Main Component
 // ─────────────────────────────────────────────────────────────────────────────
 export default function CTA() {
-  const [ref, inView] = useReveal(0.2);
-  const [mousePosition, setMousePosition] = useState({ x: 0.5, y: 0.5 });
-  const [particles, setParticles] = useState([]);
-  const controls = useAnimation();
-  const { scrollYProgress } = useScroll();
-  const y = useTransform(scrollYProgress, [0, 1], [0, 50]);
-
-  // Create floating particles
-  useEffect(() => {
-    const newParticles = Array.from({ length: 25 }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      size: Math.random() * 3 + 1.5,
-      duration: Math.random() * 20 + 10,
-      delay: Math.random() * 5,
-      angle: Math.random() * 360,
-    }));
-    setParticles(newParticles);
-  }, []);
+  const [sectionRef, inView] = useInView(0.12);
+  const [contentInView, setContentInView] = useState(false);
 
   useEffect(() => {
     if (inView) {
-      controls.start("visible");
+      const timer = setTimeout(() => setContentInView(true), 150);
+      return () => clearTimeout(timer);
     }
-  }, [inView, controls]);
+  }, [inView]);
 
-  const handleMouseMove = (e) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    setMousePosition({
-      x: (e.clientX - rect.left) / rect.width,
-      y: (e.clientY - rect.top) / rect.height,
-    });
+  const handleButtonClick = (buttonName) => {
+    // Analytics tracking hook placeholder
+    console.log(`CTA Button Clicked: ${buttonName}`);
+    // You can integrate with Google Analytics, Facebook Pixel, etc.
+    // Example: gtag('event', 'conversion', { 'send_to': 'AW-XXXXX/XXXXX' });
   };
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        duration: 0.8,
-        staggerChildren: 0.2,
-        delayChildren: 0.3,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 30, scale: 0.95 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      scale: 1,
-      transition: {
-        type: "spring",
-        stiffness: 100,
-        damping: 15,
-      },
-    },
-  };
-
-  const floatingVariants = {
-    animate: {
-      y: [0, -20, 0, 20, 0],
-      rotate: [0, 5, 0, -5, 0],
-      transition: {
-        duration: 8,
-        repeat: Infinity,
-        ease: "easeInOut",
-      },
-    },
-  };
-
-  // FIXED: NHS-compliant trust indicators
-  // Replaced "NHS Approved" (which could imply unauthorised endorsement)
-  // with accurate, defensible claims
-  const trustIndicators = [
-    { 
-      icon: Users, 
-      text: "500+ Workers Placed", 
-      color: "#C4972A",
-      description: "Healthcare professionals placed across North-West England"
-    },
-    { 
-      icon: Shield, 
-      text: "CQC Compliant", 
-      color: "#00A859",
-      description: "Registered with Care Quality Commission"
-    },
-    { 
-      icon: Heart, 
-      text: "Free DBS Support", 
-      color: "#10b981",
-      description: "Enhanced DBS application assistance"
-    },
-  ];
-
-  // Alternative if actually registered as NHS framework supplier:
-  // const trustIndicators = [
-  //   { icon: Users, text: "500+ Workers Placed", color: "#C4972A" },
-  //   { icon: Building2, text: "NHS Framework Supplier", color: "#005EB8" },
-  //   { icon: Heart, text: "Free DBS Support", color: "#10b981" },
-  // ];
-
-  const handleCopyPhone = () => {
-    navigator.clipboard.writeText("01772 493994");
-  };
-
-  const handleCopyEmail = () => {
-    navigator.clipboard.writeText("admin_1@evshealthcare.co.uk");
+  const scrollToSection = (id) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   };
 
   return (
-    <section
-      ref={ref}
-      onMouseMove={handleMouseMove}
-      style={{
-        position: "relative",
-        padding: "clamp(80px, 15vh, 120px) clamp(16px, 5vw, 80px)",
-        background: "linear-gradient(135deg, #0f1d3d 0%, #1a2a50 50%, #0f1d3d 100%)",
-        overflow: "hidden",
-        isolation: "isolate",
-      }}
-    >
-      {/* Animated Gradient Background */}
-      <motion.div
-        animate={{
-          background: `radial-gradient(circle at ${mousePosition.x * 100}% ${mousePosition.y * 100}%, rgba(196,151,42,0.12), transparent 50%)`,
-        }}
-        transition={{ duration: 0.3 }}
-        style={{
-          position: "absolute",
-          inset: 0,
-          pointerEvents: "none",
-        }}
-      />
-
-      {/* Floating Particles */}
-      {particles.map((particle) => (
-        <motion.div
-          key={particle.id}
-          animate={{
-            y: [0, -80, 0],
-            x: [0, Math.sin(particle.angle) * 60, 0],
-            opacity: [0, 0.3, 0],
-          }}
-          transition={{
-            duration: particle.duration,
-            delay: particle.delay,
-            repeat: Infinity,
-            ease: "linear",
-          }}
-          style={{
-            position: "absolute",
-            left: `${particle.x}%`,
-            top: `${particle.y}%`,
-            width: particle.size,
-            height: particle.size,
-            borderRadius: "50%",
-            background: `radial-gradient(circle, rgba(196,151,42,${0.25 + particle.id * 0.005}), transparent)`,
-            pointerEvents: "none",
-            zIndex: 0,
-          }}
-        />
-      ))}
-
-      {/* Animated Gradient Orbs */}
-      <motion.div
-        style={{ y }}
-        animate={{
-          scale: [1, 1.15, 1],
-          opacity: [0.25, 0.4, 0.25],
-        }}
-        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-        style={{
-          position: "absolute",
-          top: "-30%",
-          right: "-20%",
-          width: "60vw",
-          height: "60vw",
-          maxWidth: 600,
-          maxHeight: 600,
-          borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(196,151,42,0.06), transparent 70%)",
-          pointerEvents: "none",
-          zIndex: 0,
-        }}
-      />
-      <motion.div
-        style={{ y: useTransform(scrollYProgress, [0, 1], [0, -80]) }}
-        animate={{
-          scale: [1, 1.2, 1],
-          opacity: [0.15, 0.3, 0.15],
-        }}
-        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-        style={{
-          position: "absolute",
-          bottom: "-30%",
-          left: "-20%",
-          width: "50vw",
-          height: "50vw",
-          maxWidth: 500,
-          maxHeight: 500,
-          borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(100,100,255,0.04), transparent 70%)",
-          pointerEvents: "none",
-          zIndex: 0,
-        }}
-      />
-
-      {/* Top Animated Border */}
-      <motion.div
-        initial={{ scaleX: 0 }}
-        animate={inView ? { scaleX: 1 } : {}}
-        transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          height: 2,
-          background: "linear-gradient(90deg, transparent, #C4972A, #f0c060, #C4972A, transparent)",
-          transformOrigin: "left",
-          zIndex: 1,
-        }}
-      />
-
-      {/* Bottom Animated Border */}
-      <motion.div
-        initial={{ scaleX: 0 }}
-        animate={inView ? { scaleX: 1 } : {}}
-        transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
-        style={{
-          position: "absolute",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: 2,
-          background: "linear-gradient(90deg, transparent, #C4972A, #f0c060, #C4972A, transparent)",
-          transformOrigin: "right",
-          zIndex: 1,
-        }}
-      />
-
-      <div style={{ maxWidth: 900, margin: "0 auto", position: "relative", zIndex: 2 }}>
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate={controls}
-          style={{ textAlign: "center" }}
-        >
-          {/* Floating Decorative Star */}
-          <motion.div
-            variants={floatingVariants}
-            animate="animate"
-            style={{
-              position: "absolute",
-              top: -30,
-              left: "50%",
-              transform: "translateX(-50%)",
-              width: 60,
-              height: 60,
-              opacity: 0.25,
-              pointerEvents: "none",
-            }}
-          >
-            <Sparkles size={50} strokeWidth={1} style={{ color: "#C4972A" }} />
-          </motion.div>
-
-          {/* Main Heading with Animated Gradient */}
-          <motion.h2
-            variants={itemVariants}
-            style={{
-              fontFamily: "'Inter', sans-serif",
-              fontSize: "clamp(1.8rem, 4vw, 3.2rem)",
-              fontWeight: 800,
-              color: "#fff",
-              letterSpacing: "-0.03em",
-              marginBottom: 20,
-              lineHeight: 1.2,
-            }}
-          >
-            Ready to Start Your{" "}
-            <span
-              style={{
-                background: "linear-gradient(135deg, #C4972A, #f0c060, #e8b84a, #C4972A)",
-                backgroundSize: "200% auto",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-                animation: "gradientShift 3s linear infinite",
-              }}
-            >
-              Healthcare Career?
-            </span>
-          </motion.h2>
-
-          {/* Animated Underline */}
-          <motion.div
-            variants={itemVariants}
-            initial={{ scaleX: 0 }}
-            animate={inView ? { scaleX: 1 } : {}}
-            transition={{ duration: 0.8, delay: 0.5 }}
-            style={{
-              width: 100,
-              height: 3,
-              background: "linear-gradient(90deg, #C4972A, #f0c060, #C4972A)",
-              borderRadius: 999,
-              margin: "0 auto 24px",
-            }}
-          />
-
-          {/* Description */}
-          <motion.p
-            variants={itemVariants}
-            style={{
-              fontFamily: "'Inter', sans-serif",
-              fontSize: "clamp(14px, 1.6vw, 16px)",
-              color: "rgba(255,255,255,0.85)",
-              maxWidth: 560,
-              margin: "0 auto 40px",
-              lineHeight: 1.7,
-            }}
-          >
-            Whether you're experienced or just starting out — at EVS Healthcare,
-            there's a chance for everyone. Join our growing team of healthcare
-            professionals today.
-          </motion.p>
-
-          {/* Trust Indicators - NHS COMPLIANT (No unauthorised NHS claims) */}
-          <motion.div
-            variants={itemVariants}
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              gap: 20,
-              marginBottom: 40,
-              flexWrap: "wrap",
-            }}
-          >
-            {trustIndicators.map((item, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 20 }}
-                animate={inView ? { opacity: 1, y: 0 } : {}}
-                transition={{ delay: 0.6 + idx * 0.1 }}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  background: "rgba(255,255,255,0.06)",
-                  backdropFilter: "blur(10px)",
-                  padding: "8px 20px",
-                  borderRadius: "40px",
-                  border: "1px solid rgba(196,151,42,0.2)",
-                }}
-              >
-                <item.icon size={14} style={{ color: item.color }} />
-                <span
-                  style={{
-                    fontFamily: "'Inter', sans-serif",
-                    fontSize: 12,
-                    fontWeight: 500,
-                    color: "rgba(255,255,255,0.9)",
-                  }}
-                >
-                  {item.text}
-                </span>
-              </motion.div>
-            ))}
-          </motion.div>
-
-          {/* CTA Buttons */}
-          <motion.div
-            variants={itemVariants}
-            style={{
-              display: "flex",
-              gap: 20,
-              justifyContent: "center",
-              flexWrap: "wrap",
-            }}
-          >
-            <MagneticButton
-              href="#register"
-              variant="primary"
-              icon={ClipboardCheck}
-            >
-              Apply Today
-            </MagneticButton>
-
-            <MagneticButton
-              href="https://wa.me/447466999218"
-              variant="secondary"
-              icon={MessageCircle}
-            >
-              WhatsApp Us
-            </MagneticButton>
-          </motion.div>
-
-          {/* Contact Info Note */}
-          <motion.div
-            variants={itemVariants}
-            style={{
-              marginTop: 40,
-              paddingTop: 24,
-              borderTop: "1px solid rgba(255,255,255,0.08)",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 16,
-              flexWrap: "wrap",
-              justifyContent: "center",
-            }}
-          >
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                background: "rgba(255,255,255,0.04)",
-                padding: "8px 20px",
-                borderRadius: "40px",
-                cursor: "pointer",
-                border: "1px solid rgba(255,255,255,0.08)",
-              }}
-              onClick={handleCopyPhone}
-            >
-              <Phone size={14} style={{ color: "#C4972A" }} />
-              <span
-                style={{
-                  fontFamily: "'Inter', sans-serif",
-                  fontSize: 13,
-                  color: "rgba(255,255,255,0.8)",
-                }}
-              >
-                01772 493994
-              </span>
-            </motion.div>
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                background: "rgba(255,255,255,0.04)",
-                padding: "8px 20px",
-                borderRadius: "40px",
-                cursor: "pointer",
-                border: "1px solid rgba(255,255,255,0.08)",
-              }}
-              onClick={handleCopyEmail}
-            >
-              <Mail size={14} style={{ color: "#C4972A" }} />
-              <span
-                style={{
-                  fontFamily: "'Inter', sans-serif",
-                  fontSize: 13,
-                  color: "rgba(255,255,255,0.8)",
-                }}
-              >
-                admin_1@evshealthcare.co.uk
-              </span>
-            </motion.div>
-          </motion.div>
-
-          {/* Bottom Decorative Element */}
-          <motion.div
-            initial={{ opacity: 0, scaleX: 0 }}
-            animate={inView ? { opacity: 1, scaleX: 1 } : {}}
-            transition={{ duration: 0.8, delay: 0.9 }}
-            style={{
-              marginTop: "clamp(40px, 6vh, 50px)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 16,
-            }}
-          >
-            <div style={{ width: 60, height: 1, background: "rgba(196,151,42,0.3)", borderRadius: 999 }} />
-            <motion.div
-              animate={{
-                scale: [1, 1.5, 1],
-                opacity: [0.4, 1, 0.4],
-              }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-              style={{
-                width: 6,
-                height: 6,
-                borderRadius: "50%",
-                background: "#C4972A",
-                boxShadow: "0 0 12px rgba(196,151,42,0.6)",
-              }}
-            />
-            <div style={{ width: 60, height: 1, background: "rgba(196,151,42,0.3)", borderRadius: 999 }} />
-          </motion.div>
-        </motion.div>
-      </div>
-
+    <>
       <style>{`
-        @keyframes gradientShift {
-          0%, 100% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400;1,600;1,700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,450;14..32,500;14..32,600;14..32,700;14..32,800&display=swap');
+
+        .cta-section {
+          position: relative;
+          width: 100%;
+          padding: clamp(60px, 12vh, 120px) clamp(20px, 5vw, 60px);
+          background: linear-gradient(165deg, #FFF9E6 0%, #FFFDF7 30%, #FAF5E8 70%, #F5EDD6 100%);
+          overflow: hidden;
+          isolation: isolate;
         }
-        
+
+        /* Decorative blur circles */
+        .cta-section .decorative-circle {
+          position: absolute;
+          border-radius: 50%;
+          pointer-events: none;
+          z-index: 0;
+          filter: blur(80px);
+        }
+
+        .cta-section .circle-1 {
+          top: -15%;
+          right: -10%;
+          width: 50%;
+          height: 80%;
+          background: radial-gradient(circle, rgba(196,151,42,0.15), transparent 70%);
+        }
+
+        .cta-section .circle-2 {
+          bottom: -20%;
+          left: -10%;
+          width: 40%;
+          height: 60%;
+          background: radial-gradient(circle, rgba(196,151,42,0.08), transparent 70%);
+        }
+
+        .cta-section .circle-3 {
+          top: 30%;
+          left: 20%;
+          width: 30%;
+          height: 40%;
+          background: radial-gradient(circle, rgba(196,151,42,0.04), transparent 70%);
+        }
+
+        /* Subtle pattern overlay */
+        .cta-section .pattern-overlay {
+          position: absolute;
+          inset: 0;
+          z-index: 0;
+          opacity: 0.03;
+          background-image: 
+            radial-gradient(circle at 20% 50%, #C4972A 1px, transparent 1px),
+            radial-gradient(circle at 80% 50%, #C4972A 1px, transparent 1px);
+          background-size: 60px 60px;
+          pointer-events: none;
+        }
+
+        .cta-container {
+          position: relative;
+          z-index: 1;
+          max-width: 820px;
+          margin: 0 auto;
+          text-align: center;
+        }
+
+        /* ── Content Animation ────────────────────────────────────────────── */
+        .cta-content {
+          opacity: 0;
+          transform: translateY(30px) scale(0.98);
+          transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+                      transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .cta-content.visible {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+
+        /* ── Badge ────────────────────────────────────────────────────────── */
+        .cta-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          font-family: 'Inter', sans-serif;
+          font-size: clamp(10px, 0.8vw, 12px);
+          font-weight: 600;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: #C4972A;
+          background: rgba(196,151,42,0.08);
+          padding: 6px 18px;
+          border-radius: 50px;
+          margin-bottom: 16px;
+          border: 1px solid rgba(196,151,42,0.08);
+        }
+
+        .cta-badge .dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: #C4972A;
+          animation: pulse-dot 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-dot {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.4; transform: scale(0.7); }
+        }
+
+        /* ── Typography ───────────────────────────────────────────────────── */
+        .cta-headline {
+          font-family: 'Playfair Display', Georgia, serif;
+          font-size: clamp(2.2rem, 5.5vw, 4.2rem);
+          font-weight: 700;
+          color: #0a0a2e;
+          line-height: 1.1;
+          letter-spacing: -0.02em;
+          margin-bottom: clamp(12px, 1.8vw, 20px);
+        }
+
+        .cta-headline .highlight {
+          color: #C4972A;
+          position: relative;
+        }
+
+        .cta-headline .highlight::after {
+          content: '';
+          position: absolute;
+          bottom: -4px;
+          left: 0;
+          right: 0;
+          height: 3px;
+          background: linear-gradient(90deg, #C4972A, rgba(196,151,42,0.2));
+          border-radius: 3px;
+        }
+
+        .cta-subtitle {
+          font-family: 'Inter', sans-serif;
+          font-size: clamp(15px, 1.3vw, 18px);
+          font-weight: 400;
+          color: #4a5568;
+          line-height: 1.7;
+          max-width: 520px;
+          margin: 0 auto clamp(28px, 4vh, 40px);
+        }
+
+        /* ── Buttons ──────────────────────────────────────────────────────── */
+        .cta-buttons {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          justify-content: center;
+          gap: clamp(12px, 1.5vw, 18px);
+          margin-bottom: clamp(20px, 3vh, 28px);
+        }
+
+        .cta-btn-primary {
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          font-family: 'Inter', sans-serif;
+          font-size: clamp(14px, 1.1vw, 16px);
+          font-weight: 700;
+          color: #ffffff;
+          background: #0a0a2e;
+          padding: clamp(14px, 1.4vw, 18px) clamp(32px, 3.5vw, 48px);
+          border: none;
+          border-radius: 14px;
+          cursor: pointer;
+          text-decoration: none;
+          transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+          box-shadow: 0 4px 20px rgba(10,10,46,0.25);
+          position: relative;
+          overflow: hidden;
+        }
+
+        .cta-btn-primary::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(135deg, #C4972A, #e8b840);
+          opacity: 0;
+          transition: opacity 0.4s ease;
+        }
+
+        .cta-btn-primary:hover {
+          transform: translateY(-3px) scale(1.02);
+          box-shadow: 0 8px 35px rgba(10,10,46,0.35);
+        }
+
+        .cta-btn-primary:hover::before {
+          opacity: 1;
+        }
+
+        .cta-btn-primary:active {
+          transform: translateY(0) scale(0.98);
+          transition-duration: 0.1s;
+        }
+
+        .cta-btn-primary span {
+          position: relative;
+          z-index: 1;
+        }
+
+        .cta-btn-primary svg {
+          position: relative;
+          z-index: 1;
+          transition: transform 0.3s ease;
+        }
+
+        .cta-btn-primary:hover svg {
+          transform: translateX(4px);
+        }
+
+        /* ── WhatsApp Button ──────────────────────────────────────────────── */
+        .cta-btn-whatsapp {
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          font-family: 'Inter', sans-serif;
+          font-size: clamp(14px, 1.1vw, 16px);
+          font-weight: 600;
+          color: #ffffff;
+          background: #25D366;
+          padding: clamp(14px, 1.4vw, 18px) clamp(28px, 3vw, 40px);
+          border: none;
+          border-radius: 14px;
+          cursor: pointer;
+          text-decoration: none;
+          transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+          box-shadow: 0 4px 20px rgba(37, 211, 102, 0.35);
+        }
+
+        .cta-btn-whatsapp:hover {
+          transform: translateY(-3px) scale(1.02);
+          box-shadow: 0 8px 35px rgba(37, 211, 102, 0.45);
+        }
+
+        .cta-btn-whatsapp:active {
+          transform: translateY(0) scale(0.98);
+          transition-duration: 0.1s;
+        }
+
+        .cta-btn-whatsapp svg {
+          transition: transform 0.3s ease;
+        }
+
+        .cta-btn-whatsapp:hover svg {
+          transform: scale(1.1);
+        }
+
+        /* ── Tertiary Link ────────────────────────────────────────────────── */
+        .cta-btn-tertiary {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          font-family: 'Inter', sans-serif;
+          font-size: clamp(13px, 1vw, 15px);
+          font-weight: 500;
+          color: #0a0a2e;
+          background: none;
+          border: none;
+          cursor: pointer;
+          text-decoration: none;
+          padding: 8px 16px;
+          border-radius: 8px;
+          transition: all 0.3s ease;
+          position: relative;
+        }
+
+        .cta-btn-tertiary::after {
+          content: '';
+          position: absolute;
+          bottom: 4px;
+          left: 16px;
+          right: 16px;
+          height: 2px;
+          background: #C4972A;
+          transform: scaleX(0);
+          transition: transform 0.3s ease;
+        }
+
+        .cta-btn-tertiary:hover {
+          color: #C4972A;
+        }
+
+        .cta-btn-tertiary:hover::after {
+          transform: scaleX(1);
+        }
+
+        .cta-btn-tertiary svg {
+          transition: transform 0.3s ease;
+        }
+
+        .cta-btn-tertiary:hover svg {
+          transform: translateX(4px);
+        }
+
+        /* ── Trust Microcopy ──────────────────────────────────────────────── */
+        .cta-trust {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          justify-content: center;
+          gap: clamp(16px, 2vw, 28px);
+          margin-top: clamp(16px, 2vh, 24px);
+        }
+
+        .cta-trust-item {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-family: 'Inter', sans-serif;
+          font-size: clamp(12px, 0.9vw, 14px);
+          font-weight: 450;
+          color: #4a5568;
+        }
+
+        .cta-trust-item svg {
+          color: #C4972A;
+          flex-shrink: 0;
+        }
+
+        .cta-trust-divider {
+          width: 3px;
+          height: 3px;
+          border-radius: 50%;
+          background: #C4972A;
+          opacity: 0.3;
+        }
+
+        /* ── Responsive ──────────────────────────────────────────────────── */
+
+        /* Tablet */
+        @media (max-width: 1024px) {
+          .cta-section {
+            padding: clamp(50px, 8vh, 80px) clamp(20px, 4vw, 40px);
+          }
+          .cta-headline {
+            font-size: clamp(2rem, 5vw, 3.2rem);
+          }
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+          .cta-section {
+            padding: clamp(40px, 6vh, 60px) clamp(16px, 3vw, 24px);
+          }
+          .cta-headline {
+            font-size: clamp(1.8rem, 6vw, 2.6rem);
+          }
+          .cta-subtitle {
+            font-size: 14px;
+          }
+          .cta-buttons {
+            flex-direction: column;
+            width: 100%;
+          }
+          .cta-btn-primary,
+          .cta-btn-whatsapp {
+            width: 100%;
+            justify-content: center;
+          }
+          .cta-trust {
+            gap: 10px 20px;
+          }
+          .cta-trust-item {
+            font-size: 12px;
+          }
+          .cta-trust-divider {
+            display: none;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .cta-section {
+            padding: 32px 12px 48px;
+          }
+          .cta-headline {
+            font-size: 1.6rem;
+          }
+          .cta-subtitle {
+            font-size: 13px;
+          }
+          .cta-btn-primary,
+          .cta-btn-whatsapp {
+            font-size: 14px;
+            padding: 14px 24px;
+          }
+          .cta-trust {
+            flex-direction: column;
+            gap: 6px;
+          }
+        }
+
+        /* ── Reduced Motion ──────────────────────────────────────────────── */
         @media (prefers-reduced-motion: reduce) {
-          *, *::before, *::after {
-            animation-duration: 0.01ms !important;
-            transition-duration: 0.01ms !important;
+          .cta-content {
+            opacity: 1 !important;
+            transform: none !important;
+            transition: none !important;
+          }
+          .cta-btn-primary,
+          .cta-btn-whatsapp,
+          .cta-btn-tertiary {
+            transition: none !important;
+          }
+          .cta-btn-primary:hover,
+          .cta-btn-whatsapp:hover,
+          .cta-btn-tertiary:hover {
+            transform: none !important;
+          }
+          .cta-badge .dot {
+            animation: none !important;
+          }
+        }
+
+        /* ── Hover: no touch devices ────────────────────────────────────── */
+        @media (hover: none) {
+          .cta-btn-primary:hover {
+            transform: none !important;
+          }
+          .cta-btn-primary:hover::before {
+            opacity: 0 !important;
+          }
+          .cta-btn-whatsapp:hover {
+            transform: none !important;
+          }
+          .cta-btn-tertiary:hover::after {
+            transform: scaleX(0) !important;
           }
         }
       `}</style>
-    </section>
+
+      <section
+        ref={sectionRef}
+        className="cta-section"
+        aria-labelledby="cta-heading"
+        id="cta"
+      >
+        {/* Decorative Elements */}
+        <div className="decorative-circle circle-1" aria-hidden="true" />
+        <div className="decorative-circle circle-2" aria-hidden="true" />
+        <div className="decorative-circle circle-3" aria-hidden="true" />
+        <div className="pattern-overlay" aria-hidden="true" />
+
+        <div className="cta-container">
+          <div className={`cta-content ${contentInView ? "visible" : ""}`}>
+            {/* Badge */}
+            <div className="cta-badge">
+              <span className="dot" aria-hidden="true" />
+              <span>Start Your Journey Today</span>
+            </div>
+
+            {/* Headline */}
+            <h2 id="cta-heading" className="cta-headline">
+              Begin Your <span className="highlight">Sacred Journey</span> Today
+            </h2>
+
+            {/* Subtitle */}
+            <p className="cta-subtitle">
+              Let us guide you through a seamless, spiritually fulfilling Hajj
+              and Umrah experience with complete care and professionalism.
+            </p>
+
+            {/* Buttons */}
+            <div className="cta-buttons">
+              <button
+                className="cta-btn-primary"
+                onClick={() => {
+                  handleButtonClick("Free Consultation");
+                  scrollToSection("contact");
+                }}
+                aria-label="Get a free consultation"
+              >
+                <span>Get a Free Consultation</span>
+                <Calendar size={18} />
+              </button>
+
+              <a
+                className="cta-btn-whatsapp"
+                href="https://wa.me/2341234567890?text=Hello%20RASAOF%20Travels%2C%20I%27d%20like%20to%20inquire%20about%20Hajj%20and%20Umrah%20packages"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => handleButtonClick("WhatsApp")}
+                aria-label="Chat on WhatsApp"
+              >
+                <MessageCircle size={20} />
+                <span>Chat on WhatsApp</span>
+              </a>
+
+              <button
+                className="cta-btn-tertiary"
+                onClick={() => {
+                  handleButtonClick("View Packages");
+                  scrollToSection("packages");
+                }}
+                aria-label="View packages"
+              >
+                <span>View Packages</span>
+                <ArrowRight size={16} />
+              </button>
+            </div>
+
+            {/* Trust Microcopy */}
+            <div className="cta-trust">
+              <span className="cta-trust-item">
+                <CheckCircle size={16} />
+                <span>No obligation consultation</span>
+              </span>
+              <span className="cta-trust-divider" aria-hidden="true" />
+              <span className="cta-trust-item">
+                <Shield size={16} />
+                <span>100% guided support from experts</span>
+              </span>
+              <span className="cta-trust-divider" aria-hidden="true" />
+              <span className="cta-trust-item">
+                <Sparkles size={16} />
+                <span>Flexible payment plans</span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </>
   );
 }

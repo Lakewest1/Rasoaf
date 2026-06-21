@@ -1,857 +1,861 @@
-import { motion, useInView, useAnimation, AnimatePresence } from "framer-motion";
+// src/components/layout/Footer.jsx
+// ─────────────────────────────────────────────────────────────────────────────
+// RASOAF Travels and Tours — Footer Section
+//
+// A premium, high-trust footer that reinforces credibility, improves
+// navigation, and encourages final conversions.
+//
+// Design: Dark charcoal background, gold accents, light text
+// Layout: 4-column responsive grid + bottom bar
+// Animation: Hover glow, scale, slide-in effects
+// Responsive: 4 → 2 → 1 columns (desktop → tablet → mobile)
+// ─────────────────────────────────────────────────────────────────────────────
+
 import { useRef, useEffect, useState } from "react";
-//import EVSLogo from "../EVSLogo";
-// Import proper social media icons from react-icons
-import { FaLinkedin, FaFacebook, FaTwitter, FaInstagram } from "react-icons/fa";
 import {
   Phone,
   Mail,
+  MapPin,
+  MessageCircle,
   Send,
-  CheckCircle,
-  AlertCircle,
-  ArrowUp,
-  ChevronRight,
+  ArrowRight,
   Shield,
-  Heart
+  CheckCircle,
+  Award,
+  Globe,
+  Plane,
+  Hotel,
+  Users,
+  Compass,
+  Star,
+  Calendar,
+  Clock,
+  ChevronRight,
 } from "lucide-react";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Modern 2026 Footer — Premium Design with Glass Morphism
-// Features: Animated borders, social links, newsletter (Formspree), back to top
-// FIXED: Proper social media icons (LinkedIn, Facebook, Twitter/X, Instagram)
-// ─────────────────────────────────────────────────────────────────────────────
+// ── Custom Icons (for icons not exported in some Lucide versions) ──────────
 
-export default function Footer() {
+const InstagramIcon = ({ size = 18, color = "currentColor" }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke={color}
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <rect x="2" y="2" width="20" height="20" rx="5" />
+    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+  </svg>
+);
+
+const FacebookIcon = ({ size = 18, color = "currentColor" }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke={color}
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+  </svg>
+);
+
+const TwitterIcon = ({ size = 18, color = "currentColor" }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke={color}
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z" />
+  </svg>
+);
+
+// ── Quick Links Data ──────────────────────────────────────────────────────────
+const QUICK_LINKS = [
+  { name: "Home", href: "/" },
+  { name: "About Us", href: "/about" },
+  { name: "Services", href: "/services" },
+  { name: "Hajj Packages", href: "/packages/hajj" },
+  { name: "Umrah Packages", href: "/packages/umrah" },
+  { name: "Visa Services", href: "/visa" },
+  { name: "Flights & Hotels", href: "/flights-hotels" },
+  { name: "Destinations", href: "/destinations" },
+  { name: "Testimonials", href: "/testimonials" },
+  { name: "FAQ", href: "/faq" },
+  { name: "Contact", href: "/contact" },
+];
+
+// ── Services Data ─────────────────────────────────────────────────────────────
+const SERVICES_LIST = [
+  { name: "Hajj Packages", icon: Compass },
+  { name: "Umrah Packages", icon: Star },
+  { name: "Visa Assistance", icon: Shield },
+  { name: "Flight Booking", icon: Plane },
+  { name: "Hotel Reservation", icon: Hotel },
+  { name: "Group & Family Travel", icon: Users },
+  { name: "International Tours", icon: Globe },
+];
+
+// ── Social Media Data ─────────────────────────────────────────────────────────
+const SOCIAL_LINKS = [
+  {
+    name: "WhatsApp",
+    icon: MessageCircle,
+    href: "https://wa.me/2341234567890",
+    color: "#25D366",
+  },
+  {
+    name: "Instagram",
+    icon: InstagramIcon,
+    href: "https://www.instagram.com/rasoaftravelsandtours/",
+    color: "#E4405F",
+  },
+  {
+    name: "Facebook",
+    icon: FacebookIcon,
+    href: "https://www.facebook.com/profile.php?id=61590695552485",
+    color: "#1877F2",
+  },
+  {
+    name: "X (Twitter)",
+    icon: TwitterIcon,
+    href: "https://x.com/Rasoaftravels",
+    color: "#000000",
+  },
+];
+
+// ── Helper: clamp for inline styles ─────────────────────────────────────────
+function clamp(min, pref, max) {
+  return `clamp(${min}px, ${pref}, ${max}px)`;
+}
+
+// ── Hook: IntersectionObserver for scroll animation ──────────────────────
+function useInView(threshold = 0.05) {
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, amount: 0.3 });
-  const controls = useAnimation();
-  const [email, setEmail] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubscribed, setIsSubscribed] = useState(false);
-  const [error, setError] = useState(null);
-  const [showScrollTop, setShowScrollTop] = useState(false);
-  const [currentYear] = useState(new Date().getFullYear());
-
-  // Formspree endpoint - Replace with your own endpoint ID
-  const FORMSPREE_ENDPOINT = "https://formspree.io/f/xqapvgwk";
-
-  // Check scroll position to show/hide back to top button
-  useEffect(() => {
-    const handleScroll = () => {
-      setShowScrollTop(window.scrollY > 300);
-    };
-    window.addEventListener("scroll", handleScroll);
-    handleScroll();
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  const [inView, setInView] = useState(false);
 
   useEffect(() => {
-    if (isInView) {
-      controls.start("visible");
-    }
-  }, [isInView, controls]);
+    const el = ref.current;
+    if (!el) return;
 
-  const handleSubscribe = async (e) => {
-    e.preventDefault();
-    if (!email) return;
-
-    setIsSubmitting(true);
-    setError(null);
-
-    try {
-      const response = await fetch(FORMSPREE_ENDPOINT, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify({ email }),
-      });
-
-      if (response.ok) {
-        setIsSubscribed(true);
-        setEmail("");
-        setTimeout(() => setIsSubscribed(false), 5000);
-      } else {
-        const data = await response.json();
-        setError(data.error || "Something went wrong. Please try again.");
-      }
-    } catch (err) {
-      setError("Network error. Please check your connection.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        duration: 0.6,
-        staggerChildren: 0.08,
-        delayChildren: 0.2,
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setInView(true);
+          observer.unobserve(el);
+        }
       },
-    },
-  };
+      { threshold }
+    );
 
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.5, type: "spring", stiffness: 100, damping: 15 },
-    },
-  };
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [threshold]);
 
-  // PROPER SOCIAL MEDIA ICONS using react-icons/fa
-  // Each icon is now instantly recognizable as its respective platform
-  const socialLinks = [
-    { 
-      name: "LinkedIn", 
-      icon: FaLinkedin, 
-      url: "https://www.linkedin.com/company/evs-healthcare", 
-      color: "#0077B5",
-      hoverColor: "#0077B5"
-    },
-    { 
-      name: "Facebook", 
-      icon: FaFacebook, 
-      url: "https://www.facebook.com/EVSHealthcare", 
-      color: "#1877F2",
-      hoverColor: "#1877F2"
-    },
-    { 
-      name: "Twitter", 
-      icon: FaTwitter, 
-      url: "https://twitter.com/EVS_Healthcare", 
-      color: "#1DA1F2",
-      hoverColor: "#1DA1F2"
-    },
-    { 
-      name: "Instagram", 
-      icon: FaInstagram, 
-      url: "https://www.instagram.com/evshealthcare", 
-      color: "#E4405F",
-      hoverColor: "#E4405F"
-    },
-  ];
+  return [ref, inView];
+}
 
-  const quickLinks = [
-    { name: "About Us", url: "#about" },
-    { name: "Featured Jobs", url: "#jobs" },
-    { name: "Contact Us", url: "#contact" },
-    { name: "FAQ", url: "#faq" },
-    { name: "Testimonials", url: "#testimonials" },
-  ];
-
-  const legalLinks = [
-    { name: "Privacy Policy", url: "#" },
-    { name: "GDPR Compliance", url: "#" },
-    { name: "Terms of Service", url: "#" },
-    { name: "Cookie Policy", url: "#" },
-    { name: "Accessibility", url: "#" },
-  ];
-
-  // Floating particles for background
-  const particles = Array.from({ length: 12 }, (_, i) => ({
-    id: i,
-    x: Math.random() * 100,
-    y: Math.random() * 100,
-    size: Math.random() * 2.5 + 1,
-    duration: Math.random() * 20 + 10,
-    delay: Math.random() * 5,
-  }));
+// ── Footer Brand Column ──────────────────────────────────────────────────────
+function FooterBrand({ inView }) {
+  const [hoveredSocial, setHoveredSocial] = useState(null);
 
   return (
-    <footer ref={ref} style={{ position: "relative", background: "#0a0f1a", overflow: "hidden" }}>
-      {/* Floating Background Particles */}
-      {particles.map((particle) => (
-        <motion.div
-          key={particle.id}
-          animate={{
-            y: [0, -60, 0],
-            x: [0, Math.sin(particle.id) * 30, 0],
-            opacity: [0, 0.2, 0],
-          }}
-          transition={{
-            duration: particle.duration,
-            delay: particle.delay,
-            repeat: Infinity,
-            ease: "linear",
-          }}
-          style={{
-            position: "absolute",
-            left: `${particle.x}%`,
-            top: `${particle.y}%`,
-            width: particle.size,
-            height: particle.size,
-            borderRadius: "50%",
-            background: `radial-gradient(circle, rgba(196,151,42,${0.4}), transparent)`,
-            pointerEvents: "none",
-            zIndex: 0,
-          }}
-        />
-      ))}
-
-      {/* Animated Gradient Background */}
+    <div
+      className="footer-brand"
+      style={{
+        opacity: inView ? 1 : 0,
+        transform: inView ? "translateY(0)" : "translateY(20px)",
+        transition: "opacity 0.6s ease, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)",
+      }}
+    >
+      {/* Logo */}
       <div
         style={{
-          position: "absolute",
-          inset: 0,
-          background: "radial-gradient(ellipse at 50% 0%, rgba(196,151,42,0.06), transparent 60%)",
-          pointerEvents: "none",
-        }}
-      />
-
-      {/* Top Animated Border */}
-      <motion.div
-        initial={{ scaleX: 0 }}
-        animate={isInView ? { scaleX: 1 } : {}}
-        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          height: 1,
-          background: "linear-gradient(90deg, transparent, #C4972A, #f0c060, #e8b84a, #C4972A, transparent)",
-          transformOrigin: "left",
-        }}
-      />
-
-      {/* Bottom Animated Border */}
-      <motion.div
-        initial={{ scaleX: 0 }}
-        animate={isInView ? { scaleX: 1 } : {}}
-        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
-        style={{
-          position: "absolute",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: 1,
-          background: "linear-gradient(90deg, transparent, rgba(196,151,42,0.3), rgba(196,151,42,0.1), transparent)",
-          transformOrigin: "right",
-        }}
-      />
-
-      {/* Main Footer Content */}
-      <div
-        style={{
-          maxWidth: 1200,
-          margin: "0 auto",
-          padding: "clamp(50px, 10vh, 70px) clamp(20px, 5vw, 80px) clamp(40px, 6vh, 60px)",
-          position: "relative",
-          zIndex: 2,
+          display: "flex",
+          alignItems: "center",
+          gap: "12px",
+          marginBottom: "16px",
         }}
       >
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate={controls}
+        <div
           style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-            gap: "clamp(40px, 6vw, 60px)",
-            marginBottom: "clamp(40px, 6vh, 60px)",
-          }}
-        >
-          {/* Brand Column */}
-          <motion.div variants={itemVariants}>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
-              <motion.div
-                whileHover={{ rotate: 360, scale: 1.1 }}
-                transition={{ duration: 0.5, type: "spring", stiffness: 200 }}
-                style={{ cursor: "pointer" }}
-              >
-                <EVSLogo size={44} />
-              </motion.div>
-              <div>
-                <div
-                  style={{
-                    fontFamily: "'Inter', sans-serif",
-                    fontWeight: 800,
-                    fontSize: 15,
-                    color: "#fff",
-                    letterSpacing: "1.5px",
-                  }}
-                >
-                  EVS HEALTHCARE LTD
-                </div>
-                <div
-                  style={{
-                    fontFamily: "'Inter', sans-serif",
-                    fontStyle: "italic",
-                    fontSize: 11,
-                    color: "#C4972A",
-                    fontWeight: 600,
-                    letterSpacing: "0.5px",
-                  }}
-                >
-                  We care in time.
-                </div>
-              </div>
-            </div>
-            <p
-              style={{
-                fontFamily: "'Inter', sans-serif",
-                fontSize: 13,
-                color: "rgba(255,255,255,0.55)",
-                lineHeight: 1.7,
-                marginBottom: 24,
-                maxWidth: 280,
-              }}
-            >
-              Providing quality healthcare staffing solutions across North-West England.
-              Your trusted partner in care excellence.
-            </p>
-            
-            {/* Social Links with recognisable brand icons */}
-            <div style={{ display: "flex", gap: 12 }}>
-              {socialLinks.map((social, idx) => {
-                const IconComponent = social.icon;
-                return (
-                  <motion.a
-                    key={social.name}
-                    href={social.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={`Follow us on ${social.name}`}
-                    whileHover={{ y: -4, scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                    transition={{ type: "spring", stiffness: 400 }}
-                    style={{
-                      width: 38,
-                      height: 38,
-                      borderRadius: "50%",
-                      background: "rgba(255,255,255,0.05)",
-                      backdropFilter: "blur(10px)",
-                      border: "1px solid rgba(255,255,255,0.1)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      textDecoration: "none",
-                      transition: "all 0.3s ease",
-                      color: "rgba(255,255,255,0.6)",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = `${social.color}20`;
-                      e.currentTarget.style.borderColor = `${social.color}60`;
-                      e.currentTarget.style.transform = "translateY(-4px)";
-                      e.currentTarget.style.color = social.color;
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = "rgba(255,255,255,0.05)";
-                      e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)";
-                      e.currentTarget.style.transform = "translateY(0)";
-                      e.currentTarget.style.color = "rgba(255,255,255,0.6)";
-                    }}
-                  >
-                    <IconComponent size={18} />
-                  </motion.a>
-                );
-              })}
-            </div>
-          </motion.div>
-
-          {/* Quick Links Column */}
-          <motion.div variants={itemVariants}>
-            <h3
-              style={{
-                fontFamily: "'Inter', sans-serif",
-                fontSize: 15,
-                fontWeight: 700,
-                color: "#fff",
-                marginBottom: 24,
-                letterSpacing: "0.5px",
-                position: "relative",
-                display: "inline-block",
-              }}
-            >
-              Quick Links
-              <motion.div
-                initial={{ width: 0 }}
-                animate={isInView ? { width: "100%" } : {}}
-                transition={{ duration: 0.6, delay: 0.3 }}
-                style={{
-                  position: "absolute",
-                  bottom: -8,
-                  left: 0,
-                  height: 2,
-                  background: "linear-gradient(90deg, #C4972A, #f0c060)",
-                  borderRadius: 999,
-                }}
-              />
-            </h3>
-            <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-              {quickLinks.map((link, idx) => (
-                <motion.li
-                  key={link.name}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={isInView ? { opacity: 1, x: 0 } : {}}
-                  transition={{ delay: idx * 0.05 }}
-                  style={{ marginBottom: 12 }}
-                >
-                  <a
-                    href={link.url}
-                    style={{
-                      fontFamily: "'Inter', sans-serif",
-                      fontSize: 13,
-                      color: "rgba(255,255,255,0.55)",
-                      textDecoration: "none",
-                      transition: "all 0.3s ease",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 8,
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.color = "#C4972A";
-                      e.currentTarget.style.transform = "translateX(6px)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.color = "rgba(255,255,255,0.55)";
-                      e.currentTarget.style.transform = "translateX(0)";
-                    }}
-                  >
-                    <ChevronRight size={12} style={{ opacity: 0.7 }} />
-                    {link.name}
-                  </a>
-                </motion.li>
-              ))}
-            </ul>
-          </motion.div>
-
-          {/* Legal Column */}
-          <motion.div variants={itemVariants}>
-            <h3
-              style={{
-                fontFamily: "'Inter', sans-serif",
-                fontSize: 15,
-                fontWeight: 700,
-                color: "#fff",
-                marginBottom: 24,
-                letterSpacing: "0.5px",
-                position: "relative",
-                display: "inline-block",
-              }}
-            >
-              Legal & Compliance
-              <motion.div
-                initial={{ width: 0 }}
-                animate={isInView ? { width: "100%" } : {}}
-                transition={{ duration: 0.6, delay: 0.4 }}
-                style={{
-                  position: "absolute",
-                  bottom: -8,
-                  left: 0,
-                  height: 2,
-                  background: "linear-gradient(90deg, #C4972A, #f0c060)",
-                  borderRadius: 999,
-                }}
-              />
-            </h3>
-            <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-              {legalLinks.map((link, idx) => (
-                <motion.li
-                  key={link.name}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={isInView ? { opacity: 1, x: 0 } : {}}
-                  transition={{ delay: 0.2 + idx * 0.05 }}
-                  style={{ marginBottom: 12 }}
-                >
-                  <a
-                    href={link.url}
-                    style={{
-                      fontFamily: "'Inter', sans-serif",
-                      fontSize: 13,
-                      color: "rgba(255,255,255,0.55)",
-                      textDecoration: "none",
-                      transition: "all 0.3s ease",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 8,
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.color = "#C4972A";
-                      e.currentTarget.style.transform = "translateX(6px)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.color = "rgba(255,255,255,0.55)";
-                      e.currentTarget.style.transform = "translateX(0)";
-                    }}
-                  >
-                    <Shield size={10} style={{ opacity: 0.7 }} />
-                    {link.name}
-                  </a>
-                </motion.li>
-              ))}
-            </ul>
-          </motion.div>
-
-          {/* Newsletter & Contact Column */}
-          <motion.div variants={itemVariants}>
-            <h3
-              style={{
-                fontFamily: "'Inter', sans-serif",
-                fontSize: 15,
-                fontWeight: 700,
-                color: "#fff",
-                marginBottom: 24,
-                letterSpacing: "0.5px",
-                position: "relative",
-                display: "inline-block",
-              }}
-            >
-              Stay Connected
-              <motion.div
-                initial={{ width: 0 }}
-                animate={isInView ? { width: "100%" } : {}}
-                transition={{ duration: 0.6, delay: 0.5 }}
-                style={{
-                  position: "absolute",
-                  bottom: -8,
-                  left: 0,
-                  height: 2,
-                  background: "linear-gradient(90deg, #C4972A, #f0c060)",
-                  borderRadius: 999,
-                }}
-              />
-            </h3>
-            <p
-              style={{
-                fontFamily: "'Inter', sans-serif",
-                fontSize: 13,
-                color: "rgba(255,255,255,0.55)",
-                lineHeight: 1.6,
-                marginBottom: 20,
-              }}
-            >
-              Subscribe to receive job alerts and latest updates
-            </p>
-            
-            {/* Newsletter Form with Formspree */}
-            <form onSubmit={handleSubscribe} style={{ marginBottom: 24 }}>
-              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <input
-                  type="email"
-                  name="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Your email address"
-                  required
-                  style={{
-                    flex: 1,
-                    minWidth: 160,
-                    padding: "12px 16px",
-                    borderRadius: "12px",
-                    border: "1px solid rgba(196,151,42,0.2)",
-                    background: "rgba(255,255,255,0.05)",
-                    fontFamily: "'Inter', sans-serif",
-                    fontSize: 13,
-                    color: "#fff",
-                    outline: "none",
-                    transition: "all 0.3s ease",
-                  }}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = "#C4972A";
-                    e.target.style.background = "rgba(255,255,255,0.08)";
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = "rgba(196,151,42,0.2)";
-                    e.target.style.background = "rgba(255,255,255,0.05)";
-                  }}
-                />
-                <motion.button
-                  type="submit"
-                  disabled={isSubmitting}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  style={{
-                    padding: "12px 24px",
-                    borderRadius: "40px",
-                    border: "none",
-                    background: "linear-gradient(135deg, #C4972A, #8B6914)",
-                    color: "#0f1d3d",
-                    fontFamily: "'Inter', sans-serif",
-                    fontSize: 13,
-                    fontWeight: 600,
-                    cursor: isSubmitting ? "not-allowed" : "pointer",
-                    opacity: isSubmitting ? 0.7 : 1,
-                    transition: "all 0.3s ease",
-                    whiteSpace: "nowrap",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 6,
-                  }}
-                >
-                  {isSubmitting ? (
-                    "Sending..."
-                  ) : isSubscribed ? (
-                    <>
-                      <CheckCircle size={14} /> Subscribed!
-                    </>
-                  ) : (
-                    <>
-                      Subscribe <Send size={12} />
-                    </>
-                  )}
-                </motion.button>
-              </div>
-              
-              {/* Error Message */}
-              {error && (
-                <motion.p
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  style={{
-                    marginTop: 12,
-                    fontSize: 11,
-                    color: "#ef4444",
-                    fontFamily: "'Inter', sans-serif",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 6,
-                  }}
-                >
-                  <AlertCircle size={12} />
-                  {error}
-                </motion.p>
-              )}
-              
-              {/* Success Message */}
-              {isSubscribed && !error && (
-                <motion.p
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  style={{
-                    marginTop: 12,
-                    fontSize: 11,
-                    color: "#10b981",
-                    fontFamily: "'Inter', sans-serif",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 6,
-                  }}
-                >
-                  <CheckCircle size={12} />
-                  Thank you for subscribing! You'll receive updates soon.
-                </motion.p>
-              )}
-            </form>
-
-            {/* Contact Info */}
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 14,
-                paddingTop: 20,
-                borderTop: "1px solid rgba(196,151,42,0.12)",
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <div
-                  style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: "10px",
-                    background: "rgba(196,151,42,0.12)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "#C4972A",
-                  }}
-                >
-                  <Phone size={16} strokeWidth={1.5} />
-                </div>
-                <div>
-                  <div
-                    style={{
-                      fontFamily: "'Inter', sans-serif",
-                      fontSize: 10,
-                      fontWeight: 600,
-                      letterSpacing: "1px",
-                      color: "rgba(255,255,255,0.4)",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    24/7 Support Line
-                  </div>
-                  <div
-                    style={{
-                      fontFamily: "'Inter', sans-serif",
-                      fontSize: 14,
-                      fontWeight: 700,
-                      color: "#C4972A",
-                    }}
-                  >
-                    01772 493994
-                  </div>
-                </div>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <div
-                  style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: "10px",
-                    background: "rgba(196,151,42,0.12)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "#C4972A",
-                  }}
-                >
-                  <Mail size={16} strokeWidth={1.5} />
-                </div>
-                <div>
-                  <div
-                    style={{
-                      fontFamily: "'Inter', sans-serif",
-                      fontSize: 10,
-                      fontWeight: 600,
-                      letterSpacing: "1px",
-                      color: "rgba(255,255,255,0.4)",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    Email Us
-                  </div>
-                  <div
-                    style={{
-                      fontFamily: "'Inter', sans-serif",
-                      fontSize: 12,
-                      fontWeight: 500,
-                      color: "rgba(255,255,255,0.8)",
-                    }}
-                  >
-                    admin_1@evshealthcare.co.uk
-                  </div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        </motion.div>
-
-        {/* Bottom Bar with Glass Effect */}
-        <motion.div
-          variants={itemVariants}
-          initial="hidden"
-          animate={controls}
-          style={{
-            borderTop: "1px solid rgba(196,151,42,0.12)",
+            width: "48px",
+            height: "48px",
+            borderRadius: "12px",
+            background: "linear-gradient(135deg, #C4972A, #e8b840)",
             display: "flex",
-            justifyContent: "space-between",
             alignItems: "center",
-            flexWrap: "wrap",
-            gap: 20,
-            background: "rgba(255,255,255,0.02)",
-            backdropFilter: "blur(10px)",
-            borderRadius: "20px",
-            padding: "24px 28px",
-            marginTop: "20px",
+            justifyContent: "center",
+            color: "#0a0a2e",
+            fontWeight: 800,
+            fontSize: "20px",
+            fontFamily: "'Playfair Display', serif",
+            flexShrink: 0,
           }}
         >
+          R
+        </div>
+        <div>
+          <div
+            style={{
+              fontFamily: "'Playfair Display', serif",
+              fontSize: "clamp(1.1rem, 1.3vw, 1.4rem)",
+              fontWeight: 700,
+              color: "#ffffff",
+              letterSpacing: "-0.01em",
+            }}
+          >
+            RASAOF
+          </div>
           <div
             style={{
               fontFamily: "'Inter', sans-serif",
-              color: "rgba(255,255,255,0.45)",
-              fontSize: 12,
-              lineHeight: 1.6,
+              fontSize: "clamp(8px, 0.6vw, 10px)",
+              fontWeight: 500,
+              color: "rgba(196,151,42,0.7)",
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
             }}
           >
-            © {currentYear} EVS Healthcare Solutions Limited. All rights reserved.
-            <br />
-            <span style={{ fontSize: 11, opacity: 0.7 }}>
-              Company registered in England & Wales. GDPR Compliant.
-            </span>
+            Travels & Tours Ltd
           </div>
-
-          <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
-            {["Privacy", "GDPR", "Terms", "Cookies"].map((link, idx) => (
-              <motion.a
-                key={link}
-                href="#"
-                whileHover={{ x: 2 }}
-                style={{
-                  fontFamily: "'Inter', sans-serif",
-                  color: "rgba(255,255,255,0.45)",
-                  fontSize: 12,
-                  textDecoration: "none",
-                  transition: "all 0.3s ease",
-                  letterSpacing: "0.3px",
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = "#C4972A")}
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.color = "rgba(255,255,255,0.45)")
-                }
-              >
-                {link}
-              </motion.a>
-            ))}
-          </div>
-        </motion.div>
+        </div>
       </div>
 
-      {/* Back to Top Button - Left Side, Only Appears When Needed */}
-      <AnimatePresence>
-        {showScrollTop && (
-          <motion.button
-            onClick={scrollToTop}
-            initial={{ opacity: 0, scale: 0, x: -50 }}
-            animate={{ opacity: 1, scale: 1, x: 0 }}
-            exit={{ opacity: 0, scale: 0, x: -50 }}
-            transition={{ type: "spring", stiffness: 200, damping: 20 }}
-            whileHover={{ y: -5, scale: 1.08 }}
-            whileTap={{ scale: 0.92 }}
-            style={{
-              position: "fixed",
-              bottom: 30,
-              left: 30,
-              width: 48,
-              height: 48,
-              borderRadius: "50%",
-              background: "linear-gradient(135deg, #C4972A, #8B6914)",
-              border: "none",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              boxShadow: "0 6px 16px rgba(196,151,42,0.3)",
-              zIndex: 1000,
-              transition: "all 0.3s ease",
-            }}
-          >
-            <ArrowUp size={20} strokeWidth={2.5} style={{ color: "#0f1d3d" }} />
-          </motion.button>
-        )}
-      </AnimatePresence>
+      {/* Description */}
+      <p
+        style={{
+          fontFamily: "'Inter', sans-serif",
+          fontSize: "clamp(12px, 0.9vw, 14px)",
+          fontWeight: 400,
+          color: "rgba(255,255,255,0.65)",
+          lineHeight: 1.7,
+          marginBottom: "20px",
+          maxWidth: "280px",
+        }}
+      >
+        RASAOF Travels and Tours Limited provides trusted Hajj, Umrah, and
+        international travel services with comfort, care, and professionalism.
+      </p>
 
+      {/* Social Icons */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "10px",
+        }}
+      >
+        {SOCIAL_LINKS.map((social) => {
+          const Icon = social.icon;
+          const isHovered = hoveredSocial === social.name;
+          return (
+            <a
+              key={social.name}
+              href={social.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`Follow us on ${social.name}`}
+              onMouseEnter={() => setHoveredSocial(social.name)}
+              onMouseLeave={() => setHoveredSocial(null)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "40px",
+                height: "40px",
+                borderRadius: "50%",
+                background: isHovered ? social.color : "rgba(255,255,255,0.06)",
+                color: isHovered ? "#ffffff" : "rgba(255,255,255,0.5)",
+                transition: "all 0.3s cubic-bezier(0.25, 1, 0.5, 1)",
+                transform: isHovered ? "scale(1.12) translateY(-2px)" : "scale(1) translateY(0)",
+                boxShadow: isHovered ? `0 4px 20px ${social.color}40` : "none",
+              }}
+            >
+              <Icon size={18} />
+            </a>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ── Footer Links Column ──────────────────────────────────────────────────────
+function FooterLinks({ inView }) {
+  const [hoveredLink, setHoveredLink] = useState(null);
+
+  return (
+    <div
+      className="footer-links"
+      style={{
+        opacity: inView ? 1 : 0,
+        transform: inView ? "translateY(0)" : "translateY(20px)",
+        transition: "opacity 0.6s ease 0.1s, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s",
+      }}
+    >
+      <h4
+        style={{
+          fontFamily: "'Inter', sans-serif",
+          fontSize: "clamp(13px, 1vw, 15px)",
+          fontWeight: 700,
+          color: "#ffffff",
+          marginBottom: "16px",
+          letterSpacing: "0.02em",
+        }}
+      >
+        Quick Links
+      </h4>
+      <ul
+        style={{
+          listStyle: "none",
+          padding: 0,
+          margin: 0,
+          display: "flex",
+          flexDirection: "column",
+          gap: "8px",
+        }}
+      >
+        {QUICK_LINKS.map((link) => (
+          <li key={link.name}>
+            <a
+              href={link.href}
+              onMouseEnter={() => setHoveredLink(link.name)}
+              onMouseLeave={() => setHoveredLink(null)}
+              style={{
+                fontFamily: "'Inter', sans-serif",
+                fontSize: "clamp(12px, 0.85vw, 14px)",
+                fontWeight: 400,
+                color: hoveredLink === link.name ? "#C4972A" : "rgba(255,255,255,0.6)",
+                textDecoration: "none",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                transition: "all 0.3s ease",
+                transform: hoveredLink === link.name ? "translateX(4px)" : "translateX(0)",
+                position: "relative",
+              }}
+            >
+              <ChevronRight
+                size={12}
+                style={{
+                  opacity: hoveredLink === link.name ? 1 : 0,
+                  transform: hoveredLink === link.name ? "translateX(0)" : "translateX(-6px)",
+                  transition: "all 0.3s ease",
+                  color: "#C4972A",
+                }}
+              />
+              <span>{link.name}</span>
+              {hoveredLink === link.name && (
+                <span
+                  style={{
+                    position: "absolute",
+                    bottom: "-2px",
+                    left: "0",
+                    width: "100%",
+                    height: "1.5px",
+                    background: "#C4972A",
+                    borderRadius: "999px",
+                  }}
+                />
+              )}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+// ── Footer Services Column ───────────────────────────────────────────────────
+function FooterServices({ inView }) {
+  const [hoveredService, setHoveredService] = useState(null);
+
+  return (
+    <div
+      className="footer-services"
+      style={{
+        opacity: inView ? 1 : 0,
+        transform: inView ? "translateY(0)" : "translateY(20px)",
+        transition: "opacity 0.6s ease 0.2s, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s",
+      }}
+    >
+      <h4
+        style={{
+          fontFamily: "'Inter', sans-serif",
+          fontSize: "clamp(13px, 1vw, 15px)",
+          fontWeight: 700,
+          color: "#ffffff",
+          marginBottom: "16px",
+          letterSpacing: "0.02em",
+        }}
+      >
+        Our Services
+      </h4>
+      <ul
+        style={{
+          listStyle: "none",
+          padding: 0,
+          margin: 0,
+          display: "flex",
+          flexDirection: "column",
+          gap: "8px",
+        }}
+      >
+        {SERVICES_LIST.map((service) => {
+          const Icon = service.icon;
+          const isHovered = hoveredService === service.name;
+          return (
+            <li key={service.name}>
+              <a
+                href={`/services/${service.name.toLowerCase().replace(/\s+/g, "-")}`}
+                onMouseEnter={() => setHoveredService(service.name)}
+                onMouseLeave={() => setHoveredService(null)}
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: "clamp(12px, 0.85vw, 14px)",
+                  fontWeight: 400,
+                  color: isHovered ? "#C4972A" : "rgba(255,255,255,0.6)",
+                  textDecoration: "none",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  transition: "all 0.3s ease",
+                  transform: isHovered ? "translateX(4px)" : "translateX(0)",
+                }}
+              >
+                <Icon
+                  size={14}
+                  style={{
+                    color: isHovered ? "#C4972A" : "rgba(255,255,255,0.2)",
+                    transition: "color 0.3s ease",
+                  }}
+                />
+                <span>{service.name}</span>
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
+// ── Footer Contact Column ────────────────────────────────────────────────────
+function FooterContact({ inView }) {
+  const [hoveredCta, setHoveredCta] = useState(false);
+
+  return (
+    <div
+      className="footer-contact"
+      style={{
+        opacity: inView ? 1 : 0,
+        transform: inView ? "translateY(0)" : "translateY(20px)",
+        transition: "opacity 0.6s ease 0.3s, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.3s",
+      }}
+    >
+      <h4
+        style={{
+          fontFamily: "'Inter', sans-serif",
+          fontSize: "clamp(13px, 1vw, 15px)",
+          fontWeight: 700,
+          color: "#ffffff",
+          marginBottom: "16px",
+          letterSpacing: "0.02em",
+        }}
+      >
+        Get in Touch
+      </h4>
+
+      {/* Contact Items */}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "12px",
+          marginBottom: "20px",
+        }}
+      >
+        <a
+          href="tel:+2341234567890"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            fontFamily: "'Inter', sans-serif",
+            fontSize: "clamp(12px, 0.85vw, 14px)",
+            fontWeight: 400,
+            color: "rgba(255,255,255,0.7)",
+            textDecoration: "none",
+            transition: "color 0.3s ease",
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.color = "#C4972A"}
+          onMouseLeave={(e) => e.currentTarget.style.color = "rgba(255,255,255,0.7)"}
+        >
+          <Phone size={16} color="#C4972A" />
+          <span>+234 123 456 7890</span>
+        </a>
+
+        <a
+          href="mailto:rasoaf24@gmail.com"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            fontFamily: "'Inter', sans-serif",
+            fontSize: "clamp(12px, 0.85vw, 14px)",
+            fontWeight: 400,
+            color: "rgba(255,255,255,0.7)",
+            textDecoration: "none",
+            transition: "color 0.3s ease",
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.color = "#C4972A"}
+          onMouseLeave={(e) => e.currentTarget.style.color = "rgba(255,255,255,0.7)"}
+        >
+          <Mail size={16} color="#C4972A" />
+          <span>rasoaf24@gmail.com</span>
+        </a>
+
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            fontFamily: "'Inter', sans-serif",
+            fontSize: "clamp(12px, 0.85vw, 14px)",
+            fontWeight: 400,
+            color: "rgba(255,255,255,0.7)",
+          }}
+        >
+          <MapPin size={16} color="#C4972A" />
+          <span>Lagos, Nigeria</span>
+        </div>
+      </div>
+
+      {/* CTA Buttons */}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "10px",
+        }}
+      >
+        <a
+          href="https://wa.me/2341234567890?text=Hello%20RASAOF%20Travels%2C%20I'd%20like%20to%20inquire%20about%20Hajj%20and%20Umrah%20packages"
+          target="_blank"
+          rel="noopener noreferrer"
+          onMouseEnter={() => setHoveredCta(true)}
+          onMouseLeave={() => setHoveredCta(false)}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "8px",
+            fontFamily: "'Inter', sans-serif",
+            fontSize: "clamp(13px, 0.9vw, 15px)",
+            fontWeight: 600,
+            color: "#ffffff",
+            background: "#25D366",
+            padding: "clamp(10px, 1vw, 12px) clamp(20px, 2vw, 28px)",
+            borderRadius: "12px",
+            textDecoration: "none",
+            transition: "all 0.3s cubic-bezier(0.25, 1, 0.5, 1)",
+            boxShadow: hoveredCta
+              ? "0 4px 24px rgba(37, 211, 102, 0.45)"
+              : "0 4px 16px rgba(37, 211, 102, 0.25)",
+            transform: hoveredCta ? "translateY(-2px) scale(1.02)" : "translateY(0) scale(1)",
+            width: "100%",
+            animation: hoveredCta ? "cta-pulse 2s ease-in-out infinite" : "none",
+          }}
+        >
+          <MessageCircle size={18} />
+          <span>Chat on WhatsApp</span>
+        </a>
+
+        <a
+          href="/contact"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "8px",
+            fontFamily: "'Inter', sans-serif",
+            fontSize: "clamp(13px, 0.9vw, 15px)",
+            fontWeight: 500,
+            color: "rgba(255,255,255,0.8)",
+            background: "rgba(255,255,255,0.06)",
+            padding: "clamp(10px, 1vw, 12px) clamp(20px, 2vw, 28px)",
+            borderRadius: "12px",
+            textDecoration: "none",
+            border: "1px solid rgba(255,255,255,0.06)",
+            transition: "all 0.3s ease",
+            width: "100%",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "rgba(196,151,42,0.1)";
+            e.currentTarget.style.borderColor = "rgba(196,151,42,0.2)";
+            e.currentTarget.style.color = "#C4972A";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "rgba(255,255,255,0.06)";
+            e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)";
+            e.currentTarget.style.color = "rgba(255,255,255,0.8)";
+          }}
+        >
+          <span>Get Consultation</span>
+          <ArrowRight size={16} />
+        </a>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Footer — Main Component
+// ─────────────────────────────────────────────────────────────────────────────
+export default function Footer() {
+  const [sectionRef, inView] = useInView(0.05);
+  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+
+  useEffect(() => {
+    setCurrentYear(new Date().getFullYear());
+  }, []);
+
+  return (
+    <>
       <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400;1,600;1,700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,450;14..32,500;14..32,600;14..32,700;14..32,800&display=swap');
+
+        @keyframes cta-pulse {
+          0%, 100% { box-shadow: 0 4px 24px rgba(37, 211, 102, 0.45); }
+          50% { box-shadow: 0 4px 32px rgba(37, 211, 102, 0.65); }
+        }
+
+        .footer-section {
+          background: #0a0a0e;
+          position: relative;
+          overflow: hidden;
+        }
+
+        /* Decorative top line */
+        .footer-section::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 50%;
+          transform: translateX(-50%);
+          width: clamp(80px, 20vw, 200px);
+          height: 2px;
+          background: linear-gradient(90deg, transparent, #C4972A, transparent);
+          border-radius: 999px;
+        }
+
+        /* Subtle background glow */
+        .footer-section::after {
+          content: '';
+          position: absolute;
+          bottom: 0;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 60%;
+          height: 30%;
+          background: radial-gradient(ellipse at center, rgba(196,151,42,0.03) 0%, transparent 70%);
+          pointer-events: none;
+        }
+
+        .footer-container {
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: clamp(48px, 8vh, 72px) clamp(16px, 4vw, 48px) clamp(32px, 4vh, 48px);
+          position: relative;
+          z-index: 1;
+        }
+
+        /* ── Grid ────────────────────────────────────────────────────────── */
+        .footer-grid {
+          display: grid;
+          grid-template-columns: 1.2fr 1fr 1fr 1.2fr;
+          gap: clamp(32px, 4vw, 48px);
+          padding-bottom: clamp(32px, 4vh, 48px);
+          border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        /* ── Bottom Bar ──────────────────────────────────────────────────── */
+        .footer-bottom {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          justify-content: space-between;
+          gap: 16px;
+          padding-top: clamp(20px, 2vh, 28px);
+          font-family: 'Inter', sans-serif;
+          font-size: clamp(11px, 0.8vw, 13px);
+          font-weight: 400;
+          color: rgba(255,255,255,0.35);
+        }
+
+        .footer-bottom .trust-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          color: rgba(196,151,42,0.6);
+          font-weight: 500;
+        }
+
+        .footer-bottom .trust-badge svg {
+          color: #C4972A;
+        }
+
+        .footer-bottom-links {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          gap: 16px;
+        }
+
+        .footer-bottom-links a {
+          color: rgba(255,255,255,0.35);
+          text-decoration: none;
+          transition: color 0.3s ease;
+        }
+
+        .footer-bottom-links a:hover {
+          color: #C4972A;
+        }
+
+        .footer-bottom-links .divider {
+          width: 3px;
+          height: 3px;
+          border-radius: 50%;
+          background: rgba(255,255,255,0.15);
+        }
+
+        /* ── Responsive ──────────────────────────────────────────────────── */
+
+        /* Tablet: 2 columns */
+        @media (max-width: 1024px) {
+          .footer-grid {
+            grid-template-columns: 1fr 1fr;
+            gap: clamp(32px, 4vw, 40px);
+          }
+        }
+
+        /* Mobile: 1 column */
         @media (max-width: 768px) {
-          footer .bottom-bar {
+          .footer-container {
+            padding: clamp(36px, 5vh, 48px) clamp(14px, 3vw, 20px) clamp(24px, 3vh, 32px);
+          }
+          .footer-grid {
+            grid-template-columns: 1fr;
+            gap: 32px;
+          }
+          .footer-bottom {
             flex-direction: column;
             text-align: center;
           }
-          .back-to-top {
-            bottom: 20px;
-            left: 20px;
-            width: 40px;
-            height: 40px;
+          .footer-bottom-links {
+            justify-content: center;
+            gap: 12px;
           }
         }
+
+        @media (max-width: 480px) {
+          .footer-grid {
+            gap: 24px;
+          }
+          .footer-bottom-links {
+            gap: 8px;
+          }
+          .footer-bottom-links .divider {
+            display: none;
+          }
+        }
+
+        /* ── Reduced Motion ──────────────────────────────────────────────── */
         @media (prefers-reduced-motion: reduce) {
-          * {
-            animation-duration: 0.01ms !important;
-            transition-duration: 0.01ms !important;
+          .footer-brand,
+          .footer-links,
+          .footer-services,
+          .footer-contact {
+            opacity: 1 !important;
+            transform: none !important;
+            transition: none !important;
+          }
+          .footer-section::before {
+            animation: none !important;
+          }
+        }
+
+        /* ── Hover: no touch devices ────────────────────────────────────── */
+        @media (hover: none) {
+          .footer-brand a,
+          .footer-links a,
+          .footer-services a,
+          .footer-contact a {
+            transition: none !important;
+          }
+          .footer-brand a:hover,
+          .footer-links a:hover,
+          .footer-services a:hover,
+          .footer-contact a:hover {
+            transform: none !important;
           }
         }
       `}</style>
-    </footer>
+
+      <footer className="footer-section" ref={sectionRef} role="contentinfo">
+        <div className="footer-container">
+          {/* Main Footer Grid */}
+          <div className="footer-grid">
+            <FooterBrand inView={inView} />
+            <FooterLinks inView={inView} />
+            <FooterServices inView={inView} />
+            <FooterContact inView={inView} />
+          </div>
+
+          {/* Bottom Bar */}
+          <div className="footer-bottom">
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                alignItems: "center",
+                gap: "12px",
+              }}
+            >
+              <span>
+                © {currentYear} RASAOF Travels and Tours Limited. All rights reserved.
+              </span>
+            </div>
+
+            <div className="footer-bottom-links">
+              <span className="trust-badge">
+                <Shield size={14} />
+                <span>Licensed & Trusted Travel Operator</span>
+              </span>
+              <span className="divider" aria-hidden="true" />
+              <a href="/privacy-policy">Privacy Policy</a>
+              <span className="divider" aria-hidden="true" />
+              <a href="/terms">Terms & Conditions</a>
+              <span className="divider" aria-hidden="true" />
+              <a href="/refund-policy">Refund Policy</a>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </>
   );
 }

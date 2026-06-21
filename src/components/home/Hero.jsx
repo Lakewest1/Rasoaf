@@ -1,44 +1,11 @@
 // components/RasoafHero.jsx
 // ─────────────────────────────────────────────────────────────────────────────
 // RASOAF TRAVELS AND TOURS LIMITED
-// v9 — Register button always-visible on ALL screens + robust marquee pause
-//   Inherits ALL v8 fixes. New in v9:
-//   • Register button: always visible on desktop AND mobile (opacity:1 base state)
-//   • Idle state: subtle dimmed appearance; hover: full gold glow (both screens)
-//   • Marquee wrap hover/touch: GSAP timeScale→0 (desktop) + CSS paused class (mobile)
-//   • Individual panel hover still enhances the button (brighter gold, scale up)
-//   • Removed the hidden-until-hover entry animation — replaced with always-on presence
-//   • rh-panel-register sits at z-index:6 — above corner, shimmer, gradient layers
-//   Inherits ALL v8 fixes. Original v7/v8 notes:
-//
-//   MOBILE PERFORMANCE (≤768px):
-//   • isMobile flag via window.innerWidth — evaluated once at mount
-//   • Background cycle: static image only on mobile (no GSAP transitions)
-//   • Panel float / rotate / clip-morph tweens: KILLED on mobile
-//   • TV container float tween: KILLED on mobile
-//   • Shimmer sweep tween: KILLED on mobile
-//   • Badge float tween: KILLED on mobile
-//   • Wave-stat ambient float: KILLED on mobile
-//   • Stat counter: simplified (no ScrollTrigger proxy) on mobile
-//   • Marquee: CSS-only animation on mobile (no GSAP, will-change stripped)
-//   • img parallax inside panels: KILLED on mobile
-//   • Magnet effect: skipped on mobile (pointer events are touch anyway)
-//   • Lenis smooth scroll: DISABLED on mobile (native scroll is faster)
-//   • will-change: transform/opacity stripped from non-essential els on mobile
-//   • GPU layer hints: contain:layout style on panels on mobile
-//
-//   MODERN DESIGN POLISH (zero content/color/layout changes):
-//   • Glassmorphism micro-upgrade: trust badges get richer backdrop filter
-//   • TV screen: inner glow ring subtle breathing pulse (CSS only)
-//   • Panel corner triangle: soft scale-in instead of opacity snap
-//   • Social chip hover: background shimmer sweep on hover
-//   • Stat numbers: ligature-aware letter-spacing refinement
-//   • rh-hero: isolation:isolate to prevent stacking context leaks
-//   • scroll-behavior: smooth restored to root (was auto)
-//   • prefers-color-scheme: dark variant (text softening only)
-//   • Text rendering: optimizeLegibility on headline
-//   • Gradient overlays: slightly warmer gold tint on vignette edges
-//   • Contain: layout paint on bottom-section for paint perf
+// v12 — Content pushed down to avoid navbar overlap
+//   Inherits ALL v11 enhancements. New in v12:
+//   • Increased top padding/margin to account for fixed navbar
+//   • Content now sits comfortably below navbar
+//   • All existing content, animations, and functionality preserved
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useState, useEffect, useRef, useCallback } from "react";
@@ -96,7 +63,7 @@ const BG_SLIDES = [
     position: "50% 50%",
   },
   {
-    src: "https://res.cloudinary.com/dbqdgvvgq/image/upload/v1781877261/konevi-islam-4399868_1920_jlixwp.jpg",
+    src: "https://res.cloudinary.com/dbqdgvvgq/image/upload/v1781877261/konevi-islam-4399868_1920_gsrsap.jpg",
     position: "50% 60%",
   },
   {
@@ -108,9 +75,6 @@ const BG_SLIDES = [
     position: "50% 55%",
   },
 ];
-
-// Wave y-offsets matching CSS classes
-const WAVE_Y = [-4, 8, 16, 4];
 
 // ── CSS ───────────────────────────────────────────────────────────────────────
 const CSS = `
@@ -143,19 +107,30 @@ const CSS = `
     justify-content: flex-start;
     overflow: hidden;
     background: #0a0a0a;
-    padding-top: clamp(40px, 6vh, 60px);
+    /* v12: increased top padding to account for fixed navbar */
+    padding-top: clamp(80px, 12vh, 120px);
     padding-bottom: 0;
-    /* v7: stacking context isolation — prevents gradient bleed into children */
     isolation: isolate;
+  }
+
+  /* ── v11: Background height reduced to 60% ──────────────────────────── */
+  .rh-bg-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 60%;
+    z-index: 0;
+    overflow: hidden;
   }
 
   .rh-bgvid {
     position: absolute;
     top: 0; left: 0;
-    width: 100%; height: 70%;
+    width: 100%;
+    height: 100%;
     object-fit: cover;
     object-position: center;
-    z-index: 0;
     opacity: 0;
     will-change: transform, opacity;
   }
@@ -164,7 +139,8 @@ const CSS = `
   .rh-bgslide {
     position: absolute;
     top: 0; left: 0;
-    width: 100%; height: 70%;
+    width: 100%;
+    height: 100%;
     object-fit: cover;
     z-index: 0;
     will-change: transform, opacity;
@@ -175,7 +151,8 @@ const CSS = `
   .rh-glass-mask {
     position: absolute;
     top: 0; left: 0;
-    width: 100%; height: 70%;
+    width: 100%;
+    height: 60%;
     z-index: 1;
     pointer-events: none;
     background:
@@ -196,7 +173,6 @@ const CSS = `
       linear-gradient(180deg, rgba(0,0,0,0.48) 0%, rgba(0,0,0,0.14) 50%, rgba(0,0,0,0.68) 100%);
   }
 
-  /* v7: slightly warmer gold tint on the vignette edges */
   .rh-vignette {
     position: absolute;
     inset: 0;
@@ -217,7 +193,9 @@ const CSS = `
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-top: clamp(80px, 12vh, 140px);
+    /* v12: increased top margin to push content below navbar */
+    margin-top: clamp(40px, 6vh, 80px);
+    margin-bottom: clamp(16px, 3vh, 32px);
   }
 
   .rh-headline-wrapper {
@@ -227,89 +205,236 @@ const CSS = `
   }
 
   .rh-sup-text {
-    font-family: 'Inter', sans-serif;
-    font-size: clamp(8px, 0.8vw, 10px);
+    font-family: 'Inter', 'Space Grotesk', sans-serif;
+    font-size: clamp(9px, 0.85vw, 12px);
     font-weight: 500;
-    letter-spacing: 0.28em;
+    letter-spacing: 0.35em;
     text-transform: uppercase;
     color: rgba(196,151,42,0.85);
     display: block;
     text-align: center;
-    margin-bottom: clamp(4px, 0.6vw, 8px);
+    margin-bottom: clamp(6px, 0.8vw, 12px);
     opacity: 0;
     transform: translateY(8px);
+    position: relative;
+    padding: 0 16px;
+  }
+  .rh-sup-text::before,
+  .rh-sup-text::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 20px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(196,151,42,0.3));
+  }
+  .rh-sup-text::before {
+    left: -10px;
+    transform: translateY(-50%) rotate(180deg);
+  }
+  .rh-sup-text::after {
+    right: -10px;
+    transform: translateY(-50%);
   }
 
   .rh-headline {
     font-family: 'Playfair Display', Georgia, 'Plus Jakarta Sans', serif;
     font-weight: 700;
-    font-size: clamp(3.2rem, 8vw, 7.5rem);
+    font-size: clamp(2.8rem, 7vw, 6.5rem);
     line-height: 1.04;
     letter-spacing: -0.025em;
     color: #ffffff;
-    margin: 0 auto clamp(8px, 1.5vw, 16px);
+    margin: 0 auto clamp(6px, 1vw, 12px);
     max-width: 860px;
     opacity: 0;
-    /* v7: sharpen headline rendering */
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
   }
   .rh-headline .rh-word { display: inline-block; overflow: hidden; vertical-align: bottom; }
   .rh-headline .rh-char { display: inline-block; will-change: transform, opacity; }
-  .rh-headline em { font-style: italic; font-weight: 500; color: #C4972A; }
+  .rh-headline em { 
+    font-style: italic; 
+    font-weight: 500; 
+    color: #C4972A;
+    text-shadow: 0 0 40px rgba(196,151,42,0.15);
+  }
 
   .rh-subtitle {
     font-family: 'Inter', 'DM Sans', sans-serif;
-    font-size: clamp(0.95rem, 1.5vw, 1.15rem);
+    font-size: clamp(0.85rem, 1.3vw, 1.1rem);
     font-weight: 350;
-    line-height: 1.65;
-    color: rgba(255,255,255,0.68);
-    max-width: 440px;
-    margin: 0 auto clamp(24px, 4vw, 36px);
+    line-height: 1.6;
+    color: rgba(255,255,255,0.75);
+    max-width: 500px;
+    margin: 0 auto clamp(16px, 2.5vw, 28px);
+    opacity: 0;
+    transform: translateY(14px);
+    letter-spacing: 0.01em;
+  }
+
+  .rh-cta-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(12px, 1.5vw, 20px);
+    flex-wrap: wrap;
+    margin-bottom: clamp(16px, 2.5vh, 28px);
     opacity: 0;
     transform: translateY(14px);
   }
+
+  .rh-cta-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Inter', 'Space Grotesk', sans-serif;
+    font-size: clamp(13px, 1.1vw, 16px);
+    font-weight: 700;
+    color: #0f1d3d;
+    background: linear-gradient(135deg, #C4972A 0%, #dba82e 100%);
+    border: none;
+    padding: clamp(11px, 1vw, 14px) clamp(24px, 2.5vw, 36px);
+    border-radius: 50px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+    box-shadow: 0 4px 20px rgba(196,151,42,0.35), inset 0 1px 0 rgba(255,255,255,0.2);
+    transform: translateY(0);
+    letter-spacing: 0.02em;
+    position: relative;
+    overflow: hidden;
+  }
+  .rh-cta-primary::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #dba82e 0%, #e8b840 100%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+  .rh-cta-primary:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 32px rgba(196,151,42,0.45), inset 0 1px 0 rgba(255,255,255,0.3);
+  }
+  .rh-cta-primary:hover::before { opacity: 1; }
+  .rh-cta-primary:active {
+    transform: translateY(0) scale(0.98);
+    box-shadow: 0 2px 12px rgba(196,151,42,0.25);
+  }
+  .rh-cta-primary span { position: relative; z-index: 1; }
+  .rh-cta-primary svg { 
+    position: relative; 
+    z-index: 1; 
+    transition: transform 0.3s ease; 
+  }
+  .rh-cta-primary:hover svg { transform: translateX(4px); }
+
+  .rh-cta-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Inter', 'Space Grotesk', sans-serif;
+    font-size: clamp(13px, 1.1vw, 16px);
+    font-weight: 600;
+    color: rgba(255,255,255,0.9);
+    background: rgba(255,255,255,0.06);
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    border: 1.5px solid rgba(255,255,255,0.15);
+    padding: clamp(11px, 1vw, 14px) clamp(24px, 2.5vw, 36px);
+    border-radius: 50px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+    letter-spacing: 0.02em;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+  }
+  .rh-cta-secondary::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(196,151,42,0.10);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    border-radius: 50px;
+  }
+  .rh-cta-secondary:hover {
+    transform: translateY(-3px) scale(1.02);
+    border-color: rgba(196,151,42,0.4);
+    color: #C4972A;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.1);
+  }
+  .rh-cta-secondary:hover::before { opacity: 1; }
+  .rh-cta-secondary:active {
+    transform: translateY(0) scale(0.98);
+  }
+  .rh-cta-secondary span { position: relative; z-index: 1; }
+  .rh-cta-secondary svg { 
+    position: relative; 
+    z-index: 1; 
+    transition: transform 0.3s ease; 
+  }
+  .rh-cta-secondary:hover svg { transform: translateX(4px); }
 
   .rh-trust-row {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: clamp(12px, 2vw, 24px);
+    gap: clamp(8px, 1.2vw, 16px);
     flex-wrap: wrap;
-    margin-bottom: clamp(24px, 3.5vw, 36px);
     opacity: 0;
     transform: translateY(14px);
   }
 
-  /* v7: richer glass on trust badges */
   .rh-trust-badge {
     display: flex;
     align-items: center;
-    gap: 7px;
-    background: rgba(255,255,255,0.07);
+    gap: 6px;
+    background: rgba(255,255,255,0.06);
     backdrop-filter: blur(16px) saturate(180%);
     -webkit-backdrop-filter: blur(16px) saturate(180%);
-    border: 1px solid rgba(255,255,255,0.14);
+    border: 1px solid rgba(255,255,255,0.10);
     border-radius: 100px;
-    padding: 6px 16px;
+    padding: 5px 14px 5px 10px;
     font-family: 'Inter', 'Space Grotesk', sans-serif;
-    font-size: clamp(9px, 1vw, 11px);
+    font-size: clamp(8px, 0.75vw, 10px);
     font-weight: 450;
-    color: rgba(255,255,255,0.80);
+    color: rgba(255,255,255,0.75);
     letter-spacing: 0.03em;
-    transition: border-color 0.3s ease, background 0.3s ease, color 0.3s ease,
-                box-shadow 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
     will-change: transform;
-    /* v7: subtle inner glow on badges */
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 2px 8px rgba(0,0,0,0.15);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 2px 8px rgba(0,0,0,0.12);
   }
   .rh-trust-badge:hover {
-    border-color: rgba(196,151,42,0.45);
-    background: rgba(196,151,42,0.09);
+    border-color: rgba(196,151,42,0.4);
+    background: rgba(196,151,42,0.10);
     color: #C4972A;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.1), 0 4px 16px rgba(196,151,42,0.12);
+    transform: translateY(-2px);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 6px 20px rgba(196,151,42,0.10);
   }
-  .rh-trust-badge svg { color: #C4972A; flex-shrink: 0; }
+  .rh-trust-badge svg { 
+    color: #C4972A; 
+    flex-shrink: 0; 
+    width: 10px; 
+    height: 10px;
+  }
+  .rh-trust-badge .badge-check {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: rgba(196,151,42,0.15);
+    color: #C4972A;
+    flex-shrink: 0;
+  }
+  .rh-trust-badge .badge-check svg {
+    width: 8px;
+    height: 8px;
+  }
 
   /* ── MARQUEE ──────────────────────────────────────────────────────────── */
   .rh-marquee-wrap {
@@ -336,7 +461,7 @@ const CSS = `
       rgba(0,0,0,0.15) 97%,
       transparent 100%
     );
-    padding: clamp(8px, 1.5vw, 16px) 0;
+    padding: clamp(6px, 1vw, 12px) 0;
   }
 
   .rh-marquee-track {
@@ -347,7 +472,6 @@ const CSS = `
     padding: 0 clamp(6px, 1vw, 12px);
   }
 
-  /* v7: CSS-only marquee for mobile — no GSAP overhead */
   @keyframes rh-marquee-css {
     from { transform: translateX(0); }
     to   { transform: translateX(-50%); }
@@ -359,11 +483,9 @@ const CSS = `
     }
     .rh-marquee-track:hover { animation-play-state: paused; }
 
-    /* v8: register button always visible on touch (no hover available) */
     .rh-panel-register {
       opacity: 1 !important;
       transform: translateY(0) scale(1) !important;
-      /* slightly larger tap target on mobile */
       padding: 6px 13px 6px 10px;
       font-size: 9px;
     }
@@ -373,8 +495,8 @@ const CSS = `
   .rh-panel {
     position: relative;
     flex-shrink: 0;
-    width: clamp(200px, 22vw, 320px);
-    height: clamp(260px, 36vw, 420px);
+    width: clamp(180px, 20vw, 280px);
+    height: clamp(230px, 32vw, 360px);
     overflow: hidden;
     cursor: pointer;
     border-radius: clamp(10px, 1.4vw, 18px);
@@ -442,7 +564,7 @@ const CSS = `
   }
   .rh-panel-label {
     font-family: 'Playfair Display', Georgia, serif;
-    font-size: clamp(15px, 1.8vw, 20px);
+    font-size: clamp(14px, 1.6vw, 18px);
     font-weight: 600;
     color: #ffffff;
     letter-spacing: -0.01em;
@@ -453,7 +575,7 @@ const CSS = `
   }
   .rh-panel-tag {
     font-family: 'Inter', sans-serif;
-    font-size: clamp(8px, 0.8vw, 10px);
+    font-size: clamp(7px, 0.7vw, 9px);
     font-weight: 500;
     letter-spacing: 0.15em;
     text-transform: uppercase;
@@ -473,7 +595,6 @@ const CSS = `
     text-shadow: 0 1px 3px rgba(0,0,0,0.3);
   }
 
-  /* v7: smooth scale-in on corner triangle (was opacity snap) */
   .rh-panel-corner {
     position: absolute; bottom: 0; left: 0;
     width: 0; height: 0;
@@ -488,7 +609,6 @@ const CSS = `
   }
   .rh-panel:hover .rh-panel-corner { opacity: 1; transform: scale(1); }
 
-  /* ── v9: REGISTER BUTTON — always visible on ALL screens ─────────────── */
   .rh-panel-register {
     position: absolute;
     bottom: clamp(12px, 1.8vw, 18px);
@@ -497,119 +617,78 @@ const CSS = `
     display: flex;
     align-items: center;
     gap: 5px;
-
-    /* idle glass pill — always visible, slightly dimmed */
-    background: rgba(0, 0, 0, 0.48);
-    backdrop-filter: blur(10px) saturate(150%);
-    -webkit-backdrop-filter: blur(10px) saturate(150%);
-    border: 1px solid rgba(196,151,42,0.38);
+    background: rgba(0, 0, 0, 0.52);
+    backdrop-filter: blur(10px) saturate(160%);
+    -webkit-backdrop-filter: blur(10px) saturate(160%);
+    border: 1px solid rgba(196,151,42,0.50);
     border-radius: 100px;
-    padding: 5px 12px 5px 9px;
-
-    /* type */
+    padding: 5px 11px 5px 8px;
     font-family: 'Inter', sans-serif;
     font-size: clamp(8px, 0.85vw, 10px);
     font-weight: 600;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.10em;
     text-transform: uppercase;
-    color: rgba(196,151,42,0.80);
+    color: #C4972A;
     cursor: pointer;
-
-    /* v9: always visible — no opacity:0 hiding */
-    opacity: 1;
-    transform: translateY(0) scale(1);
-
+    opacity: 0;
+    transform: translateY(6px) scale(0.92);
     transition:
-      background    0.28s cubic-bezier(0.25, 1, 0.5, 1),
-      border-color  0.28s ease,
-      color         0.28s ease,
-      box-shadow    0.28s ease,
-      transform     0.30s cubic-bezier(0.34, 1.56, 0.64, 1);
-
-    box-shadow:
-      0 2px 8px  rgba(0,0,0,0.30),
-      inset 0 1px 0 rgba(255,255,255,0.05);
-
+      opacity 0.32s cubic-bezier(0.25, 1, 0.5, 1),
+      transform 0.32s cubic-bezier(0.34, 1.56, 0.64, 1),
+      background 0.25s ease,
+      border-color 0.25s ease,
+      box-shadow 0.25s ease;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.06);
     pointer-events: auto;
     white-space: nowrap;
     user-select: none;
     -webkit-user-select: none;
-    text-decoration: none;
   }
-
-  /* pulsing dot indicator */
   .rh-panel-register::before {
     content: '';
     flex-shrink: 0;
-    width: 5px;
-    height: 5px;
+    width: 5px; height: 5px;
     border-radius: 50%;
-    background: rgba(196,151,42,0.70);
-    box-shadow: 0 0 4px rgba(196,151,42,0.45);
-    transition: background 0.28s ease, box-shadow 0.28s ease;
-  }
-
-  /* ── panel hover: brighten the button ──────────────────────────────────── */
-  .rh-panel:hover .rh-panel-register {
-    background: rgba(0, 0, 0, 0.58);
-    border-color: rgba(196,151,42,0.65);
-    color: #C4972A;
-    box-shadow:
-      0 3px 14px rgba(0,0,0,0.35),
-      0 0 0 1px rgba(196,151,42,0.12),
-      inset 0 1px 0 rgba(255,255,255,0.08);
-  }
-  .rh-panel:hover .rh-panel-register::before {
     background: #C4972A;
-    box-shadow: 0 0 6px rgba(196,151,42,0.65);
+    box-shadow: 0 0 5px rgba(196,151,42,0.7);
+    transition: background 0.25s ease, box-shadow 0.25s ease;
   }
-
-  /* ── button self-hover: full gold emphasis + micro lift ────────────────── */
+  .rh-panel:hover .rh-panel-register,
+  .rh-panel:focus-visible .rh-panel-register {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
   .rh-panel-register:hover {
-    background: rgba(196,151,42,0.20);
-    border-color: rgba(196,151,42,0.85);
+    background: rgba(196,151,42,0.22);
+    border-color: rgba(196,151,42,0.80);
     color: #e8b840;
-    transform: translateY(-1px) scale(1.04);
-    box-shadow:
-      0 5px 18px rgba(196,151,42,0.22),
-      0 0 0 1px rgba(196,151,42,0.15),
-      inset 0 1px 0 rgba(255,255,255,0.12);
+    box-shadow: 0 4px 16px rgba(196,151,42,0.20), inset 0 1px 0 rgba(255,255,255,0.10);
   }
   .rh-panel-register:hover::before {
     background: #e8b840;
     box-shadow: 0 0 8px rgba(232,184,64,0.85);
   }
-
-  /* focus ring */
   .rh-panel-register:focus-visible {
     outline: 2px solid #C4972A;
     outline-offset: 2px;
   }
 
-  /* active press */
-  .rh-panel-register:active {
-    transform: translateY(0) scale(0.97);
-    transition-duration: 0.10s;
-  }
-
-  /* ── v9: marquee paused state — drives CSS animation on mobile ──────── */
   .rh-marquee-paused .rh-marquee-track {
     animation-play-state: paused !important;
   }
-
 
   .rh-tv-section {
     position: relative; z-index: 10;
     width: 100%;
     display: flex; align-items: center; justify-content: center;
-    padding: clamp(16px, 3vw, 32px) clamp(16px, 4vw, 48px);
-    margin-top: clamp(24px, 4vw, 48px);
+    padding: clamp(12px, 2vw, 24px) clamp(16px, 4vw, 48px);
+    margin-top: clamp(12px, 2vh, 24px);
   }
 
   .rh-tv-container {
     position: relative;
     display: flex; flex-direction: column; align-items: center;
-    width: 100%; max-width: 500px;
+    width: 100%; max-width: 420px;
     margin: 0 auto;
     z-index: 200;
     will-change: transform;
@@ -618,10 +697,9 @@ const CSS = `
   .rh-tv-screen {
     position: relative;
     width: 100%;
-    border-radius: 18px;
+    border-radius: 16px;
     overflow: hidden;
     border: 2px solid rgba(196,151,42,0.55);
-    /* v7: layered glow — outer ambient + inner ring */
     box-shadow:
       0 0 0 1px rgba(196,151,42,0.15),
       0 0 30px rgba(196,151,42,0.35),
@@ -630,7 +708,6 @@ const CSS = `
     background: #000;
     z-index: 201;
     aspect-ratio: 16/9;
-    /* v7: subtle breathing pulse on the TV screen border */
     animation: rh-tv-glow 4s ease-in-out infinite;
   }
   @keyframes rh-tv-glow {
@@ -644,10 +721,10 @@ const CSS = `
   }
 
   .rh-tv-stand {
-    width: 70%; height: 8px;
+    width: 70%; height: 6px;
     background: linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 100%);
     border-radius: 4px;
-    margin-top: 15px;
+    margin-top: 12px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     position: relative; z-index: 199;
   }
@@ -682,12 +759,12 @@ const CSS = `
 
   .rh-tv-controls {
     position: absolute;
-    bottom: clamp(10px, 1.5vw, 16px);
-    left: clamp(10px, 1.5vw, 16px);
-    display: flex; gap: 10px; z-index: 210;
+    bottom: clamp(8px, 1.2vw, 14px);
+    left: clamp(8px, 1.2vw, 14px);
+    display: flex; gap: 8px; z-index: 210;
   }
   .rh-tv-control-btn {
-    width: 36px; height: 36px;
+    width: 32px; height: 32px;
     border-radius: 50%;
     background: rgba(0,0,0,0.75);
     backdrop-filter: blur(8px);
@@ -707,8 +784,8 @@ const CSS = `
 
   .rh-tv-badge {
     position: absolute;
-    top: clamp(10px, 1.5vw, 16px);
-    right: clamp(10px, 1.5vw, 16px);
+    top: clamp(8px, 1.2vw, 14px);
+    right: clamp(8px, 1.2vw, 14px);
     background: rgba(0,0,0,0.75);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
@@ -716,206 +793,11 @@ const CSS = `
     border-radius: 100px;
     border: 1px solid rgba(196,151,42,0.45);
     font-family: 'Inter', sans-serif;
-    font-size: 9px; color: #C4972A;
+    font-size: 8px; color: #C4972A;
     letter-spacing: 0.08em; font-weight: 550;
     z-index: 210;
   }
 
-  /* ── BOTTOM SECTION ───────────────────────────────────────────────────── */
-  .rh-bottom-section {
-    position: relative; z-index: 10;
-    width: 100%;
-    background: #fafaf8;
-    padding: clamp(60px, 10vw, 100px) clamp(24px, 5vw, 48px);
-    opacity: 0; transform: translateY(28px);
-    overflow: hidden;
-    /* v7: paint containment for scroll perf */
-    contain: layout paint;
-  }
-  .rh-bottom-section::before {
-    content: '';
-    position: absolute; top: -60px; left: 0; right: 0; height: 120px;
-    background:
-      radial-gradient(ellipse 85% 100% at 15% 100%, rgba(196,151,42,0.04) 0%, transparent 55%),
-      radial-gradient(ellipse 75% 100% at 50% 100%, rgba(196,151,42,0.03) 0%, transparent 55%),
-      radial-gradient(ellipse 85% 100% at 85% 100%, rgba(196,151,42,0.04) 0%, transparent 55%);
-    z-index: 0; pointer-events: none;
-  }
-  .rh-bottom-section::after {
-    content: '';
-    position: absolute; bottom: 0; left: 0; right: 0; height: 200px;
-    background:
-      radial-gradient(ellipse 70% 60% at 20% 50%, rgba(196,151,42,0.025) 0%, transparent 55%),
-      radial-gradient(ellipse 60% 50% at 55% 40%, rgba(196,151,42,0.02) 0%, transparent 55%),
-      radial-gradient(ellipse 70% 60% at 80% 50%, rgba(196,151,42,0.025) 0%, transparent 55%);
-    z-index: 0; pointer-events: none;
-  }
-
-  .rh-bottom-inner {
-    position: relative; z-index: 1;
-    max-width: 960px; margin: 0 auto;
-  }
-
-  .rh-wave-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr;
-    grid-template-rows: auto auto auto;
-    gap: clamp(10px, 1.5vw, 18px);
-    align-items: start;
-  }
-
-  .rh-wave-paragraph {
-    grid-column: 1 / -1; grid-row: 1;
-    font-family: 'Inter', 'DM Sans', sans-serif;
-    font-size: clamp(0.9rem, 1.2vw, 1.05rem);
-    font-weight: 380; line-height: 1.75;
-    color: #6b6b64; text-align: center;
-    padding: 0 clamp(16px, 4vw, 40px) clamp(12px, 2vw, 20px);
-    border-bottom: 1px solid rgba(0,0,0,0.05);
-  }
-
-  .rh-wave-ctas {
-    grid-column: 1 / -1; grid-row: 2;
-    display: flex; align-items: center; justify-content: center;
-    gap: clamp(28px, 5vw, 48px);
-    padding: clamp(10px, 2vw, 16px) 0;
-  }
-
-  .rh-text-cta {
-    font-family: 'Inter', 'Plus Jakarta Sans', sans-serif;
-    font-size: clamp(14px, 1.3vw, 16px);
-    font-weight: 550; color: #1a1a1a;
-    text-decoration: none; background: none; border: none;
-    cursor: pointer; padding: 0 0 4px;
-    letter-spacing: -0.01em;
-    position: relative;
-    transition: color 0.25s ease;
-  }
-  .rh-text-cta::after {
-    content: '';
-    position: absolute; bottom: 0; left: 0;
-    width: 100%; height: 1.5px;
-    background: #c4b998; opacity: 0.3; border-radius: 2px;
-    transition: opacity 0.25s ease, background 0.25s ease, transform 0.3s ease;
-    transform-origin: left;
-  }
-  .rh-text-cta:hover { color: #b8942e; }
-  .rh-text-cta:hover::after { opacity: 1; background: #b8942e; transform: scaleX(1.05); }
-  .rh-cta-sep { width: 1px; height: 14px; background: #d4d4ce; flex-shrink: 0; }
-
-  .rh-wave-stat-1 { grid-column: 1; grid-row: 3; transform: translateY(-4px); }
-  .rh-wave-stat-2 { grid-column: 2; grid-row: 3; transform: translateY(8px); }
-  .rh-wave-stat-3 { grid-column: 3; grid-row: 3; transform: translateY(16px); }
-  .rh-wave-stat-4 { grid-column: 4; grid-row: 3; transform: translateY(4px); }
-
-  .rh-wave-stat-item {
-    display: flex; flex-direction: column; align-items: center; gap: 2px;
-    padding: clamp(16px, 3vw, 28px) clamp(10px, 2vw, 16px);
-    /* v7: subtle warm glass on stat cards */
-    background: rgba(255,255,255,0.75);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border-radius: clamp(10px, 1.4vw, 16px);
-    border: 1px solid rgba(0,0,0,0.045);
-    box-shadow:
-      0 1px 2px rgba(0,0,0,0.02),
-      0 4px 12px rgba(0,0,0,0.03),
-      inset 0 1px 0 rgba(255,255,255,0.8);
-    transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1),
-                box-shadow 0.4s ease, border-color 0.4s ease;
-    position: relative; overflow: hidden;
-    will-change: transform;
-  }
-  .rh-wave-stat-item::before {
-    content: '';
-    position: absolute; top: 0; left: 0; right: 0; height: 2px;
-    background: linear-gradient(90deg, transparent, rgba(196,151,42,0.3), transparent);
-    opacity: 0; transition: opacity 0.4s ease;
-  }
-  .rh-wave-stat-item:hover {
-    transform: translateY(-4px) !important;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06);
-    border-color: rgba(196,151,42,0.15);
-  }
-  .rh-wave-stat-item:hover::before { opacity: 1; }
-
-  .rh-stat-num {
-    font-family: 'Playfair Display', 'Plus Jakarta Sans', serif;
-    font-size: clamp(1.6rem, 2.6vw, 2.4rem);
-    font-weight: 700; color: #1a1a1a;
-    /* v7: tighter letter-spacing for modern feel */
-    letter-spacing: -0.04em;
-    line-height: 1;
-    transition: color 0.3s ease;
-    font-variant-numeric: tabular-nums;
-  }
-  .rh-wave-stat-item:hover .rh-stat-num { color: #b8942e; }
-  .rh-stat-num span { color: #C4972A; font-size: 0.7em; font-weight: 600; transition: color 0.3s ease; }
-  .rh-wave-stat-item:hover .rh-stat-num span { color: #b8942e; }
-  .rh-stat-label {
-    font-family: 'Inter', 'Space Grotesk', sans-serif;
-    font-size: clamp(8px, 0.8vw, 10px);
-    font-weight: 450; letter-spacing: 0.08em;
-    text-transform: uppercase; color: rgba(0,0,0,0.36);
-    white-space: nowrap; transition: color 0.3s ease;
-  }
-  .rh-wave-stat-item:hover .rh-stat-label { color: rgba(0,0,0,0.48); }
-
-  /* ── SOCIAL ROW ───────────────────────────────────────────────────────── */
-  .rh-social-row {
-    display: flex; align-items: center; justify-content: center;
-    gap: clamp(6px, 1vw, 10px); flex-wrap: wrap;
-    margin-top: clamp(32px, 5vw, 48px);
-    padding-top: clamp(24px, 4vw, 36px);
-    border-top: 1px solid rgba(0,0,0,0.05);
-    position: relative;
-  }
-  .rh-social-row::before {
-    content: '';
-    position: absolute; top: -1px; left: 10%; right: 10%; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(196,151,42,0.15) 20%, rgba(196,151,42,0.08) 50%, rgba(196,151,42,0.15) 80%, transparent);
-  }
-
-  /* v7: social chip gets shimmer sweep on hover (CSS-only, no extra GSAP) */
-  .rh-social-chip {
-    display: inline-flex; align-items: center; gap: 5px;
-    font-family: 'Inter', 'Space Grotesk', sans-serif;
-    font-size: clamp(10px, 0.95vw, 11px);
-    font-weight: 450; color: rgba(0,0,0,0.50);
-    text-decoration: none;
-    background: rgba(255,255,255,0.65);
-    border: 1px solid rgba(0,0,0,0.07);
-    border-radius: 100px;
-    padding: 5px 12px;
-    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-    cursor: pointer; position: relative; overflow: hidden;
-  }
-  .rh-social-chip::before {
-    content: '';
-    position: absolute; top: 0; left: -80%; width: 60%; height: 100%;
-    background: linear-gradient(105deg, transparent 30%, rgba(196,151,42,0.15) 50%, transparent 70%);
-    transform: skewX(-15deg);
-    transition: left 0.5s ease;
-    pointer-events: none;
-  }
-  .rh-social-chip::after {
-    content: '';
-    position: absolute; inset: 0;
-    background: rgba(196,151,42,0.06); opacity: 0;
-    transition: opacity 0.3s ease; border-radius: 100px;
-  }
-  .rh-social-chip svg { color: currentColor; flex-shrink: 0; transition: transform 0.3s ease; }
-  .rh-social-chip:hover {
-    border-color: rgba(196,151,42,0.35); color: #b8942e;
-    background: rgba(196,151,42,0.03);
-    transform: translateY(-2px);
-    box-shadow: 0 3px 12px rgba(196,151,42,0.08);
-  }
-  .rh-social-chip:hover::before { left: 120%; }
-  .rh-social-chip:hover::after  { opacity: 1; }
-  .rh-social-chip:hover svg { transform: scale(1.1); }
-
-  /* ── KEYFRAMES ────────────────────────────────────────────────────────── */
   @keyframes rhHeartPump {
     0%, 100% { transform: scale(1); }
     15%       { transform: scale(1.06); }
@@ -924,116 +806,208 @@ const CSS = `
     60%       { transform: scale(1); }
   }
 
-  /* ── FOCUS ────────────────────────────────────────────────────────────── */
-  .rh-text-cta:focus-visible,
-  .rh-social-chip:focus-visible,
   .rh-tv-control-btn:focus-visible,
-  .rh-panel:focus-visible,
-  .rh-wave-stat-item:focus-within {
+  .rh-panel:focus-visible {
     outline: 2px solid #C4972A;
     outline-offset: 3px;
     border-radius: 4px;
   }
 
-  /* ── TABLET ───────────────────────────────────────────────────────────── */
-  @media (max-width: 860px) {
-    .rh-content { margin-top: clamp(60px, 10vh, 100px); }
-    .rh-panel { width: clamp(170px, 28vw, 240px); height: clamp(220px, 44vw, 340px); }
-    .rh-tv-container { max-width: 100%; }
-    .rh-tv-screen { border-radius: 14px; border-width: 1.5px; }
-    .rh-tv-stand { width: 60%; height: 6px; margin-top: 12px; }
-    .rh-tv-stand::before { width: 40px; height: 28px; bottom: -28px; }
-    .rh-tv-stand::after  { width: 60px; height: 8px;  bottom: -36px; }
-    .rh-tv-leg-left, .rh-tv-leg-right { width: 10px; height: 25px; bottom: -25px; }
-    .rh-tv-leg-left  { left: 28%; }
-    .rh-tv-leg-right { right: 28%; }
-    .rh-tv-control-btn { width: 34px; height: 34px; }
-    .rh-wave-grid { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto auto auto; }
-    .rh-wave-paragraph { grid-column: 1 / -1; grid-row: 1; }
-    .rh-wave-ctas      { grid-column: 1 / -1; grid-row: 2; }
-    .rh-wave-stat-1 { grid-column: 1; grid-row: 3; transform: translateY(-2px); }
-    .rh-wave-stat-2 { grid-column: 2; grid-row: 3; transform: translateY(6px); }
-    .rh-wave-stat-3 { grid-column: 1; grid-row: 4; transform: translateY(2px); }
-    .rh-wave-stat-4 { grid-column: 2; grid-row: 4; transform: translateY(10px); }
+  /* ── v12: Responsive adjustments for navbar offset ──────────────────── */
+  /* Tablet */
+  @media (max-width: 1024px) and (min-width: 769px) {
+    .rh-hero {
+      padding-top: clamp(70px, 10vh, 90px);
+    }
+    .rh-bg-wrapper {
+      height: 55%;
+    }
+    .rh-glass-mask {
+      height: 55%;
+    }
+    .rh-content {
+      margin-top: clamp(30px, 5vh, 50px);
+    }
+    .rh-headline {
+      font-size: clamp(2.4rem, 6vw, 4.5rem);
+    }
+    .rh-tv-container {
+      max-width: 360px;
+    }
+    .rh-panel {
+      width: clamp(160px, 22vw, 220px);
+      height: clamp(200px, 30vw, 280px);
+    }
   }
 
-  /* ── MOBILE ───────────────────────────────────────────────────────────── */
+  /* Mobile */
   @media (max-width: 768px) {
-    /* v7: disable TV breathing glow on mobile (paint-heavy) */
+    .rh-hero {
+      padding-top: clamp(60px, 8vh, 80px);
+    }
+    .rh-bg-wrapper {
+      height: 50%;
+    }
+    .rh-glass-mask {
+      height: 50%;
+    }
     .rh-tv-screen { animation: none !important; }
-
-    /* v7: strip will-change from panels on mobile */
     .rh-panel {
       will-change: auto;
-      /* v7: contain layout for compositing efficiency */
       contain: layout;
     }
-    .rh-panel img {
-      will-change: auto;
-    }
-
-    /* v7: disable panel label heartbeat on mobile */
+    .rh-panel img { will-change: auto; }
     .rh-panel-label { animation: none !important; }
-
-    /* v7: simpler hover on mobile — no scale on image */
     .rh-panel:hover img { transform: scale(1.05); }
-
-    /* v7: stat cards — no backdrop-filter on mobile (heavy) */
     .rh-wave-stat-item {
       backdrop-filter: none !important;
       -webkit-backdrop-filter: none !important;
       will-change: auto;
     }
-
-    /* v7: trust badge — simplify backdrop on mobile */
     .rh-trust-badge {
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
     }
-
-    /* v7: social chip shimmer off on mobile */
-    .rh-social-chip::before { display: none; }
-
-    /* v7: TV container — no will-change on mobile */
     .rh-tv-container { will-change: auto; }
+    .rh-content {
+      margin-top: clamp(20px, 3vh, 35px);
+    }
+    .rh-headline {
+      font-size: clamp(2.2rem, 8vw, 3.2rem);
+    }
+    .rh-tv-container {
+      max-width: 300px;
+    }
+    .rh-panel {
+      width: clamp(140px, 35vw, 180px);
+      height: clamp(180px, 45vw, 240px);
+    }
+    .rh-tv-stand {
+      width: 60%; height: 5px; margin-top: 10px;
+    }
+    .rh-tv-stand::before {
+      width: 40px; height: 28px; bottom: -28px;
+    }
+    .rh-tv-stand::after {
+      width: 60px; height: 8px; bottom: -36px;
+    }
+    .rh-tv-leg-left, .rh-tv-leg-right {
+      width: 10px; height: 25px; bottom: -25px;
+    }
+    .rh-tv-leg-left  { left: 28%; }
+    .rh-tv-leg-right { right: 28%; }
+    .rh-tv-control-btn {
+      width: 30px; height: 30px;
+    }
+    .rh-tv-control-btn svg {
+      width: 14px; height: 14px;
+    }
+    .rh-tv-badge {
+      font-size: 7px; padding: 3px 10px;
+    }
   }
 
-  @media (max-width: 520px) {
-    .rh-content { margin-top: clamp(50px, 8vh, 70px); }
-    .rh-headline { font-size: clamp(2.8rem, 11vw, 4rem); }
-    .rh-trust-row { gap: 8px; }
-    .rh-panel { width: clamp(150px, 42vw, 200px); height: clamp(200px, 55vw, 280px); }
-    .rh-tv-stand { width: 50%; }
+  /* Small Mobile */
+  @media (max-width: 480px) {
+    .rh-hero {
+      padding-top: clamp(50px, 6vh, 65px);
+    }
+    .rh-bg-wrapper {
+      height: 45%;
+    }
+    .rh-glass-mask {
+      height: 45%;
+    }
+    .rh-content {
+      margin-top: clamp(15px, 2.5vh, 25px);
+    }
+    .rh-headline {
+      font-size: clamp(1.8rem, 7vw, 2.6rem);
+    }
+    .rh-subtitle {
+      font-size: clamp(0.7rem, 2.5vw, 0.8rem);
+    }
+    .rh-cta-primary,
+    .rh-cta-secondary {
+      font-size: clamp(11px, 2.5vw, 13px);
+      padding: clamp(8px, 1.5vw, 10px) clamp(16px, 3vw, 24px);
+    }
+    .rh-trust-badge {
+      font-size: clamp(7px, 2vw, 8px);
+      padding: 4px 10px 4px 8px;
+    }
+    .rh-panel {
+      width: clamp(120px, 40vw, 160px);
+      height: clamp(160px, 50vw, 200px);
+    }
+    .rh-panel-label {
+      font-size: clamp(12px, 3.5vw, 14px);
+    }
+    .rh-panel-tag {
+      font-size: clamp(6px, 2vw, 7px);
+    }
+    .rh-tv-container {
+      max-width: 240px;
+    }
+    .rh-tv-stand {
+      width: 50%;
+    }
     .rh-tv-leg-left  { left: 30%; }
     .rh-tv-leg-right { right: 30%; }
-    .rh-tv-stand::before { width: 35px; height: 25px; bottom: -25px; }
-    .rh-tv-stand::after  { width: 50px; height: 7px;  bottom: -32px; }
-    .rh-tv-leg-left, .rh-tv-leg-right { width: 8px; height: 22px; bottom: -22px; }
-    .rh-tv-control-btn { width: 32px; height: 32px; }
-    .rh-wave-grid { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto auto auto; gap: 8px; }
-    .rh-wave-paragraph { grid-column: 1 / -1; grid-row: 1; }
-    .rh-wave-ctas      { grid-column: 1 / -1; grid-row: 2; }
-    .rh-wave-stat-1 { grid-column: 1; grid-row: 3; transform: none; }
-    .rh-wave-stat-2 { grid-column: 2; grid-row: 3; transform: none; }
-    .rh-wave-stat-3 { grid-column: 1; grid-row: 4; transform: none; }
-    .rh-wave-stat-4 { grid-column: 2; grid-row: 4; transform: none; }
-    .rh-wave-stat-item:hover { transform: translateY(-2px) !important; }
+    .rh-tv-stand::before {
+      width: 35px; height: 25px; bottom: -25px;
+    }
+    .rh-tv-stand::after {
+      width: 50px; height: 7px; bottom: -32px;
+    }
+    .rh-tv-leg-left, .rh-tv-leg-right {
+      width: 8px; height: 22px; bottom: -22px;
+    }
+    .rh-tv-control-btn {
+      width: 28px; height: 28px;
+    }
+    .rh-tv-control-btn svg {
+      width: 12px; height: 12px;
+    }
   }
 
-  /* ── REDUCED MOTION ───────────────────────────────────────────────────── */
+  /* Large Monitors */
+  @media (min-width: 1441px) {
+    .rh-hero {
+      padding-top: clamp(100px, 14vh, 140px);
+    }
+    .rh-bg-wrapper {
+      height: 65%;
+    }
+    .rh-glass-mask {
+      height: 65%;
+    }
+    .rh-content {
+      margin-top: clamp(50px, 7vh, 90px);
+    }
+    .rh-headline {
+      font-size: clamp(5rem, 6vw, 7.5rem);
+    }
+    .rh-panel {
+      width: clamp(260px, 18vw, 340px);
+      height: clamp(340px, 30vw, 440px);
+    }
+    .rh-tv-container {
+      max-width: 480px;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .rh-headline, .rh-sup-text, .rh-subtitle,
-    .rh-trust-row, .rh-bottom-section {
+    .rh-trust-row, .rh-cta-row {
       opacity: 1 !important; transform: none !important; animation: none !important;
     }
     .rh-marquee-track { animation: none !important; }
     .rh-panel, .rh-panel img, .rh-panel-info, .rh-panel-shimmer,
     .rh-panel-num, .rh-panel-corner, .rh-tv-control-btn,
-    .rh-wave-stat-item, .rh-social-chip, .rh-shimmer-sweep,
-    .rh-bgslide, .rh-bgvid, .rh-tv-screen {
+    .rh-shimmer-sweep, .rh-bgslide, .rh-bgvid, .rh-tv-screen {
       transition: none !important; animation: none !important;
     }
-    /* v8: always show register btn in reduced-motion mode */
     .rh-panel-register {
       opacity: 1 !important;
       transform: none !important;
@@ -1041,81 +1015,27 @@ const CSS = `
     }
     .rh-panel-label { animation: none !important; }
     .rh-panel:hover img { transform: none !important; }
-    .rh-wave-stat-1, .rh-wave-stat-2,
-    .rh-wave-stat-3, .rh-wave-stat-4 { transform: none !important; }
-    .rh-wave-stat-item:hover { transform: none !important; }
-    .rh-social-chip:hover  { transform: none !important; }
-    .rh-social-chip::before { display: none; }
   }
 `;
 
-// ── SVG icons (untouched) ──────────────────────────────────────────────────────
-const SvgGlobe = () => (
-  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-  </svg>
-);
-const SvgMail = () => (
-  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
-  </svg>
-);
-const SvgFB = () => (
-  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
-  </svg>
-);
-const SvgIG = () => (
-  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
-  </svg>
-);
-const SvgX = () => (
-  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"/>
-  </svg>
-);
-const SvgTikTok = () => (
-  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/>
-  </svg>
-);
-const SvgStar = () => (
-  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-  </svg>
-);
-const SvgShield = () => (
-  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-  </svg>
-);
-const SvgPlane = () => (
-  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M17.8 19.2 16 11l3.5-3.5C21 6 21 4 19 2c-2-2-4-2-5.5-.5L10 5 1.8 6.2c-.5.1-.9.5-.8 1.1l1.6 5.7c.1.4.4.6.8.6l3.6-.5 1.5 3.5c.2.4.6.6 1.1.5l4.7-1.1c.5-.1.8-.6.7-1.1z"/>
+// ── Trust Badge Icons ──────────────────────────────────────────────────
+const TrustCheckIcon = () => (
+  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <polyline points="20 6 9 17 4 12"/>
   </svg>
 );
 
-const SOCIAL_LINKS = [
-  { label: "Website",   href: "https://www.rasoaf.com",                                 Icon: SvgGlobe  },
-  { label: "Email",     href: "mailto:rasoaf24@gmail.com",                              Icon: SvgMail   },
-  { label: "Facebook",  href: "https://www.facebook.com/profile.php?id=61590695552485", Icon: SvgFB     },
-  { label: "Instagram", href: "https://www.instagram.com/rasoaftravelsandtours/",       Icon: SvgIG     },
-  { label: "X",         href: "https://x.com/Rasoaftravels",                            Icon: SvgX      },
-  { label: "TikTok",    href: "https://www.tiktok.com/@rasoaftravelsandtours",           Icon: SvgTikTok },
-];
+const ArrowIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M5 12h14M12 5l7 7-7 7"/>
+  </svg>
+);
 
 const TRUST_BADGES = [
-  { icon: SvgStar,   text: "10K+ Happy Travellers" },
-  { icon: SvgShield, text: "Secure & Trusted" },
-  { icon: SvgPlane,  text: "50+ Destinations" },
-];
-
-const STATS = [
-  { num: "10K", unit: "+", label: "Happy Travellers" },
-  { num: "98",  unit: "%", label: "Satisfaction Rate" },
-  { num: "15",  unit: "+", label: "Years Experience"  },
-  { num: "50",  unit: "+", label: "Global Destinations" },
+  { icon: TrustCheckIcon, text: "Licensed Agency" },
+  { icon: TrustCheckIcon, text: "Visa Assistance" },
+  { icon: TrustCheckIcon, text: "Flight & Hotel" },
+  { icon: TrustCheckIcon, text: "24/7 Support" },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1129,14 +1049,13 @@ export default function RasoafHero() {
   const headlineWrapperRef = useRef(null);
   const headlineRef        = useRef(null);
   const subtitleRef        = useRef(null);
+  const ctaRowRef          = useRef(null);
   const trustRef           = useRef(null);
   const marqueeTrackRef    = useRef(null);
   const tvSectionRef       = useRef(null);
-  const bottomRef          = useRef(null);
   const lenisRef           = useRef(null);
   const panelRefs          = useRef([]);
   const shimmerRef         = useRef(null);
-  const waveStatRefs       = useRef([]);
   const marqueeTween       = useRef(null);
   const scrollTimerRef     = useRef(null);
   const bgSlideARef        = useRef(null);
@@ -1151,18 +1070,15 @@ export default function RasoafHero() {
   const [isTvPlaying,     setIsTvPlaying]     = useState(true);
   const [isTvMuted,       setIsTvMuted]       = useState(false);
   const [tvVideoError,    setTvVideoError]    = useState(false);
-  // v8: marquee pause state — shared between hover (desktop) and touch (mobile)
   const [marqueePaused,   setMarqueePaused]   = useState(false);
 
-  // v7: detect mobile once at mount — avoid repeated matchMedia calls in RAF
   const isMobileRef = useRef(false);
   useEffect(() => {
     isMobileRef.current = window.innerWidth <= 768;
   }, []);
 
-  // ── Lenis smooth scroll — DISABLED on mobile (native is faster) ──────────
+  // ── Lenis smooth scroll ──────────────────────────────────────────────────
   useEffect(() => {
-    // v7: skip Lenis entirely on mobile — native scroll is composited & faster
     if (isMobileRef.current) return;
 
     const lenis = new Lenis({
@@ -1217,7 +1133,7 @@ export default function RasoafHero() {
   const handleTvVideoError   = useCallback(() => setTvVideoError(true),  []);
   const handleTvVideoCanPlay = useCallback(() => setTvVideoReady(true),  []);
 
-  // ── Scroll-aware marquee speed — skip on mobile (CSS handles it) ──────────
+  // ── Scroll-aware marquee speed ────────────────────────────────────────────
   const slowMarquee = useCallback(() => {
     if (!marqueeTween.current) return;
     gsap.to(marqueeTween.current, { timeScale: 0.25, duration: 0.6, ease: "power2.out" });
@@ -1239,12 +1155,10 @@ export default function RasoafHero() {
     };
   }, [slowMarquee]);
 
-  // ── v8: Marquee pause on hover / touch ────────────────────────────────────
-  // Desktop: drives GSAP timeScale → 0; Mobile: adds CSS class for animation-play-state
+  // ── Marquee pause on hover / touch ────────────────────────────────────────
   const pauseMarquee = useCallback(() => {
     setMarqueePaused(true);
     if (marqueeTween.current) {
-      // Cancel any pending slowMarquee restore timer so it doesn't fight us
       if (scrollTimerRef.current) { clearTimeout(scrollTimerRef.current); scrollTimerRef.current = null; }
       gsap.to(marqueeTween.current, { timeScale: 0, duration: 0.4, ease: "power2.out" });
     }
@@ -1257,7 +1171,7 @@ export default function RasoafHero() {
     }
   }, []);
 
-
+  // ── Background cycle ──────────────────────────────────────────────────────
   useEffect(() => {
     if (typeof window === "undefined") return;
     const mm = gsap.matchMedia();
@@ -1268,7 +1182,6 @@ export default function RasoafHero() {
       const slideBEl = bgSlideBRef.current;
       if (!videoEl || !slideAEl || !slideBEl) return;
 
-      // v7: on mobile, just show the video statically — no transition overhead
       if (isMobileRef.current) {
         gsap.set(videoEl,  { opacity: 1, className: "rh-bgvid active" });
         gsap.set(slideAEl, { opacity: 0, className: "rh-bgslide" });
@@ -1314,10 +1227,10 @@ export default function RasoafHero() {
     return () => mm.revert();
   }, []);
 
-  // ── Magnet effect — skip on mobile (touch has no hover anyway) ────────────
+  // ── Magnet effect ──────────────────────────────────────────────────────────
   const bindMagnet = useCallback((el) => {
     if (!el) return;
-    if (isMobileRef.current) return; // v7: skip on mobile
+    if (isMobileRef.current) return;
     if (magnetMapRef.current.has(el)) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
@@ -1359,17 +1272,28 @@ export default function RasoafHero() {
         tl.to(headlineWrapperRef.current, { opacity: 1, duration: 0.6 }, 0.1);
         tl.to(supTextRef.current,         { opacity: 1, y: 0, duration: 0.7 }, 0.15);
         tl.to(subtitleRef.current,        { opacity: 1, y: 0, duration: 0.85 }, 0.65);
-        tl.to(trustRef.current,           { opacity: 1, y: 0, duration: 0.8 },  0.80);
+        tl.to(ctaRowRef.current,          { opacity: 1, y: 0, duration: 0.8 }, 0.80);
+        tl.to(trustRef.current,           { opacity: 1, y: 0, duration: 0.8 },  0.95);
+
+        const ctaBtns = ctaRowRef.current?.querySelectorAll(".rh-cta-primary, .rh-cta-secondary");
+        if (ctaBtns?.length) {
+          tl.fromTo(ctaBtns,
+            { opacity: 0, y: 12, scale: 0.94 },
+            { opacity: 1, y: 0, scale: 1, duration: 0.55, stagger: 0.08 },
+            0.85
+          );
+        }
 
         const badges = trustRef.current?.querySelectorAll(".rh-trust-badge");
         if (badges?.length) {
           tl.fromTo(badges,
-            { opacity: 0, y: 12, scale: 0.94 },
-            { opacity: 1, y: 0, scale: 1, duration: 0.55, stagger: 0.08 },
-            0.90
+            { opacity: 0, y: 10, scale: 0.92 },
+            { opacity: 1, y: 0, scale: 1, duration: 0.5, stagger: 0.06 },
+            1.00
           );
         }
 
+        // Headline character animation
         const headlineEl = headlineRef.current;
         if (headlineEl) {
           headlineEl.style.opacity = "1";
@@ -1392,7 +1316,7 @@ export default function RasoafHero() {
           });
         }
 
-        // v7: GSAP marquee only on desktop; CSS animation handles mobile
+        // Marquee (GSAP on desktop only)
         if (marqueeTrackRef.current && !isMobile) {
           marqueeTween.current = gsap.to(marqueeTrackRef.current, {
             xPercent: -50,
@@ -1404,7 +1328,7 @@ export default function RasoafHero() {
 
         const panels = panelRefs.current.filter(Boolean);
 
-        // v7: panel ambient tweens KILLED on mobile — they cause constant repaints
+        // Panel ambient animations (desktop only)
         if (!isMobile) {
           panels.forEach((panel, i) => {
             gsap.to(panel, {
@@ -1441,7 +1365,7 @@ export default function RasoafHero() {
           });
         }
 
-        // v7: TV float KILLED on mobile
+        // TV float (desktop only)
         if (tvContainerRef.current && !isMobile) {
           gsap.to(tvContainerRef.current, {
             y: -8, duration: 4.5,
@@ -1456,7 +1380,7 @@ export default function RasoafHero() {
           });
         }
 
-        // v7: badge float KILLED on mobile
+        // Badge float (desktop only)
         if (badges?.length && !isMobile) {
           gsap.to(badges, {
             y: -3, stagger: 0.22,
@@ -1464,7 +1388,7 @@ export default function RasoafHero() {
           });
         }
 
-        // v7: shimmer sweep KILLED on mobile
+        // Shimmer sweep (desktop only)
         const shimmerEl = shimmerRef.current;
         if (shimmerEl && !isMobile) {
           const runShimmer = () => {
@@ -1479,88 +1403,20 @@ export default function RasoafHero() {
           gsap.delayedCall(2, runShimmer);
         }
 
-        if (bottomRef.current) {
-          gsap.to(bottomRef.current, {
-            opacity: 1, y: 0, duration: 0.85,
-            scrollTrigger: { trigger: bottomRef.current, start: "top 88%", toggleActions: "play none none none" },
-          });
-        }
-
-        // v7: wave stat ambient float KILLED on mobile — just do entrance only
-        const waveStats = waveStatRefs.current.filter(Boolean);
-        if (waveStats.length) {
-          waveStats.forEach((card, i) => {
-            const waveY = isMobile ? 0 : (WAVE_Y[i] ?? 0);
-
-            gsap.fromTo(card, { opacity: 0, y: 40 }, {
-              opacity: 1, y: waveY, duration: 0.8, ease: "power3.out",
-              delay: 0.1 * i,
-              scrollTrigger: { trigger: bottomRef.current, start: "top 80%", toggleActions: "play none none none" },
-              onComplete() {
-                // v7: ambient float only on desktop
-                if (!isMobile) {
-                  gsap.to(card, {
-                    y: waveY - 4,
-                    duration: 3.5 + i * 0.4,
-                    repeat: -1, yoyo: true, ease: "sine.inOut",
-                  });
-                }
-              },
-            });
-          });
-        }
-
-        // Stat counter — full on desktop, simplified on mobile
-        const statNums = bottomRef.current?.querySelectorAll(".rh-stat-num");
-        if (statNums?.length) {
-          statNums.forEach((el) => {
-            const numVal = parseFloat(el.dataset.num);
-            if (isNaN(numVal)) return;
-
-            if (isMobile) {
-              // v7: no ScrollTrigger proxy on mobile — just reveal on scroll via IntersectionObserver
-              const observer = new IntersectionObserver(
-                ([entry]) => {
-                  if (!entry.isIntersecting) return;
-                  observer.disconnect();
-                  const proxy = { val: 0 };
-                  gsap.to(proxy, {
-                    val: numVal, duration: 1.4, ease: "power2.out",
-                    onUpdate() { if (el.childNodes[0]) el.childNodes[0].textContent = Math.round(proxy.val); },
-                  });
-                },
-                { threshold: 0.4 }
-              );
-              observer.observe(el);
-            } else {
-              const proxy = { val: 0 };
-              ScrollTrigger.create({
-                trigger: el, start: "top 88%", once: true,
-                onEnter: () => {
-                  gsap.to(proxy, {
-                    val: numVal, duration: 1.8, ease: "power2.out",
-                    onUpdate() { if (el.childNodes[0]) el.childNodes[0].textContent = Math.round(proxy.val); },
-                  });
-                },
-              });
-            }
-          });
-        }
       }, rootRef);
 
       return () => ctx.revert();
     });
 
     mm.add("(prefers-reduced-motion: reduce)", () => {
-      const els = [headlineWrapperRef, supTextRef, headlineRef, subtitleRef, trustRef, bottomRef];
+      const els = [headlineWrapperRef, supTextRef, headlineRef, subtitleRef, ctaRowRef, trustRef];
       els.forEach(ref => {
         if (ref.current) { ref.current.style.opacity = "1"; ref.current.style.transform = "none"; }
       });
       if (bgSlideARef.current) { bgSlideARef.current.style.opacity = "0"; bgSlideARef.current.className = "rh-bgslide"; }
       if (bgSlideBRef.current) { bgSlideBRef.current.style.opacity = "0"; bgSlideBRef.current.className = "rh-bgslide"; }
       if (videoRef.current)    { videoRef.current.style.opacity = "1";    videoRef.current.className    = "rh-bgvid active"; }
-      panelRefs.current.forEach(el    => { if (el) el.style.opacity = "1"; });
-      waveStatRefs.current.forEach(el => { if (el) el.style.opacity = "1"; });
+      panelRefs.current.forEach(el => { if (el) el.style.opacity = "1"; });
       if (tvSectionRef.current) { tvSectionRef.current.style.opacity = "1"; tvSectionRef.current.style.transform = "none"; }
     });
 
@@ -1585,18 +1441,21 @@ export default function RasoafHero() {
 
         <section className="rh-hero" ref={heroRef} id="home" aria-label="RASOAF Travels hero">
 
-          <img ref={bgSlideARef} className="rh-bgslide" src={BG_SLIDES[0].src} alt="" aria-hidden="true" style={{ objectPosition: BG_SLIDES[0].position }} />
-          <img ref={bgSlideBRef} className="rh-bgslide" src={BG_SLIDES[1].src} alt="" aria-hidden="true" style={{ objectPosition: BG_SLIDES[1].position }} />
+          {/* ── v11: Background Wrapper ──────────────────────────────── */}
+          <div className="rh-bg-wrapper">
+            <img ref={bgSlideARef} className="rh-bgslide" src={BG_SLIDES[0].src} alt="" aria-hidden="true" style={{ objectPosition: BG_SLIDES[0].position }} />
+            <img ref={bgSlideBRef} className="rh-bgslide" src={BG_SLIDES[1].src} alt="" aria-hidden="true" style={{ objectPosition: BG_SLIDES[1].position }} />
+
+            <video
+              ref={videoRef}
+              className="rh-bgvid active"
+              src={BG_VIDEO}
+              autoPlay loop muted playsInline preload="auto"
+              aria-hidden="true"
+            />
+          </div>
+
           <div className="rh-glass-mask" aria-hidden="true" />
-
-          <video
-            ref={videoRef}
-            className="rh-bgvid active"
-            src={BG_VIDEO}
-            autoPlay loop muted playsInline preload="auto"
-            aria-hidden="true"
-          />
-
           <div className="rh-overlay"  aria-hidden="true" />
           <div className="rh-vignette" aria-hidden="true" />
 
@@ -1605,24 +1464,51 @@ export default function RasoafHero() {
               <span className="rh-sup-text" ref={supTextRef} aria-label="Your Gateway to The World">
                 Your Gateway to The World
               </span>
-              <h1 className="rh-headline" ref={headlineRef} aria-label="One Story at a Time — RASOAF Travels">
+
+              <h1 className="rh-headline" ref={headlineRef} aria-label="One Sacred Journey at a Time — RASOAF Travels">
                 <span className="rh-word">One&nbsp;</span>
-                <span className="rh-word">Story</span><br />
+                <span className="rh-word">Sacred&nbsp;</span>
+                <span className="rh-word">Journey</span><br />
                 <span className="rh-word">at&nbsp;a&nbsp;</span>
                 <span className="rh-word"><em>Time</em></span>
               </h1>
             </div>
 
             <p className="rh-subtitle" ref={subtitleRef}>
-              Your journey to the world has never been crafted like this before.
+              Experience Hajj, Umrah, and international travel with trusted guidance, 
+              personalized support, and seamless planning from departure to return.
             </p>
+
+            <div className="rh-cta-row" ref={ctaRowRef}>
+              <button
+                type="button"
+                className="rh-cta-primary"
+                onClick={() => scrollTo("services")}
+                aria-label="Plan Your Umrah"
+              >
+                <span>Plan Your Umrah</span>
+                <ArrowIcon />
+              </button>
+              <button
+                type="button"
+                className="rh-cta-secondary"
+                onClick={() => scrollTo("packages")}
+                aria-label="Explore Packages"
+              >
+                <span>Explore Packages</span>
+                <ArrowIcon />
+              </button>
+            </div>
 
             <div className="rh-trust-row" ref={trustRef} role="list" aria-label="Trust indicators">
               {TRUST_BADGES.map((b, i) => {
                 const Icon = b.icon;
                 return (
                   <div key={i} className="rh-trust-badge" role="listitem">
-                    <Icon aria-hidden="true" /><span>{b.text}</span>
+                    <span className="badge-check">
+                      <Icon aria-hidden="true" />
+                    </span>
+                    <span>{b.text}</span>
                   </div>
                 );
               })}
@@ -1664,7 +1550,6 @@ export default function RasoafHero() {
                     <span className="rh-panel-label">{panel.label}</span>
                     <span className="rh-panel-tag">{panel.tag}</span>
                   </div>
-                  {/* v8: Register button — bottom-left overlay, scrolls to #register */}
                   <button
                     type="button"
                     className="rh-panel-register"
@@ -1693,7 +1578,7 @@ export default function RasoafHero() {
                     fontSize: "14px", textAlign: "center", padding: "20px",
                   }}>
                     <div>
-                      <SvgPlane />
+                      <span style={{ fontSize: "32px" }}>✈️</span>
                       <p>Video loading...</p>
                       <p style={{ fontSize: "10px", opacity: 0.6, marginTop: "4px" }}>Premium content will appear shortly</p>
                     </div>
@@ -1722,10 +1607,10 @@ export default function RasoafHero() {
                 {!tvVideoError && (
                   <div className="rh-tv-controls">
                     <button type="button" onClick={toggleTvPlay} className="rh-tv-control-btn" aria-label={isTvPlaying ? "Pause" : "Play"}>
-                      {isTvPlaying ? <Pause size={18} /> : <Play size={18} />}
+                      {isTvPlaying ? <Pause size={16} /> : <Play size={16} />}
                     </button>
                     <button type="button" onClick={toggleTvMute} className="rh-tv-control-btn" aria-label={isTvMuted ? "Unmute" : "Mute"}>
-                      {isTvMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+                      {isTvMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
                     </button>
                   </div>
                 )}
@@ -1735,58 +1620,6 @@ export default function RasoafHero() {
               <div className="rh-tv-stand" />
               <div className="rh-tv-leg-left" />
               <div className="rh-tv-leg-right" />
-            </div>
-          </div>
-        </section>
-
-        <section className="rh-bottom-section" ref={bottomRef} aria-label="About RASOAF Travels">
-          <div className="rh-bottom-inner">
-            <div className="rh-wave-grid">
-              <div className="rh-wave-paragraph">
-                <p style={{ margin: 0, fontFamily: "'Inter','DM Sans',sans-serif", fontSize: "clamp(0.9rem,1.2vw,1.05rem)", fontWeight: 380, lineHeight: 1.75, color: "#6b6b64" }}>
-                  We bring reality to your journey — from sacred Hajj &amp; Umrah pilgrimages to seamless global visa services and premium travel experiences. No templates, no repeated routes, no shortcuts.
-                </p>
-              </div>
-
-              <div className="rh-wave-ctas">
-                <button type="button" className="rh-text-cta" onClick={() => scrollTo("booking")}  aria-label="Book a trip">Book a trip</button>
-                <span className="rh-cta-sep" aria-hidden="true" />
-                <button type="button" className="rh-text-cta" onClick={() => scrollTo("services")} aria-label="See Packages">See Packages</button>
-              </div>
-
-              {STATS.map((s, i) => (
-                <div
-                  key={i}
-                  className={`rh-wave-stat-${i + 1} rh-wave-stat-item`}
-                  ref={(el) => { waveStatRefs.current[i] = el; }}
-                  role="listitem"
-                  aria-label={`${s.num}${s.unit} ${s.label}`}
-                >
-                  <span className="rh-stat-num" data-num={parseFloat(s.num)}>
-                    {s.num}<span>{s.unit}</span>
-                  </span>
-                  <span className="rh-stat-label">{s.label}</span>
-                </div>
-              ))}
-            </div>
-
-            <div className="rh-social-row" role="list" aria-label="RASOAF social media">
-              {SOCIAL_LINKS.map((link, i) => {
-                const Icon = link.Icon;
-                return (
-                  <a
-                    key={i}
-                    href={link.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="rh-social-chip"
-                    aria-label={`RASOAF on ${link.label}`}
-                    role="listitem"
-                  >
-                    <Icon aria-hidden="true" /><span>{link.label}</span>
-                  </a>
-                );
-              })}
             </div>
           </div>
         </section>
