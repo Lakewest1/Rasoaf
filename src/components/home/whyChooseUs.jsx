@@ -5,7 +5,7 @@
 // A premium trust-building section that communicates the agency's credibility,
 // professionalism, and commitment to customer satisfaction.
 //
-// Design: Yellow/warm backgrounds, black text, cream/white cards, gold accents
+// Design System: Manrope (headings) · Inter (body) · Yellow/Black brand
 // Layout: Section header + 4 feature cards in responsive grid
 // Animation: Fade-up on scroll, hover lift with gold glow
 // Responsive: 4 → 2 → 1 columns (desktop → tablet → mobile)
@@ -27,7 +27,7 @@ const FEATURES = [
     title: "Experienced Team",
     description:
       "Our knowledgeable travel specialists have years of experience organizing seamless Hajj, Umrah, and international travel experiences.",
-    color: "#C4972A",
+    color: "#D4A017",
   },
   {
     id: 2,
@@ -35,7 +35,7 @@ const FEATURES = [
     title: "Transparent Pricing",
     description:
       "Clear, honest pricing with no hidden costs, giving you confidence and peace of mind when planning your journey.",
-    color: "#C4972A",
+    color: "#D4A017",
   },
   {
     id: 3,
@@ -43,7 +43,7 @@ const FEATURES = [
     title: "End-to-End Support",
     description:
       "From consultation and visa processing to accommodation and return travel, we're with you every step of the way.",
-    color: "#C4972A",
+    color: "#D4A017",
   },
   {
     id: 4,
@@ -51,7 +51,7 @@ const FEATURES = [
     title: "Personalized Guidance",
     description:
       "Receive tailored recommendations and dedicated assistance to match your unique travel needs and preferences.",
-    color: "#C4972A",
+    color: "#D4A017",
   },
 ];
 
@@ -113,9 +113,9 @@ function FeatureCard({ feature, index, inView }) {
           flexDirection: "column",
           alignItems: "center",
           textAlign: "center",
-          border: `1px solid ${hovered ? "rgba(196,151,42,0.30)" : "rgba(0,0,0,0.05)"}`,
+          border: `1px solid ${hovered ? "rgba(212,160,23,0.30)" : "rgba(0,0,0,0.05)"}`,
           boxShadow: hovered
-            ? "0 12px 40px rgba(0,0,0,0.08), 0 4px 16px rgba(196,151,42,0.10)"
+            ? "0 12px 40px rgba(0,0,0,0.08), 0 4px 16px rgba(212,160,23,0.10)"
             : "0 2px 12px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02)",
           transform: hovered ? "translateY(-6px)" : "translateY(0)",
           transition: "all 0.35s cubic-bezier(0.25, 1, 0.5, 1)",
@@ -132,7 +132,7 @@ function FeatureCard({ feature, index, inView }) {
             left: "15%",
             right: "15%",
             height: "3px",
-            background: `linear-gradient(90deg, transparent, #C4972A, transparent)`,
+            background: `linear-gradient(90deg, transparent, #D4A017, transparent)`,
             transform: hovered ? "scaleX(1)" : "scaleX(0.3)",
             opacity: hovered ? 1 : 0.3,
             transition: "transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease",
@@ -149,7 +149,7 @@ function FeatureCard({ feature, index, inView }) {
             height: "150%",
             top: "-25%",
             left: "-25%",
-            background: `radial-gradient(circle at 50% 40%, rgba(196,151,42,${hovered ? 0.05 : 0.02}), transparent 70%)`,
+            background: `radial-gradient(circle at 50% 40%, rgba(212,160,23,${hovered ? 0.05 : 0.02}), transparent 70%)`,
             transition: "opacity 0.5s ease",
             pointerEvents: "none",
           }}
@@ -166,10 +166,10 @@ function FeatureCard({ feature, index, inView }) {
             height: "clamp(60px, 7vw, 80px)",
             borderRadius: "50%",
             background: hovered
-              ? "linear-gradient(135deg, rgba(196,151,42,0.15), rgba(196,151,42,0.05))"
-              : "rgba(196,151,42,0.06)",
-            border: `1px solid ${hovered ? "rgba(196,151,42,0.25)" : "rgba(196,151,42,0.08)"}`,
-            color: "#C4972A",
+              ? "linear-gradient(135deg, rgba(212,160,23,0.15), rgba(212,160,23,0.05))"
+              : "rgba(212,160,23,0.06)",
+            border: `1px solid ${hovered ? "rgba(212,160,23,0.25)" : "rgba(212,160,23,0.08)"}`,
+            color: "#D4A017",
             marginBottom: "clamp(16px, 2vw, 24px)",
             transition: "all 0.35s cubic-bezier(0.25, 1, 0.5, 1)",
             transform: hovered ? "scale(1.08) rotate(-2deg)" : "scale(1) rotate(0deg)",
@@ -179,13 +179,13 @@ function FeatureCard({ feature, index, inView }) {
           <Icon size={clamp(24, 28, 34)} strokeWidth={1.8} />
         </div>
 
-        {/* Title */}
+        {/* ── Title: Manrope ── */}
         <h3
           style={{
-            fontFamily: "'Playfair Display', Georgia, serif",
-            fontSize: "clamp(1.1rem, 1.6vw, 1.4rem)",
+            fontFamily: "'Manrope', sans-serif",
+            fontSize: "clamp(1.1rem, 1.5vw, 1.3rem)",
             fontWeight: 700,
-            color: "#0a0a2e",
+            color: "#111111",
             marginBottom: "clamp(8px, 1vw, 12px)",
             lineHeight: 1.2,
             letterSpacing: "-0.01em",
@@ -195,13 +195,13 @@ function FeatureCard({ feature, index, inView }) {
           {feature.title}
         </h3>
 
-        {/* Description */}
+        {/* ── Description: Inter ── */}
         <p
           style={{
             fontFamily: "'Inter', sans-serif",
-            fontSize: "clamp(13px, 1vw, 14.5px)",
+            fontSize: "clamp(0.85rem, 1vw, 0.95rem)",
             fontWeight: 400,
-            color: "#4a5568",
+            color: "#5F5F5F",
             lineHeight: 1.7,
             marginBottom: 0,
             flex: 1,
@@ -218,7 +218,7 @@ function FeatureCard({ feature, index, inView }) {
             width: "6px",
             height: "6px",
             borderRadius: "50%",
-            background: "#C4972A",
+            background: "#D4A017",
             opacity: hovered ? 1 : 0.15,
             transform: hovered ? "scale(1)" : "scale(0.6)",
             transition: "all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)",
@@ -235,7 +235,7 @@ function FeatureCard({ feature, index, inView }) {
               left: "-50%",
               width: "200%",
               height: "200%",
-              background: `radial-gradient(circle at 50% 50%, rgba(196,151,42,0.03), transparent 70%)`,
+              background: `radial-gradient(circle at 50% 50%, rgba(212,160,23,0.03), transparent 70%)`,
               pointerEvents: "none",
               animation: "goldPulse 2s ease-in-out infinite",
             }}
@@ -269,8 +269,9 @@ export default function WhyChooseUs() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400;1,600;1,700&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,450;14..32,500;14..32,600;14..32,700;14..32,800&display=swap');
+        /* ── Rasoaf Design System Typography ── */
+        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;450;500;600;700;800&display=swap');
 
         @keyframes goldPulse {
           0%, 100% { opacity: 0.3; }
@@ -279,7 +280,7 @@ export default function WhyChooseUs() {
 
         .why-choose-section {
           padding: clamp(56px, 10vh, 96px) clamp(16px, 4vw, 48px);
-          background: linear-gradient(180deg, #FFF9E6 0%, #FFFDF7 50%, #FAF5E8 100%);
+          background: linear-gradient(180deg, #FFF8E6 0%, #FFFBEF 50%, #FFFDF5 100%);
           position: relative;
           overflow: hidden;
         }
@@ -293,9 +294,9 @@ export default function WhyChooseUs() {
           right: 0;
           bottom: 0;
           background-image: 
-            radial-gradient(circle at 10% 30%, rgba(196,151,42,0.04) 0%, transparent 40%),
-            radial-gradient(circle at 90% 70%, rgba(196,151,42,0.04) 0%, transparent 40%),
-            radial-gradient(circle at 50% 90%, rgba(196,151,42,0.02) 0%, transparent 30%);
+            radial-gradient(circle at 10% 30%, rgba(212,160,23,0.04) 0%, transparent 40%),
+            radial-gradient(circle at 90% 70%, rgba(212,160,23,0.04) 0%, transparent 40%),
+            radial-gradient(circle at 50% 90%, rgba(212,160,23,0.02) 0%, transparent 30%);
           pointer-events: none;
           z-index: 0;
         }
@@ -323,26 +324,28 @@ export default function WhyChooseUs() {
         .why-choose-header .eyebrow-line {
           width: clamp(24px, 3vw, 40px);
           height: 1.5px;
-          background: #C4972A;
+          background: #D4A017;
           border-radius: 999px;
         }
 
+        /* ── Eyebrow: Inter, uppercase, 0.18em ── */
         .why-choose-header .eyebrow-text {
           font-family: 'Inter', sans-serif;
-          font-size: clamp(9px, 0.9vw, 11px);
+          font-size: clamp(0.7rem, 0.8vw, 0.8rem);
           font-weight: 700;
-          letter-spacing: 3px;
+          letter-spacing: 0.18em;
           text-transform: uppercase;
-          color: #C4972A;
+          color: #D4A017;
         }
 
+        /* ── Heading: Manrope, 700-800 weight, -0.02em ── */
         .why-choose-header h2 {
-          font-family: 'Playfair Display', Georgia, serif;
-          font-size: clamp(1.6rem, 3.5vw, 2.8rem);
-          font-weight: 700;
-          color: #0a0a2e;
+          font-family: 'Manrope', sans-serif;
+          font-weight: 800;
+          font-size: clamp(1.8rem, 3.5vw, 2.8rem);
           letter-spacing: -0.02em;
-          line-height: 1.2;
+          line-height: 1.1;
+          color: #111111;
           margin-bottom: 12px;
           max-width: 720px;
           margin-left: auto;
@@ -350,7 +353,7 @@ export default function WhyChooseUs() {
         }
 
         .why-choose-header h2 .highlight {
-          color: #C4972A;
+          color: #D4A017;
           position: relative;
         }
 
@@ -361,18 +364,19 @@ export default function WhyChooseUs() {
           left: 0;
           right: 0;
           height: 2.5px;
-          background: linear-gradient(90deg, #C4972A, rgba(196,151,42,0.2));
+          background: linear-gradient(90deg, #D4A017, rgba(212,160,23,0.2));
           border-radius: 3px;
         }
 
+        /* ── Supporting Text: Inter, 400 weight, 1.7 line-height ── */
         .why-choose-header p {
           font-family: 'Inter', sans-serif;
-          font-size: clamp(14px, 1.2vw, 16px);
-          color: #5a5a6a;
+          font-size: clamp(0.95rem, 1.1vw, 1.05rem);
+          font-weight: 400;
+          line-height: 1.7;
+          color: #5F5F5F;
           max-width: 520px;
           margin: 0 auto;
-          line-height: 1.7;
-          font-weight: 400;
         }
 
         .why-choose-header .header-animate {

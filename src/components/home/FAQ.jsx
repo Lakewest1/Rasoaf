@@ -5,7 +5,7 @@
 // A premium FAQ section that addresses common concerns and removes hesitation
 // before booking a pilgrimage package.
 //
-// Design: Soft yellow background, black text, clean cards, gold accents
+// Design System: Manrope (headings) · Inter (body) · Yellow/Black brand
 // Layout: Two-column accordion on desktop, single column on mobile
 // Animation: Smooth expand/collapse with icon rotation
 // Responsive: 2 → 1 columns (desktop → tablet/mobile)
@@ -138,9 +138,9 @@ function FAQItem({ item, isOpen, onToggle, index, inView }) {
         `,
         background: isOpen ? "#ffffff" : "rgba(255,255,255,0.6)",
         borderRadius: "16px",
-        border: `1px solid ${isOpen ? "rgba(196,151,42,0.2)" : "rgba(0,0,0,0.04)"}`,
+        border: `1px solid ${isOpen ? "rgba(212,160,23,0.2)" : "rgba(0,0,0,0.04)"}`,
         boxShadow: isOpen
-          ? "0 4px 20px rgba(0,0,0,0.06), 0 2px 8px rgba(196,151,42,0.06)"
+          ? "0 4px 20px rgba(0,0,0,0.06), 0 2px 8px rgba(212,160,23,0.06)"
           : "0 1px 4px rgba(0,0,0,0.02)",
         transition: "all 0.3s cubic-bezier(0.25, 1, 0.5, 1)",
         overflow: "hidden",
@@ -166,16 +166,16 @@ function FAQItem({ item, isOpen, onToggle, index, inView }) {
           border: "none",
           cursor: "pointer",
           fontFamily: "'Inter', sans-serif",
-          fontSize: "clamp(14px, 1.1vw, 16px)",
+          fontSize: "clamp(0.9rem, 1vw, 1rem)",
           fontWeight: 600,
-          color: isOpen ? "#0a0a2e" : "#2d3748",
+          color: isOpen ? "#111111" : "#2d3748",
           textAlign: "left",
           transition: "color 0.3s ease",
           position: "relative",
         }}
         onMouseEnter={(e) => {
           if (!isOpen) {
-            e.currentTarget.style.color = "#0a0a2e";
+            e.currentTarget.style.color = "#111111";
           }
         }}
         onMouseLeave={(e) => {
@@ -196,12 +196,12 @@ function FAQItem({ item, isOpen, onToggle, index, inView }) {
           <span
             style={{
               fontFamily: "'Inter', sans-serif",
-              fontSize: "clamp(8px, 0.6vw, 10px)",
+              fontSize: "clamp(0.5rem, 0.55vw, 0.65rem)",
               fontWeight: 600,
               textTransform: "uppercase",
               letterSpacing: "0.06em",
-              color: "#C4972A",
-              background: "rgba(196,151,42,0.08)",
+              color: "#D4A017",
+              background: "rgba(212,160,23,0.08)",
               padding: "2px 10px",
               borderRadius: "50px",
               whiteSpace: "nowrap",
@@ -222,15 +222,15 @@ function FAQItem({ item, isOpen, onToggle, index, inView }) {
             width: "28px",
             height: "28px",
             borderRadius: "50%",
-            background: isOpen ? "rgba(196,151,42,0.08)" : "rgba(0,0,0,0.03)",
+            background: isOpen ? "rgba(212,160,23,0.08)" : "rgba(0,0,0,0.03)",
             transition: "all 0.3s ease",
             flexShrink: 0,
           }}
         >
           {isOpen ? (
-            <ChevronUp size={18} color="#C4972A" />
+            <ChevronUp size={18} color="#D4A017" />
           ) : (
-            <ChevronDown size={18} color="#6b6b7a" />
+            <ChevronDown size={18} color="#5F5F5F" />
           )}
         </div>
       </button>
@@ -250,9 +250,9 @@ function FAQItem({ item, isOpen, onToggle, index, inView }) {
           style={{
             padding: "0 clamp(18px, 2vw, 24px) clamp(18px, 2vw, 24px)",
             fontFamily: "'Inter', sans-serif",
-            fontSize: "clamp(13px, 1vw, 15px)",
+            fontSize: "clamp(0.85rem, 0.95vw, 0.95rem)",
             fontWeight: 400,
-            color: "#4a5568",
+            color: "#5F5F5F",
             lineHeight: 1.8,
             borderTop: "1px solid rgba(0,0,0,0.04)",
             paddingTop: "clamp(16px, 1.8vw, 20px)",
@@ -267,7 +267,7 @@ function FAQItem({ item, isOpen, onToggle, index, inView }) {
         <div
           style={{
             height: "2px",
-            background: "linear-gradient(90deg, #C4972A, rgba(196,151,42,0.1))",
+            background: "linear-gradient(90deg, #D4A017, rgba(212,160,23,0.1))",
             borderRadius: "0 0 16px 16px",
             width: "100%",
           }}
@@ -294,7 +294,7 @@ function SearchBar({ onSearch, onClear, query }) {
           left: "16px",
           top: "50%",
           transform: "translateY(-50%)",
-          color: "#8a8a9a",
+          color: "#5F5F5F",
         }}
       />
       <input
@@ -306,9 +306,9 @@ function SearchBar({ onSearch, onClear, query }) {
           width: "100%",
           padding: "clamp(12px, 1.2vw, 14px) 16px clamp(12px, 1.2vw, 14px) 46px",
           fontFamily: "'Inter', sans-serif",
-          fontSize: "clamp(13px, 1vw, 15px)",
+          fontSize: "clamp(0.85rem, 0.95vw, 0.95rem)",
           fontWeight: 400,
-          color: "#0a0a2e",
+          color: "#111111",
           background: "rgba(255,255,255,0.8)",
           backdropFilter: "blur(12px)",
           WebkitBackdropFilter: "blur(12px)",
@@ -319,8 +319,8 @@ function SearchBar({ onSearch, onClear, query }) {
           boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
         }}
         onFocus={(e) => {
-          e.currentTarget.style.borderColor = "rgba(196,151,42,0.3)";
-          e.currentTarget.style.boxShadow = "0 4px 16px rgba(196,151,42,0.06)";
+          e.currentTarget.style.borderColor = "rgba(212,160,23,0.3)";
+          e.currentTarget.style.boxShadow = "0 4px 16px rgba(212,160,23,0.06)";
         }}
         onBlur={(e) => {
           e.currentTarget.style.borderColor = "rgba(0,0,0,0.06)";
@@ -339,7 +339,7 @@ function SearchBar({ onSearch, onClear, query }) {
             background: "none",
             border: "none",
             cursor: "pointer",
-            color: "#8a8a9a",
+            color: "#5F5F5F",
             padding: "4px",
             borderRadius: "50%",
             display: "flex",
@@ -373,9 +373,9 @@ function CTASection({ inView }) {
         transform: inView ? "translateY(0)" : "translateY(20px)",
         transition: "opacity 0.6s ease 0.6s, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.6s",
         padding: "clamp(32px, 4vh, 48px)",
-        background: "linear-gradient(135deg, #FFF9E6 0%, #FFF3D6 100%)",
+        background: "linear-gradient(135deg, #FFF8E6 0%, #FFFBEF 100%)",
         borderRadius: "20px",
-        border: "1px solid rgba(196,151,42,0.1)",
+        border: "1px solid rgba(212,160,23,0.1)",
       }}
     >
       <div
@@ -398,32 +398,35 @@ function CTASection({ inView }) {
               width: "40px",
               height: "40px",
               borderRadius: "50%",
-              background: "rgba(196,151,42,0.1)",
+              background: "rgba(212,160,23,0.1)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              color: "#C4972A",
+              color: "#D4A017",
             }}
           >
             <MessageCircle size={20} />
           </div>
           <div>
+            {/* ── Heading: Manrope ── */}
             <h4
               style={{
-                fontFamily: "'Playfair Display', Georgia, serif",
-                fontSize: "clamp(1.1rem, 1.6vw, 1.4rem)",
+                fontFamily: "'Manrope', sans-serif",
+                fontSize: "clamp(1.1rem, 1.4vw, 1.3rem)",
                 fontWeight: 700,
-                color: "#0a0a2e",
+                color: "#111111",
                 marginBottom: "2px",
+                letterSpacing: "-0.01em",
               }}
             >
               Still Have Questions?
             </h4>
+            {/* ── Subtext: Inter ── */}
             <p
               style={{
                 fontFamily: "'Inter', sans-serif",
-                fontSize: "clamp(13px, 1vw, 15px)",
-                color: "#5a5a6a",
+                fontSize: "clamp(0.85rem, 0.95vw, 0.95rem)",
+                color: "#5F5F5F",
                 marginBottom: 0,
               }}
             >
@@ -441,6 +444,7 @@ function CTASection({ inView }) {
             gap: "12px",
           }}
         >
+          {/* ── Primary Button: Yellow background, black text ── */}
           <a
             href="#contact"
             style={{
@@ -448,29 +452,31 @@ function CTASection({ inView }) {
               alignItems: "center",
               gap: "8px",
               fontFamily: "'Inter', sans-serif",
-              fontSize: "clamp(13px, 1vw, 15px)",
+              fontSize: "clamp(0.85rem, 0.95vw, 0.95rem)",
               fontWeight: 600,
-              color: "#ffffff",
-              background: "#C4972A",
+              letterSpacing: "0.01em",
+              color: "#111111",
+              background: "linear-gradient(135deg, #F7C948 0%, #D4A017 100%)",
               padding: "clamp(10px, 1vw, 12px) clamp(24px, 2.5vw, 32px)",
               borderRadius: "50px",
               textDecoration: "none",
-              boxShadow: "0 4px 16px rgba(196,151,42,0.25)",
+              boxShadow: "0 4px 16px rgba(212,160,23,0.25)",
               transition: "all 0.3s ease",
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = "translateY(-2px)";
-              e.currentTarget.style.boxShadow = "0 8px 28px rgba(196,151,42,0.35)";
+              e.currentTarget.style.boxShadow = "0 8px 28px rgba(212,160,23,0.35)";
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = "translateY(0)";
-              e.currentTarget.style.boxShadow = "0 4px 16px rgba(196,151,42,0.25)";
+              e.currentTarget.style.boxShadow = "0 4px 16px rgba(212,160,23,0.25)";
             }}
           >
             <span>Contact Us</span>
             <ArrowRight size={16} />
           </a>
 
+          {/* ── Secondary Button: Outline ── */}
           <a
             href="tel:+2341234567890"
             style={{
@@ -478,9 +484,9 @@ function CTASection({ inView }) {
               alignItems: "center",
               gap: "8px",
               fontFamily: "'Inter', sans-serif",
-              fontSize: "clamp(13px, 1vw, 15px)",
+              fontSize: "clamp(0.85rem, 0.95vw, 0.95rem)",
               fontWeight: 500,
-              color: "#0a0a2e",
+              color: "#111111",
               background: "rgba(255,255,255,0.7)",
               backdropFilter: "blur(8px)",
               WebkitBackdropFilter: "blur(8px)",
@@ -491,7 +497,7 @@ function CTASection({ inView }) {
               transition: "all 0.3s ease",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = "rgba(196,151,42,0.2)";
+              e.currentTarget.style.borderColor = "rgba(212,160,23,0.2)";
               e.currentTarget.style.background = "rgba(255,255,255,0.9)";
             }}
             onMouseLeave={(e) => {
@@ -510,9 +516,9 @@ function CTASection({ inView }) {
               alignItems: "center",
               gap: "8px",
               fontFamily: "'Inter', sans-serif",
-              fontSize: "clamp(13px, 1vw, 15px)",
+              fontSize: "clamp(0.85rem, 0.95vw, 0.95rem)",
               fontWeight: 500,
-              color: "#0a0a2e",
+              color: "#111111",
               background: "rgba(255,255,255,0.7)",
               backdropFilter: "blur(8px)",
               WebkitBackdropFilter: "blur(8px)",
@@ -523,7 +529,7 @@ function CTASection({ inView }) {
               transition: "all 0.3s ease",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = "rgba(196,151,42,0.2)";
+              e.currentTarget.style.borderColor = "rgba(212,160,23,0.2)";
               e.currentTarget.style.background = "rgba(255,255,255,0.9)";
             }}
             onMouseLeave={(e) => {
@@ -546,7 +552,7 @@ function CTASection({ inView }) {
 export default function FAQ() {
   const [sectionRef, inView] = useInView(0.08);
   const [headerInView, setHeaderInView] = useState(false);
-  const [openItemId, setOpenItemId] = useState(null); // Only one open at a time
+  const [openItemId, setOpenItemId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
@@ -556,12 +562,10 @@ export default function FAQ() {
     }
   }, [inView]);
 
-  // Toggle accordion item (only one open at a time)
   const toggleItem = useCallback((id) => {
     setOpenItemId((prev) => (prev === id ? null : id));
   }, []);
 
-  // Filter FAQs based on search
   const filteredFAQs = FAQ_ITEMS.filter(
     (item) =>
       item.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -569,14 +573,12 @@ export default function FAQ() {
       item.category.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Split into two columns for desktop
   const midPoint = Math.ceil(filteredFAQs.length / 2);
   const leftColumn = filteredFAQs.slice(0, midPoint);
   const rightColumn = filteredFAQs.slice(midPoint);
 
   const handleSearch = (query) => {
     setSearchQuery(query);
-    // Close any open item when searching
     if (query) {
       setOpenItemId(null);
     }
@@ -589,12 +591,13 @@ export default function FAQ() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400;1,600;1,700&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,450;14..32,500;14..32,600;14..32,700;14..32,800&display=swap');
+        /* ── Rasoaf Design System Typography ── */
+        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;450;500;600;700;800&display=swap');
 
         .faq-section {
           padding: clamp(48px, 8vh, 80px) clamp(16px, 4vw, 48px);
-          background: linear-gradient(180deg, #FFF9E6 0%, #FFFDF7 50%, #FAF5E8 100%);
+          background: linear-gradient(180deg, #FFF8E6 0%, #FFFBEF 50%, #FFFDF5 100%);
           position: relative;
           overflow: hidden;
         }
@@ -607,8 +610,8 @@ export default function FAQ() {
           right: 0;
           bottom: 0;
           background-image: 
-            radial-gradient(circle at 20% 40%, rgba(196,151,42,0.04) 0%, transparent 40%),
-            radial-gradient(circle at 80% 60%, rgba(196,151,42,0.04) 0%, transparent 40%);
+            radial-gradient(circle at 20% 40%, rgba(212,160,23,0.04) 0%, transparent 40%),
+            radial-gradient(circle at 80% 60%, rgba(212,160,23,0.04) 0%, transparent 40%);
           pointer-events: none;
           z-index: 0;
         }
@@ -636,31 +639,33 @@ export default function FAQ() {
         .faq-header .eyebrow-line {
           width: clamp(24px, 3vw, 40px);
           height: 1.5px;
-          background: #C4972A;
+          background: #D4A017;
           border-radius: 999px;
         }
 
+        /* ── Eyebrow: Inter, uppercase, 0.18em ── */
         .faq-header .eyebrow-text {
           font-family: 'Inter', sans-serif;
-          font-size: clamp(9px, 0.9vw, 11px);
+          font-size: clamp(0.7rem, 0.8vw, 0.8rem);
           font-weight: 700;
-          letter-spacing: 3px;
+          letter-spacing: 0.18em;
           text-transform: uppercase;
-          color: #C4972A;
+          color: #D4A017;
         }
 
+        /* ── Heading: Manrope, 700-800 weight, -0.02em ── */
         .faq-header h2 {
-          font-family: 'Playfair Display', Georgia, serif;
-          font-size: clamp(1.6rem, 3.5vw, 2.8rem);
-          font-weight: 700;
-          color: #0a0a2e;
+          font-family: 'Manrope', sans-serif;
+          font-weight: 800;
+          font-size: clamp(1.8rem, 3.5vw, 2.8rem);
           letter-spacing: -0.02em;
-          line-height: 1.2;
+          line-height: 1.1;
+          color: #111111;
           margin-bottom: 12px;
         }
 
         .faq-header h2 .highlight {
-          color: #C4972A;
+          color: #D4A017;
           position: relative;
         }
 
@@ -671,18 +676,19 @@ export default function FAQ() {
           left: 0;
           right: 0;
           height: 2.5px;
-          background: linear-gradient(90deg, #C4972A, rgba(196,151,42,0.2));
+          background: linear-gradient(90deg, #D4A017, rgba(212,160,23,0.2));
           border-radius: 3px;
         }
 
+        /* ── Supporting Text: Inter, 400 weight, 1.7 line-height ── */
         .faq-header p {
           font-family: 'Inter', sans-serif;
-          font-size: clamp(14px, 1.2vw, 16px);
-          color: #5a5a6a;
+          font-size: clamp(0.95rem, 1.1vw, 1.05rem);
+          font-weight: 400;
+          line-height: 1.7;
+          color: #5F5F5F;
           max-width: 520px;
           margin: 0 auto;
-          line-height: 1.7;
-          font-weight: 400;
         }
 
         .faq-header .header-animate {
@@ -709,7 +715,7 @@ export default function FAQ() {
           text-align: center;
           padding: clamp(40px, 5vh, 60px);
           font-family: 'Inter', sans-serif;
-          color: #5a5a6a;
+          color: #5F5F5F;
         }
 
         .faq-no-results .icon {
@@ -721,11 +727,12 @@ export default function FAQ() {
           margin-bottom: 4px;
           font-size: clamp(18px, 1.5vw, 22px);
           font-weight: 600;
+          color: #111111;
         }
 
         .faq-no-results .sub {
           font-size: 14px;
-          color: #8a8a9a;
+          color: #5F5F5F;
         }
 
         /* ── Responsive ──────────────────────────────────────────────────── */
@@ -884,7 +891,7 @@ export default function FAQ() {
               style={{
                 flex: 1,
                 height: 1,
-                background: "linear-gradient(90deg, transparent, rgba(196,151,42,0.12))",
+                background: "linear-gradient(90deg, transparent, rgba(212,160,23,0.12))",
               }}
             />
             <div
@@ -892,7 +899,7 @@ export default function FAQ() {
                 width: 6,
                 height: 6,
                 borderRadius: "50%",
-                background: "#C4972A",
+                background: "#D4A017",
                 opacity: 0.4,
               }}
             />
@@ -900,7 +907,7 @@ export default function FAQ() {
               style={{
                 flex: 1,
                 height: 1,
-                background: "linear-gradient(90deg, rgba(196,151,42,0.12), transparent)",
+                background: "linear-gradient(90deg, rgba(212,160,23,0.12), transparent)",
               }}
             />
           </div>

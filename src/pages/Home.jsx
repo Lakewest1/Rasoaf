@@ -3,8 +3,8 @@ import Hero from "../components/home/Hero";
 import Stats from "../components/home/Stats";
 import TrustBadges from "../components/home/TrustBadges";
 import WhyChooseUs from "../components/home/whyChooseUs";
-import RecruitmentProcess from "../components/home/RecruitmentProcess";
-import FeaturedJobs from "../components/home/FeaturedJobs";
+
+
 import Testimonials from "../components/home/Testimonials";
 import Partners from "../components/home/Partners";
 import CTA from "../components/home/CTA";

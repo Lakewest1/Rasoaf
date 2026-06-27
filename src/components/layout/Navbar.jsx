@@ -1,4 +1,11 @@
 // components/Navbar.jsx
+// ─────────────────────────────────────────────────────────────────────────────
+// RASOAF TRAVELS AND TOURS LIMITED — Ultra-Premium Navbar
+// 3D Book Now button · GSAP entrance · mouse-tilt · dropdown menus
+//
+// Design System: Manrope (headings) · Inter (body) · Yellow/Black brand
+// ─────────────────────────────────────────────────────────────────────────────
+
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { gsap } from "gsap";
@@ -9,8 +16,7 @@ import {
 } from "lucide-react";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// RASOAF TRAVELS AND TOURS LIMITED — Ultra-Premium Navbar
-// 3D Book Now button · GSAP entrance · mouse-tilt · dropdown menus
+// NAV LINKS & SUB-MENUS
 // ─────────────────────────────────────────────────────────────────────────────
 
 const NAV_LINKS = [
@@ -44,11 +50,12 @@ const SUB_MENUS = {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CSS
+// CSS — Updated with Rasoaf Design System
 // ─────────────────────────────────────────────────────────────────────────────
 const CSS = `
-  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
-  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+  /* ── Rasoaf Design System Typography ── */
+  @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600;700;800&display=swap');
 
   /* ── WRAPPER ── */
   .rasoaf-navbar-wrapper {
@@ -85,10 +92,10 @@ const CSS = `
   /* ── DESKTOP NAV LINK ── */
   .rasoaf-link {
     position: relative;
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 14px;
-    font-weight: 500;
-    letter-spacing: 0.02em;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
     background: none;
     border: none;
     cursor: pointer;
@@ -112,7 +119,7 @@ const CSS = `
     width: 0;
     height: 2px;
     border-radius: 999px;
-    background: linear-gradient(90deg, transparent, #FFD700, transparent);
+    background: linear-gradient(90deg, transparent, #D4A017, transparent);
     transition: width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
     pointer-events: none;
   }
@@ -124,24 +131,24 @@ const CSS = `
   /* transparent (hero) */
   .navbar-transparent .rasoaf-link         { color: rgba(255,255,255,0.85); }
   .navbar-transparent .rasoaf-link:hover,
-  .navbar-transparent .rasoaf-link[data-active="true"] { color: #FFD700; font-weight: 600; }
+  .navbar-transparent .rasoaf-link[data-active="true"] { color: #D4A017; font-weight: 600; }
 
   /* scrolled (glass) */
-  .navbar-scrolled .rasoaf-link            { color: rgba(0,0,0,0.72); }
+  .navbar-scrolled .rasoaf-link            { color: rgba(17,17,17,0.72); }
   .navbar-scrolled .rasoaf-link:hover,
-  .navbar-scrolled .rasoaf-link[data-active="true"]   { color: #D4A000; font-weight: 600; }
+  .navbar-scrolled .rasoaf-link[data-active="true"]   { color: #B8860B; font-weight: 600; }
 
   /* mobile navbar always dark */
   .navbar-mobile .rasoaf-link              { color: rgba(255,255,255,0.85); }
 
-  @media (max-width: 1100px) { .rasoaf-link { font-size: 13px; } }
-  @media (max-width:  960px) { .rasoaf-link { font-size: 12px; } }
+  @media (max-width: 1100px) { .rasoaf-link { font-size: 0.9rem; } }
+  @media (max-width:  960px) { .rasoaf-link { font-size: 0.85rem; } }
 
   /* ── CHEVRON ── */
   .rasoaf-chev {
     display: flex; align-items: center;
     transition: transform 0.3s ease;
-    color: rgba(255,215,0,0.6);
+    color: rgba(212,160,23,0.6);
   }
   .rasoaf-link.open .rasoaf-chev { transform: rotate(180deg); }
 
@@ -157,10 +164,10 @@ const CSS = `
     background: rgba(255,255,255,0.99);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border-radius: 16px;
+    border-radius: 18px;
     padding: 8px;
     box-shadow: 0 24px 64px rgba(0,0,0,0.18),
-                0 0 0 1px rgba(255,215,0,0.12);
+                0 0 0 1px rgba(212,160,23,0.12);
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
@@ -192,10 +199,10 @@ const CSS = `
     width: 100%;
     padding: 10px 14px;
     border-radius: 12px;
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
     font-weight: 500;
-    color: rgba(0,0,0,0.72);
+    color: rgba(17,17,17,0.72);
     background: none;
     border: none;
     cursor: pointer;
@@ -203,20 +210,20 @@ const CSS = `
     transition: all 0.25s ease;
   }
   .rasoaf-dropdown-item-3d:hover {
-    background: rgba(255,215,0,0.09);
-    color: #000;
+    background: rgba(215,169,23,0.09);
+    color: #111;
     transform: translateX(4px);
   }
   .rasoaf-dropdown-item-3d .di-icon-wrap {
     width: 30px; height: 30px;
     border-radius: 8px;
-    background: rgba(255,215,0,0.12);
+    background: rgba(215,169,23,0.12);
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
     transition: background 0.25s ease;
   }
   .rasoaf-dropdown-item-3d:hover .di-icon-wrap {
-    background: rgba(255,215,0,0.25);
+    background: rgba(215,169,23,0.25);
   }
   .rasoaf-dropdown-item-3d .di-arrow {
     margin-left: auto;
@@ -226,16 +233,16 @@ const CSS = `
   }
   .rasoaf-dropdown-item-3d:hover .di-arrow {
     opacity: 1;
-    color: #D4A000;
+    color: #D4A017;
     transform: translateX(4px);
   }
 
   /* ── INQUIRY BUTTON (outline) ── */
   .rasoaf-inquiry {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 13px;
-    font-weight: 500;
-    letter-spacing: 0.02em;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
     background: transparent;
     border-radius: 100px;
     padding: 9px 22px;
@@ -252,20 +259,20 @@ const CSS = `
     border: 1px solid rgba(255,255,255,0.3);
   }
   .navbar-transparent .rasoaf-inquiry:hover {
-    border-color: #FFD700;
-    color: #FFD700;
-    background: rgba(255,215,0,0.08);
+    border-color: #D4A017;
+    color: #D4A017;
+    background: rgba(215,169,23,0.08);
     transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(255,215,0,0.15);
+    box-shadow: 0 4px 16px rgba(215,169,23,0.15);
   }
   .navbar-scrolled .rasoaf-inquiry {
     color: #111;
-    border: 1px solid rgba(0,0,0,0.22);
+    border: 1px solid rgba(17,17,17,0.22);
   }
   .navbar-scrolled .rasoaf-inquiry:hover {
-    border-color: #D4A000;
-    color: #D4A000;
-    background: rgba(255,215,0,0.08);
+    border-color: #B8860B;
+    color: #B8860B;
+    background: rgba(215,169,23,0.08);
     transform: translateY(-2px);
   }
   .navbar-mobile .rasoaf-inquiry {
@@ -275,11 +282,7 @@ const CSS = `
 
   /* ═══════════════════════════════════════════════
      3-D  BOOK NOW  BUTTON
-     Physical depth via layered box-shadows:
-       top face  → gold gradient
-       mid layer → #A07000 (bronze)
-       base      → #6A4500 (dark)
-       ground    → translucent dark
+     Physical depth via layered box-shadows
   ═══════════════════════════════════════════════ */
   .rasoaf-book-wrap {
     perspective: 600px;
@@ -288,11 +291,11 @@ const CSS = `
 
   .rasoaf-book {
     position: relative;
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    color: #000;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    color: #111;
     border: none;
     border-radius: 100px;
     padding: 10px 28px;
@@ -303,16 +306,16 @@ const CSS = `
     user-select: none;
     -webkit-tap-highlight-color: transparent;
 
-    /* Face gradient */
-    background: linear-gradient(135deg, #FFEA00 0%, #FFD700 45%, #E8A000 100%);
+    /* Face gradient — Primary Accent */
+    background: linear-gradient(135deg, #F7C948 0%, #D4A017 45%, #B8860B 100%);
 
     /* 3-D depth stack */
     box-shadow:
-      0 0 0 1px rgba(255,215,0,0.65),
+      0 0 0 1px rgba(215,169,23,0.65),
       0 4px 0   #A07000,
       0 7px 0   #6A4500,
       0 9px 0   rgba(0,0,0,0.40),
-      0 9px 22px rgba(255,215,0,0.30);
+      0 9px 22px rgba(215,169,23,0.30);
 
     transition:
       transform  0.18s cubic-bezier(0.34,1.56,0.64,1),
@@ -325,20 +328,20 @@ const CSS = `
   @keyframes bookGlow {
     0%, 100% {
       box-shadow:
-        0 0 0 1px rgba(255,215,0,0.65),
+        0 0 0 1px rgba(215,169,23,0.65),
         0 4px 0 #A07000,
         0 7px 0 #6A4500,
         0 9px 0 rgba(0,0,0,0.40),
-        0 9px 22px rgba(255,215,0,0.30);
+        0 9px 22px rgba(215,169,23,0.30);
     }
     50% {
       box-shadow:
-        0 0 0 1px rgba(255,215,0,0.9),
+        0 0 0 1px rgba(215,169,23,0.9),
         0 4px 0 #A07000,
         0 7px 0 #6A4500,
         0 9px 0 rgba(0,0,0,0.40),
-        0 9px 34px rgba(255,215,0,0.55),
-        0 0  42px rgba(255,215,0,0.18);
+        0 9px 34px rgba(215,169,23,0.55),
+        0 0  42px rgba(215,169,23,0.18);
     }
   }
 
@@ -374,11 +377,11 @@ const CSS = `
     animation: none;
     transform: translateY(-4px) rotateX(-5deg);
     box-shadow:
-      0 0 0 1px rgba(255,215,0,0.8),
+      0 0 0 1px rgba(215,169,23,0.8),
       0 8px 0  #A07000,
       0 12px 0 #6A4500,
       0 14px 0 rgba(0,0,0,0.40),
-      0 14px 36px rgba(255,215,0,0.50);
+      0 14px 36px rgba(215,169,23,0.50);
   }
 
   /* Press — snap down */
@@ -386,11 +389,11 @@ const CSS = `
     animation: none;
     transform: translateY(5px) rotateX(7deg);
     box-shadow:
-      0 0 0 1px rgba(255,215,0,0.55),
+      0 0 0 1px rgba(215,169,23,0.55),
       0 1px 0 #A07000,
       0 2px 0 #6A4500,
       0 3px 0 rgba(0,0,0,0.35),
-      0 3px 14px rgba(255,215,0,0.20);
+      0 3px 14px rgba(215,169,23,0.20);
   }
 
   .rasoaf-book .book-text { position: relative; z-index: 1; }
@@ -411,16 +414,16 @@ const CSS = `
     align-items: center;
     justify-content: center;
     width: 44px; height: 44px;
-    background: rgba(255,215,0,0.10);
-    border: 1px solid rgba(255,215,0,0.30);
+    background: rgba(215,169,23,0.10);
+    border: 1px solid rgba(215,169,23,0.30);
     border-radius: 12px;
     cursor: pointer;
-    color: #FFD700;
+    color: #D4A017;
     flex-shrink: 0;
     z-index: 1002;
     transition: background 0.3s ease;
   }
-  .rasoaf-mob:hover { background: rgba(255,215,0,0.20); }
+  .rasoaf-mob:hover { background: rgba(215,169,23,0.20); }
 
   /* ── OVERLAY ── */
   .rasoaf-overlay {
@@ -445,13 +448,13 @@ const CSS = `
     background: linear-gradient(160deg, rgba(6,6,14,0.99), rgba(10,10,26,0.99));
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
-    border-left: 1px solid rgba(255,215,0,0.18);
+    border-left: 1px solid rgba(215,169,23,0.18);
     box-shadow: -12px 0 60px rgba(0,0,0,0.5);
     pointer-events: auto;
   }
   .rasoaf-drawer::-webkit-scrollbar { width: 3px; }
   .rasoaf-drawer::-webkit-scrollbar-thumb {
-    background: #FFD700;
+    background: #D4A017;
     border-radius: 999px;
   }
 
@@ -461,10 +464,10 @@ const CSS = `
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 16px;
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
     font-weight: 500;
-    letter-spacing: 0.02em;
+    letter-spacing: 0.01em;
     color: rgba(255,255,255,0.7);
     background: transparent;
     border: none;
@@ -476,30 +479,30 @@ const CSS = `
     transition: all 0.25s ease;
     -webkit-tap-highlight-color: transparent;
   }
-  .rasoaf-dlk:hover { color: #FFD700; background: rgba(255,215,0,0.08); transform: translateX(4px); }
+  .rasoaf-dlk:hover { color: #D4A017; background: rgba(215,169,23,0.08); transform: translateX(4px); }
   .rasoaf-dlk[data-active="true"] {
-    color: #FFD700;
-    background: rgba(255,215,0,0.12);
+    color: #D4A017;
+    background: rgba(215,169,23,0.12);
     font-weight: 600;
-    border-left: 2px solid #FFD700;
+    border-left: 2px solid #D4A017;
     border-radius: 0 12px 12px 0;
   }
   .rasoaf-dlk-arrow {
     font-size: 18px;
-    color: rgba(255,215,0,0.4);
+    color: rgba(215,169,23,0.4);
     flex-shrink: 0;
     transition: all 0.25s ease;
   }
   .rasoaf-dlk:hover .rasoaf-dlk-arrow,
   .rasoaf-dlk[data-active="true"] .rasoaf-dlk-arrow {
     transform: translateX(6px);
-    color: #FFD700;
+    color: #D4A017;
   }
 
   /* mobile sub-menu */
   .rasoaf-dlk-sub {
     padding-left: 16px;
-    border-left: 1px solid rgba(255,215,0,0.1);
+    border-left: 1px solid rgba(215,169,23,0.1);
     margin: 4px 0 8px 16px;
   }
   .rasoaf-dlk-sub-item {
@@ -509,8 +512,8 @@ const CSS = `
     width: 100%;
     padding: 10px 16px;
     border-radius: 10px;
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
     font-weight: 400;
     color: rgba(255,255,255,0.5);
     background: none;
@@ -520,8 +523,8 @@ const CSS = `
     transition: all 0.25s ease;
   }
   .rasoaf-dlk-sub-item:hover {
-    color: #FFD700;
-    background: rgba(255,215,0,0.07);
+    color: #D4A017;
+    background: rgba(215,169,23,0.07);
     transform: translateX(4px);
   }
 
@@ -529,21 +532,21 @@ const CSS = `
   .rasoaf-mobile-book {
     width: 100%;
     padding: 15px 24px;
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 15px;
-    font-weight: 700;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
     border: none;
     border-radius: 100px;
     cursor: pointer;
-    color: #000;
-    background: linear-gradient(135deg, #FFEA00, #FFD700 45%, #E8A000);
+    color: #111;
+    background: linear-gradient(135deg, #F7C948, #D4A017 45%, #B8860B);
     position: relative;
     overflow: hidden;
     box-shadow:
       0 4px 0 #A07000,
       0 6px 0 #6A4500,
       0 8px 0 rgba(0,0,0,0.35),
-      0 8px 18px rgba(255,215,0,0.30);
+      0 8px 18px rgba(215,169,23,0.30);
     transition: transform 0.15s ease, box-shadow 0.15s ease;
   }
   .rasoaf-mobile-book::before {
@@ -558,32 +561,32 @@ const CSS = `
       0 6px 0 #A07000,
       0 9px 0 #6A4500,
       0 11px 0 rgba(0,0,0,0.35),
-      0 12px 26px rgba(255,215,0,0.42);
+      0 12px 26px rgba(215,169,23,0.42);
   }
   .rasoaf-mobile-book:active {
     transform: translateY(4px);
     box-shadow:
       0 1px 0 #A07000,
       0 2px 0 #6A4500,
-      0 4px 12px rgba(255,215,0,0.20);
+      0 4px 12px rgba(215,169,23,0.20);
   }
 
   .rasoaf-mobile-inquiry {
     width: 100%;
     padding: 14px 24px;
-    font-size: 14px;
+    font-size: 0.95rem;
     font-weight: 600;
     border-radius: 100px;
     background: rgba(255,255,255,0.04);
-    color: #FFD700;
-    border: 1px solid rgba(255,215,0,0.30);
+    color: #D4A017;
+    border: 1px solid rgba(215,169,23,0.30);
     cursor: pointer;
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: 'Inter', sans-serif;
     transition: all 0.25s ease;
   }
   .rasoaf-mobile-inquiry:hover {
-    background: rgba(255,215,0,0.12);
-    border-color: #FFD700;
+    background: rgba(215,169,23,0.12);
+    border-color: #D4A017;
     transform: translateY(-2px);
   }
 
@@ -601,7 +604,7 @@ const CSS = `
   .rasoaf-book:focus-visible,
   .rasoaf-inquiry:focus-visible,
   .rasoaf-mob:focus-visible {
-    outline: 2px solid #FFD700;
+    outline: 2px solid #D4A017;
     outline-offset: 3px;
     border-radius: 8px;
   }
@@ -852,15 +855,15 @@ export default function Navbar() {
     : scrolled ? "rgba(255,255,255,0.94)" : "transparent";
 
   const navBorder = isMobile
-    ? "1px solid rgba(255,215,0,0.18)"
-    : scrolled ? "1px solid rgba(0,0,0,0.06)" : "none";
+    ? "1px solid rgba(215,169,23,0.18)"
+    : scrolled ? "1px solid rgba(17,17,17,0.06)" : "none";
 
   const navBlur = isMobile ? "blur(20px)" : scrolled ? "blur(18px)" : "none";
 
-  const logoTextColor = isMobile ? "#fff" : scrolled ? "#000" : "#fff";
+  const logoTextColor = isMobile ? "#fff" : scrolled ? "#111" : "#fff";
   const logoLtdColor  = isMobile
     ? "rgba(255,255,255,0.4)"
-    : scrolled ? "rgba(0,0,0,0.45)" : "rgba(255,255,255,0.45)";
+    : scrolled ? "rgba(17,17,17,0.45)" : "rgba(255,255,255,0.45)";
 
   // ─────────────────────────────────────────────────────────────────────────
   return (
@@ -918,7 +921,7 @@ export default function Navbar() {
                 <div style={{ display: "flex", alignItems: "baseline", gap: "clamp(4px,0.6vw,6px)", lineHeight: 1.1, flexWrap: "wrap" }}>
                   <motion.span
                     style={{
-                      fontFamily: "'Plus Jakarta Sans', sans-serif",
+                      fontFamily: "'Manrope', sans-serif",
                       fontWeight: 800,
                       fontSize: isMobile ? "14px" : "clamp(14px,1.6vw,18px)",
                       color: logoTextColor,
@@ -931,11 +934,11 @@ export default function Navbar() {
                     RASOAF
                   </motion.span>
                   <span style={{
-                    fontFamily: "'Plus Jakarta Sans', sans-serif",
-                    fontWeight: 600,
+                    fontFamily: "'Manrope', sans-serif",
+                    fontWeight: 700,
                     fontSize: isMobile ? "10px" : "clamp(11px,1.1vw,13px)",
                     color: logoTextColor,
-                    letterSpacing: "0.04em",
+                    letterSpacing: "-0.01em",
                     whiteSpace: "nowrap",
                     transition: "color 0.3s ease",
                   }}>
@@ -945,11 +948,11 @@ export default function Navbar() {
 
                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
                   <span style={{
-                    fontFamily: "'Space Grotesk', sans-serif",
+                    fontFamily: "'Inter', sans-serif",
                     fontSize: isMobile ? "7px" : "clamp(7px,0.75vw,9px)",
                     fontWeight: 500,
                     color: logoLtdColor,
-                    letterSpacing: "0.16em",
+                    letterSpacing: "0.18em",
                     textTransform: "uppercase",
                     transition: "color 0.3s ease",
                     whiteSpace: "nowrap",
@@ -961,17 +964,17 @@ export default function Navbar() {
                     style={{
                       width: 3, height: 3,
                       borderRadius: "50%",
-                      background: "#FFD700",
+                      background: "#D4A017",
                       display: "inline-block",
                       flexShrink: 0,
                     }}
                   />
                   <span style={{
-                    fontFamily: "'Space Grotesk', sans-serif",
+                    fontFamily: "'Inter', sans-serif",
                     fontStyle: "italic",
                     fontSize: isMobile ? "7px" : "clamp(7px,0.7vw,9px)",
-                    color: "#FFD700",
-                    fontWeight: 500,
+                    color: "#D4A017",
+                    fontWeight: 400,
                     letterSpacing: "0.01em",
                     whiteSpace: "nowrap",
                   }}>
@@ -1094,20 +1097,20 @@ export default function Navbar() {
                 style={{
                   display: "flex", alignItems: "center", justifyContent: "space-between",
                   padding: "24px 20px 20px",
-                  borderBottom: "1px solid rgba(255,215,0,0.1)",
+                  borderBottom: "1px solid rgba(215,169,23,0.1)",
                 }}
               >
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                   <Rasaof size={40} />
                   <div>
                     <div style={{ display: "flex", alignItems: "baseline", gap: 5, flexWrap: "wrap" }}>
-                      <span style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontWeight: 800, fontSize: 14, color: "#fff", letterSpacing: "-0.02em" }}>RASOAF</span>
-                      <span style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontWeight: 600, fontSize: 10, color: "#fff", letterSpacing: "0.04em" }}>TRAVELS &amp; TOURS</span>
+                      <span style={{ fontFamily: "'Manrope',sans-serif", fontWeight: 800, fontSize: 14, color: "#fff", letterSpacing: "-0.02em" }}>RASOAF</span>
+                      <span style={{ fontFamily: "'Manrope',sans-serif", fontWeight: 700, fontSize: 10, color: "#fff", letterSpacing: "-0.01em" }}>TRAVELS &amp; TOURS</span>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 3 }}>
-                      <span style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 8, fontWeight: 500, color: "rgba(255,255,255,0.4)", letterSpacing: "0.16em", textTransform: "uppercase" }}>Limited</span>
-                      <span style={{ width: 2.5, height: 2.5, borderRadius: "50%", background: "#FFD700", display: "inline-block" }} />
-                      <span style={{ fontFamily: "'Space Grotesk',sans-serif", fontStyle: "italic", fontSize: 8, color: "#FFD700", fontWeight: 500 }}>Your Trusted Partner</span>
+                      <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 8, fontWeight: 500, color: "rgba(255,255,255,0.4)", letterSpacing: "0.18em", textTransform: "uppercase" }}>Limited</span>
+                      <span style={{ width: 2.5, height: 2.5, borderRadius: "50%", background: "#D4A017", display: "inline-block" }} />
+                      <span style={{ fontFamily: "'Inter',sans-serif", fontStyle: "italic", fontSize: 8, color: "#D4A017", fontWeight: 400 }}>Your Trusted Partner</span>
                     </div>
                   </div>
                 </div>
@@ -1118,9 +1121,9 @@ export default function Navbar() {
                   aria-label="Close menu"
                   style={{
                     width: 36, height: 36, borderRadius: "50%",
-                    background: "rgba(255,215,0,0.10)",
-                    border: "1px solid rgba(255,215,0,0.28)",
-                    cursor: "pointer", color: "#FFD700",
+                    background: "rgba(215,169,23,0.10)",
+                    border: "1px solid rgba(215,169,23,0.28)",
+                    cursor: "pointer", color: "#D4A017",
                     fontSize: 16, display: "flex",
                     alignItems: "center", justifyContent: "center",
                     transition: "background 0.2s ease",
@@ -1163,7 +1166,7 @@ export default function Navbar() {
                               className="rasoaf-dlk-sub-item"
                               onClick={() => goTo(link)}
                             >
-                              <Icon size={14} style={{ color: "rgba(255,215,0,0.55)", flexShrink: 0 }} />
+                              <Icon size={14} style={{ color: "rgba(215,169,23,0.55)", flexShrink: 0 }} />
                               {item.label}
                             </button>
                           );
@@ -1179,7 +1182,7 @@ export default function Navbar() {
                 variants={itemV}
                 style={{
                   padding: "16px 20px 28px",
-                  borderTop: "1px solid rgba(255,215,0,0.1)",
+                  borderTop: "1px solid rgba(215,169,23,0.1)",
                   display: "flex", flexDirection: "column", gap: 10,
                 }}
               >
@@ -1189,7 +1192,7 @@ export default function Navbar() {
 
                 {/* 3-D Book Now — mobile */}
                 <button className="rasoaf-mobile-book" onClick={goToBooking}>
-                  <span style={{ position: "relative", zIndex: 1, fontWeight: 700 }}>
+                  <span style={{ position: "relative", zIndex: 1, fontWeight: 600 }}>
                     Book Now ✈
                   </span>
                 </button>
@@ -1197,11 +1200,11 @@ export default function Navbar() {
                 {/* Contact info */}
                 <div style={{ textAlign: "center", marginTop: 10 }}>
                   <p style={{
-                    fontFamily: "'Space Grotesk',sans-serif",
+                    fontFamily: "'Inter',sans-serif",
                     fontSize: 9, fontWeight: 500,
                     color: "rgba(255,255,255,0.32)",
                     marginBottom: 8,
-                    letterSpacing: "0.14em",
+                    letterSpacing: "0.18em",
                     textTransform: "uppercase",
                   }}>
                     24 / 7 Support
@@ -1210,9 +1213,9 @@ export default function Navbar() {
                     <a
                       href="tel:+234XXXXXXXXX"
                       style={{
-                        fontFamily: "'Space Grotesk',sans-serif",
+                        fontFamily: "'Inter',sans-serif",
                         fontSize: 14, fontWeight: 600,
-                        color: "#FFD700", textDecoration: "none",
+                        color: "#D4A017", textDecoration: "none",
                         display: "flex", alignItems: "center",
                         justifyContent: "center", gap: 6,
                       }}
@@ -1222,7 +1225,7 @@ export default function Navbar() {
                     <a
                       href="mailto:rasoaf24@gmail.com"
                       style={{
-                        fontFamily: "'Space Grotesk',sans-serif",
+                        fontFamily: "'Inter',sans-serif",
                         fontSize: 12, fontWeight: 500,
                         color: "rgba(255,255,255,0.55)",
                         textDecoration: "none",

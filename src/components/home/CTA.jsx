@@ -5,7 +5,7 @@
 // A premium full-width conversion section designed to convert users at the
 // decision stage into leads or consultations.
 //
-// Design: Soft gradient background (gold/yellow to white), center-aligned
+// Design System: Manrope (headings) · Inter (body) · Yellow/Black brand
 // Layout: Full-width hero-style with decorative blur elements
 // Animation: Fade-up on scroll with subtle scale
 // Responsive: Stacked buttons on mobile
@@ -68,10 +68,7 @@ export default function CTA() {
   }, [inView]);
 
   const handleButtonClick = (buttonName) => {
-    // Analytics tracking hook placeholder
     console.log(`CTA Button Clicked: ${buttonName}`);
-    // You can integrate with Google Analytics, Facebook Pixel, etc.
-    // Example: gtag('event', 'conversion', { 'send_to': 'AW-XXXXX/XXXXX' });
   };
 
   const scrollToSection = (id) => {
@@ -84,14 +81,15 @@ export default function CTA() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400;1,600;1,700&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,450;14..32,500;14..32,600;14..32,700;14..32,800&display=swap');
+        /* ── Rasoaf Design System Typography ── */
+        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;450;500;600;700;800&display=swap');
 
         .cta-section {
           position: relative;
           width: 100%;
           padding: clamp(60px, 12vh, 120px) clamp(20px, 5vw, 60px);
-          background: linear-gradient(165deg, #FFF9E6 0%, #FFFDF7 30%, #FAF5E8 70%, #F5EDD6 100%);
+          background: linear-gradient(165deg, #FFF8E6 0%, #FFFBEF 30%, #FFFDF5 70%, #FAF5E8 100%);
           overflow: hidden;
           isolation: isolate;
         }
@@ -110,7 +108,7 @@ export default function CTA() {
           right: -10%;
           width: 50%;
           height: 80%;
-          background: radial-gradient(circle, rgba(196,151,42,0.15), transparent 70%);
+          background: radial-gradient(circle, rgba(212,160,23,0.15), transparent 70%);
         }
 
         .cta-section .circle-2 {
@@ -118,7 +116,7 @@ export default function CTA() {
           left: -10%;
           width: 40%;
           height: 60%;
-          background: radial-gradient(circle, rgba(196,151,42,0.08), transparent 70%);
+          background: radial-gradient(circle, rgba(212,160,23,0.08), transparent 70%);
         }
 
         .cta-section .circle-3 {
@@ -126,7 +124,7 @@ export default function CTA() {
           left: 20%;
           width: 30%;
           height: 40%;
-          background: radial-gradient(circle, rgba(196,151,42,0.04), transparent 70%);
+          background: radial-gradient(circle, rgba(212,160,23,0.04), transparent 70%);
         }
 
         /* Subtle pattern overlay */
@@ -136,8 +134,8 @@ export default function CTA() {
           z-index: 0;
           opacity: 0.03;
           background-image: 
-            radial-gradient(circle at 20% 50%, #C4972A 1px, transparent 1px),
-            radial-gradient(circle at 80% 50%, #C4972A 1px, transparent 1px);
+            radial-gradient(circle at 20% 50%, #D4A017 1px, transparent 1px),
+            radial-gradient(circle at 80% 50%, #D4A017 1px, transparent 1px);
           background-size: 60px 60px;
           pointer-events: none;
         }
@@ -169,23 +167,23 @@ export default function CTA() {
           align-items: center;
           gap: 8px;
           font-family: 'Inter', sans-serif;
-          font-size: clamp(10px, 0.8vw, 12px);
-          font-weight: 600;
-          letter-spacing: 0.08em;
+          font-size: clamp(0.65rem, 0.7vw, 0.8rem);
+          font-weight: 700;
+          letter-spacing: 0.18em;
           text-transform: uppercase;
-          color: #C4972A;
-          background: rgba(196,151,42,0.08);
+          color: #D4A017;
+          background: rgba(212,160,23,0.08);
           padding: 6px 18px;
           border-radius: 50px;
           margin-bottom: 16px;
-          border: 1px solid rgba(196,151,42,0.08);
+          border: 1px solid rgba(212,160,23,0.08);
         }
 
         .cta-badge .dot {
           width: 6px;
           height: 6px;
           border-radius: 50%;
-          background: #C4972A;
+          background: #D4A017;
           animation: pulse-dot 2s ease-in-out infinite;
         }
 
@@ -194,19 +192,19 @@ export default function CTA() {
           50% { opacity: 0.4; transform: scale(0.7); }
         }
 
-        /* ── Typography ───────────────────────────────────────────────────── */
+        /* ── Heading: Manrope, 700-800 weight, -0.02em ── */
         .cta-headline {
-          font-family: 'Playfair Display', Georgia, serif;
+          font-family: 'Manrope', sans-serif;
+          font-weight: 800;
           font-size: clamp(2.2rem, 5.5vw, 4.2rem);
-          font-weight: 700;
-          color: #0a0a2e;
           line-height: 1.1;
           letter-spacing: -0.02em;
+          color: #111111;
           margin-bottom: clamp(12px, 1.8vw, 20px);
         }
 
         .cta-headline .highlight {
-          color: #C4972A;
+          color: #D4A017;
           position: relative;
         }
 
@@ -217,16 +215,17 @@ export default function CTA() {
           left: 0;
           right: 0;
           height: 3px;
-          background: linear-gradient(90deg, #C4972A, rgba(196,151,42,0.2));
+          background: linear-gradient(90deg, #D4A017, rgba(212,160,23,0.2));
           border-radius: 3px;
         }
 
+        /* ── Subtitle: Inter, 400 weight, 1.7 line-height ── */
         .cta-subtitle {
           font-family: 'Inter', sans-serif;
-          font-size: clamp(15px, 1.3vw, 18px);
+          font-size: clamp(1rem, 1.2vw, 1.125rem);
           font-weight: 400;
-          color: #4a5568;
           line-height: 1.7;
+          color: #5F5F5F;
           max-width: 520px;
           margin: 0 auto clamp(28px, 4vh, 40px);
         }
@@ -241,22 +240,24 @@ export default function CTA() {
           margin-bottom: clamp(20px, 3vh, 28px);
         }
 
+        /* ── Primary Button: Yellow background, black text ── */
         .cta-btn-primary {
           display: inline-flex;
           align-items: center;
           gap: 10px;
           font-family: 'Inter', sans-serif;
-          font-size: clamp(14px, 1.1vw, 16px);
-          font-weight: 700;
-          color: #ffffff;
-          background: #0a0a2e;
+          font-size: clamp(0.9rem, 1vw, 1rem);
+          font-weight: 600;
+          letter-spacing: 0.01em;
+          color: #111111;
+          background: linear-gradient(135deg, #F7C948 0%, #D4A017 100%);
           padding: clamp(14px, 1.4vw, 18px) clamp(32px, 3.5vw, 48px);
           border: none;
           border-radius: 14px;
           cursor: pointer;
           text-decoration: none;
           transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-          box-shadow: 0 4px 20px rgba(10,10,46,0.25);
+          box-shadow: 0 4px 20px rgba(212,160,23,0.25);
           position: relative;
           overflow: hidden;
         }
@@ -265,14 +266,14 @@ export default function CTA() {
           content: '';
           position: absolute;
           inset: 0;
-          background: linear-gradient(135deg, #C4972A, #e8b840);
+          background: linear-gradient(135deg, #F7C948, #e8b840);
           opacity: 0;
           transition: opacity 0.4s ease;
         }
 
         .cta-btn-primary:hover {
           transform: translateY(-3px) scale(1.02);
-          box-shadow: 0 8px 35px rgba(10,10,46,0.35);
+          box-shadow: 0 8px 35px rgba(212,160,23,0.35);
         }
 
         .cta-btn-primary:hover::before {
@@ -305,8 +306,9 @@ export default function CTA() {
           align-items: center;
           gap: 10px;
           font-family: 'Inter', sans-serif;
-          font-size: clamp(14px, 1.1vw, 16px);
+          font-size: clamp(0.9rem, 1vw, 1rem);
           font-weight: 600;
+          letter-spacing: 0.01em;
           color: #ffffff;
           background: #25D366;
           padding: clamp(14px, 1.4vw, 18px) clamp(28px, 3vw, 40px);
@@ -342,9 +344,9 @@ export default function CTA() {
           align-items: center;
           gap: 8px;
           font-family: 'Inter', sans-serif;
-          font-size: clamp(13px, 1vw, 15px);
+          font-size: clamp(0.85rem, 0.95vw, 0.95rem);
           font-weight: 500;
-          color: #0a0a2e;
+          color: #111111;
           background: none;
           border: none;
           cursor: pointer;
@@ -362,13 +364,13 @@ export default function CTA() {
           left: 16px;
           right: 16px;
           height: 2px;
-          background: #C4972A;
+          background: #D4A017;
           transform: scaleX(0);
           transition: transform 0.3s ease;
         }
 
         .cta-btn-tertiary:hover {
-          color: #C4972A;
+          color: #D4A017;
         }
 
         .cta-btn-tertiary:hover::after {
@@ -383,7 +385,7 @@ export default function CTA() {
           transform: translateX(4px);
         }
 
-        /* ── Trust Microcopy ──────────────────────────────────────────────── */
+        /* ── Trust Microcopy: Inter, 450 weight ──────────────────────────── */
         .cta-trust {
           display: flex;
           flex-wrap: wrap;
@@ -398,13 +400,13 @@ export default function CTA() {
           align-items: center;
           gap: 6px;
           font-family: 'Inter', sans-serif;
-          font-size: clamp(12px, 0.9vw, 14px);
+          font-size: clamp(0.8rem, 0.85vw, 0.9rem);
           font-weight: 450;
-          color: #4a5568;
+          color: #5F5F5F;
         }
 
         .cta-trust-item svg {
-          color: #C4972A;
+          color: #D4A017;
           flex-shrink: 0;
         }
 
@@ -412,7 +414,7 @@ export default function CTA() {
           width: 3px;
           height: 3px;
           border-radius: 50%;
-          background: #C4972A;
+          background: #D4A017;
           opacity: 0.3;
         }
 
@@ -539,12 +541,12 @@ export default function CTA() {
               <span>Start Your Journey Today</span>
             </div>
 
-            {/* Headline */}
+            {/* ── Heading: Manrope ── */}
             <h2 id="cta-heading" className="cta-headline">
               Begin Your <span className="highlight">Sacred Journey</span> Today
             </h2>
 
-            {/* Subtitle */}
+            {/* ── Subtitle: Inter ── */}
             <p className="cta-subtitle">
               Let us guide you through a seamless, spiritually fulfilling Hajj
               and Umrah experience with complete care and professionalism.

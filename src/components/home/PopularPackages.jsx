@@ -1,26 +1,28 @@
 // src/components/home/PopularPackages.jsx
 // ─────────────────────────────────────────────────────────────────────────────
 // RASOAF TRAVELS AND TOURS LIMITED — Popular Packages Section
-// v2 — Fixed: cards always visible; observer adds lift-in animation on scroll
+// v3 — Rasoaf Design System applied
+//   • Manrope for headings · Inter for body · Yellow/Black brand
+//   • Fixed: cards always visible; observer adds lift-in animation on scroll
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useEffect, useRef, useCallback } from "react";
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
 const T = {
-  gold:       "#C4972A",
-  goldLight:  "#F5C842",
-  goldDeep:   "#A07820",
-  goldPale:   "#FDF6E3",
-  goldFaint:  "#FEF9ED",
-  goldGlow:   "rgba(196,151,42,0.18)",
-  ink:        "#1A1A1A",
-  inkSoft:    "#3D3120",
-  inkMuted:   "#7A6A4A",
+  gold:       "#D4A017",
+  goldLight:  "#F7C948",
+  goldDeep:   "#B8860B",
+  goldPale:   "#FFF8E6",
+  goldFaint:  "#FFFBEF",
+  goldGlow:   "rgba(212,160,23,0.18)",
+  ink:        "#111111",
+  inkSoft:    "#2d3748",
+  inkMuted:   "#5F5F5F",
   white:      "#FFFFFF",
   cream:      "#FFFBEF",
-  borderGold: "rgba(196,151,42,0.22)",
-  borderCard: "rgba(196,151,42,0.14)",
+  borderGold: "rgba(212,160,23,0.22)",
+  borderCard: "rgba(212,160,23,0.14)",
 };
 
 // ── Package data ──────────────────────────────────────────────────────────────
@@ -116,14 +118,17 @@ const TRUST_ITEMS = [
 ];
 
 // ── CSS ───────────────────────────────────────────────────────────────────────
+// Design System: Manrope (headings) · Inter (body) · Yellow/Black brand
 const CSS = `
-  @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,500;1,600;1,700&display=swap');
+  /* ── Rasoaf Design System Typography ── */
+  @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;450;500;600;700;800&display=swap');
 
   .pp-section {
     width: 100%;
-    background: #FEF9ED;
+    background: #FFF8E6;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    color: #1A1A1A;
+    color: #111111;
   }
 
   /* ── Banner ── */
@@ -148,8 +153,8 @@ const CSS = `
     position: absolute;
     inset: 0;
     background:
-      linear-gradient(180deg, rgba(26,20,8,0.55) 0%, rgba(26,20,8,0.28) 40%, rgba(26,20,8,0.72) 100%),
-      radial-gradient(ellipse 80% 60% at 50% 0%, rgba(196,151,42,0.22) 0%, transparent 65%);
+      linear-gradient(180deg, rgba(17,11,4,0.55) 0%, rgba(17,11,4,0.28) 40%, rgba(17,11,4,0.72) 100%),
+      radial-gradient(ellipse 80% 60% at 50% 0%, rgba(212,160,23,0.22) 0%, transparent 65%);
     z-index: 1;
   }
   .pp-banner__content {
@@ -161,7 +166,6 @@ const CSS = `
     width: 100%;
   }
 
-  /* Banner text — starts visible, gains entrance animation after JS runs */
   .pp-banner__eyebrow,
   .pp-banner__heading,
   .pp-banner__subtext,
@@ -169,7 +173,6 @@ const CSS = `
     opacity: 1;
     transform: none;
   }
-  /* JS adds .pp-anim-ready to the section, then .pp-visible to each child */
   .pp-section.pp-anim-ready .pp-banner__eyebrow,
   .pp-section.pp-anim-ready .pp-banner__heading,
   .pp-section.pp-anim-ready .pp-banner__subtext,
@@ -183,35 +186,40 @@ const CSS = `
   .pp-section.pp-anim-ready .pp-banner__subtext.pp-visible  { opacity: 1; transform: none; transition-delay: 0.32s; }
   .pp-section.pp-anim-ready .pp-banner__actions.pp-visible  { opacity: 1; transform: none; transition-delay: 0.46s; }
 
+  /* ── Eyebrow: Inter, uppercase, 0.18em ── */
   .pp-banner__eyebrow {
     font-family: 'Inter', sans-serif;
-    font-size: clamp(9px, 1vw, 11px);
-    font-weight: 500;
-    letter-spacing: 0.26em;
+    font-size: clamp(0.7rem, 0.8vw, 0.8rem);
+    font-weight: 700;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: #F5C842;
+    color: #F7C948;
     margin-bottom: clamp(8px, 1.2vw, 14px);
     display: block;
   }
+
+  /* ── Heading: Manrope, 700-800 weight, -0.02em ── */
   .pp-banner__heading {
-    font-family: 'Playfair Display', Georgia, serif;
-    font-weight: 700;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 800;
     font-size: clamp(1.9rem, 5vw, 3.4rem);
-    line-height: 1.12;
+    line-height: 1.1;
     letter-spacing: -0.02em;
     color: #FFFFFF;
     margin: 0 0 clamp(12px, 2vw, 20px);
   }
   .pp-banner__heading em {
     font-style: italic;
-    font-weight: 600;
-    color: #F5C842;
+    font-weight: 700;
+    color: #F7C948;
   }
+
+  /* ── Subtext: Inter, 400 weight, 1.7 line-height ── */
   .pp-banner__subtext {
     font-family: 'Inter', sans-serif;
-    font-size: clamp(0.88rem, 1.3vw, 1.05rem);
-    font-weight: 350;
-    line-height: 1.68;
+    font-size: clamp(0.88rem, 1.2vw, 1.05rem);
+    font-weight: 400;
+    line-height: 1.7;
     color: rgba(255,255,255,0.80);
     max-width: 560px;
     margin: 0 auto clamp(20px, 3.5vw, 32px);
@@ -224,28 +232,28 @@ const CSS = `
     flex-wrap: wrap;
   }
 
-  /* Buttons */
+  /* ── Buttons: Inter, 600 weight, 0.01em ── */
   .pp-btn--primary {
     display: inline-flex;
     align-items: center;
     gap: 7px;
-    background: #C4972A;
-    color: #1A1A1A;
+    background: linear-gradient(135deg, #F7C948 0%, #D4A017 100%);
+    color: #111111;
     font-family: 'Inter', sans-serif;
-    font-size: clamp(13px, 1.2vw, 14px);
+    font-size: clamp(0.85rem, 1vw, 0.95rem);
     font-weight: 600;
-    letter-spacing: 0.02em;
+    letter-spacing: 0.01em;
     padding: clamp(10px, 1.5vw, 13px) clamp(22px, 3vw, 32px);
     border-radius: 100px;
     border: none;
     cursor: pointer;
     text-decoration: none;
     transition: background 0.25s ease, transform 0.22s ease, box-shadow 0.25s ease;
-    box-shadow: 0 2px 12px rgba(196,151,42,0.35);
+    box-shadow: 0 2px 12px rgba(212,160,23,0.35);
     white-space: nowrap;
   }
-  .pp-btn--primary:hover { background: #A07820; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(196,151,42,0.45); }
-  .pp-btn--primary:focus-visible { outline: 2px solid #F5C842; outline-offset: 3px; }
+  .pp-btn--primary:hover { background: #F7C948; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(212,160,23,0.45); }
+  .pp-btn--primary:focus-visible { outline: 2px solid #F7C948; outline-offset: 3px; }
 
   .pp-btn--ghost {
     display: inline-flex;
@@ -254,8 +262,9 @@ const CSS = `
     background: transparent;
     color: #FFFFFF;
     font-family: 'Inter', sans-serif;
-    font-size: clamp(13px, 1.2vw, 14px);
-    font-weight: 500;
+    font-size: clamp(0.85rem, 1vw, 0.95rem);
+    font-weight: 600;
+    letter-spacing: 0.01em;
     padding: clamp(10px, 1.5vw, 13px) clamp(22px, 3vw, 32px);
     border-radius: 100px;
     border: 1.5px solid rgba(255,255,255,0.55);
@@ -264,8 +273,8 @@ const CSS = `
     transition: border-color 0.25s ease, background 0.25s ease, color 0.25s ease;
     white-space: nowrap;
   }
-  .pp-btn--ghost:hover { border-color: #F5C842; background: rgba(245,200,66,0.10); color: #F5C842; }
-  .pp-btn--ghost:focus-visible { outline: 2px solid #F5C842; outline-offset: 3px; }
+  .pp-btn--ghost:hover { border-color: #F7C948; background: rgba(247,201,72,0.10); color: #F7C948; }
+  .pp-btn--ghost:focus-visible { outline: 2px solid #F7C948; outline-offset: 3px; }
 
   /* ── Grid section ── */
   .pp-grid-section {
@@ -277,31 +286,38 @@ const CSS = `
     text-align: center;
     margin-bottom: clamp(36px, 6vw, 60px);
   }
+
+  /* ── Section Eyebrow: Inter, uppercase, 0.18em ── */
   .pp-section-eyebrow {
     font-family: 'Inter', sans-serif;
-    font-size: clamp(9px, 0.9vw, 11px);
-    font-weight: 500;
-    letter-spacing: 0.26em;
+    font-size: clamp(0.7rem, 0.8vw, 0.8rem);
+    font-weight: 700;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: #C4972A;
+    color: #D4A017;
     display: block;
     margin-bottom: 12px;
   }
+
+  /* ── Section Heading: Manrope, 700-800 weight, -0.02em ── */
   .pp-section-heading {
-    font-family: 'Playfair Display', Georgia, serif;
-    font-weight: 700;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 800;
     font-size: clamp(1.7rem, 3.5vw, 2.6rem);
-    line-height: 1.14;
+    line-height: 1.1;
     letter-spacing: -0.02em;
-    color: #1A1A1A;
+    color: #111111;
     margin: 0 0 14px;
   }
-  .pp-section-heading em { font-style: italic; font-weight: 600; color: #C4972A; }
+  .pp-section-heading em { font-style: italic; font-weight: 700; color: #D4A017; }
+
+  /* ── Section Description: Inter, 400 weight, 1.7 line-height ── */
   .pp-section-desc {
-    font-size: clamp(0.88rem, 1.2vw, 1rem);
-    font-weight: 380;
+    font-family: 'Inter', sans-serif;
+    font-size: clamp(0.88rem, 1.1vw, 1rem);
+    font-weight: 400;
     line-height: 1.7;
-    color: #7A6A4A;
+    color: #5F5F5F;
     max-width: 520px;
     margin: 0 auto;
   }
@@ -320,15 +336,14 @@ const CSS = `
   /* ── Card ── */
   .pp-card {
     position: relative;
-    background: #FFFBEF;
+    background: #FFFFFF;
     border-radius: 20px;
-    border: 1px solid rgba(196,151,42,0.14);
+    border: 1px solid rgba(212,160,23,0.14);
     box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 6px 18px rgba(0,0,0,0.05);
     display: flex;
     flex-direction: column;
     overflow: hidden;
     height: 100%;
-    /* KEY FIX: cards start VISIBLE — animation is additive, not conditional */
     opacity: 1;
     transform: none;
     transition:
@@ -336,7 +351,6 @@ const CSS = `
       box-shadow 0.38s ease,
       border-color 0.38s ease;
   }
-  /* Observer adds this class — triggers the lift-in only when in viewport */
   .pp-card.pp-lift-in {
     animation: ppCardIn 0.6s cubic-bezier(0.25, 1, 0.5, 1) both;
   }
@@ -349,18 +363,18 @@ const CSS = `
     box-shadow:
       0 4px 12px rgba(0,0,0,0.06),
       0 20px 48px rgba(0,0,0,0.08),
-      0 0 0 1.5px #C4972A;
-    border-color: #C4972A;
+      0 0 0 1.5px #D4A017;
+    border-color: #D4A017;
   }
 
-  /* Slanted ribbon badge — signature element */
+  /* Slanted ribbon badge */
   .pp-card__badge {
     position: absolute;
     top: 20px;
     right: -30px;
     width: 128px;
-    background: #C4972A;
-    color: #1A1A1A;
+    background: #D4A017;
+    color: #111111;
     font-family: 'Inter', sans-serif;
     font-size: 9px;
     font-weight: 700;
@@ -373,29 +387,27 @@ const CSS = `
     pointer-events: none;
     z-index: 2;
   }
-  .pp-card__badge--dark { background: #3D3120; color: #F5C842; }
+  .pp-card__badge--dark { background: #2d3748; color: #F7C948; }
 
-  /* Featured top strip */
-  .pp-card--featured { border-color: rgba(196,151,42,0.35); }
+  .pp-card--featured { border-color: rgba(212,160,23,0.35); }
   .pp-card--featured::before {
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0;
     height: 3px;
-    background: linear-gradient(90deg, transparent, #C4972A, transparent);
+    background: linear-gradient(90deg, transparent, #D4A017, transparent);
     z-index: 1;
   }
 
-  /* Icon tile */
   .pp-card__icon-wrap {
     display: flex;
     align-items: center;
     justify-content: center;
     width: 60px;
     height: 60px;
-    background: linear-gradient(135deg, #FEF9ED, #FDF6E3);
+    background: linear-gradient(135deg, #FFFBEF, #FFF8E6);
     border-radius: 16px;
-    border: 1px solid rgba(196,151,42,0.22);
+    border: 1px solid rgba(212,160,23,0.22);
     font-size: 28px;
     margin: clamp(20px, 3vw, 28px) clamp(20px, 3vw, 28px) 0;
     flex-shrink: 0;
@@ -410,7 +422,6 @@ const CSS = `
     flex: 1;
   }
 
-  /* Duration pill */
   .pp-card__duration {
     display: inline-flex;
     align-items: center;
@@ -420,50 +431,54 @@ const CSS = `
     font-weight: 600;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: #C4972A;
-    background: rgba(196,151,42,0.10);
-    border: 1px solid rgba(196,151,42,0.20);
+    color: #D4A017;
+    background: rgba(212,160,23,0.10);
+    border: 1px solid rgba(212,160,23,0.20);
     border-radius: 100px;
     padding: 3px 10px;
     margin-bottom: 10px;
     width: fit-content;
   }
 
+  /* ── Card Title: Manrope ── */
   .pp-card__title {
-    font-family: 'Playfair Display', Georgia, serif;
+    font-family: 'Manrope', sans-serif;
     font-weight: 700;
-    font-size: clamp(1.1rem, 1.8vw, 1.3rem);
+    font-size: clamp(1.1rem, 1.6vw, 1.3rem);
     line-height: 1.2;
     letter-spacing: -0.01em;
-    color: #1A1A1A;
+    color: #111111;
     margin: 0 0 4px;
   }
+
+  /* ── Card Tagline: Inter ── */
   .pp-card__tagline {
     font-family: 'Inter', sans-serif;
-    font-size: clamp(11px, 0.95vw, 12.5px);
+    font-size: clamp(11px, 0.9vw, 12.5px);
     font-weight: 400;
     font-style: italic;
-    color: #C4972A;
+    color: #D4A017;
     margin: 0 0 10px;
     line-height: 1.4;
   }
+
+  /* ── Card Description: Inter ── */
   .pp-card__desc {
     font-family: 'Inter', sans-serif;
-    font-size: clamp(0.82rem, 1vw, 0.88rem);
-    font-weight: 380;
-    line-height: 1.68;
-    color: #7A6A4A;
+    font-size: clamp(0.82rem, 0.95vw, 0.88rem);
+    font-weight: 400;
+    line-height: 1.7;
+    color: #5F5F5F;
     margin: 0 0 clamp(14px, 2vw, 18px);
   }
   .pp-card__divider {
     width: 100%;
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(196,151,42,0.22), transparent);
+    background: linear-gradient(90deg, transparent, rgba(212,160,23,0.22), transparent);
     margin-bottom: clamp(12px, 1.8vw, 16px);
     flex-shrink: 0;
   }
 
-  /* Inclusions list */
   .pp-card__inclusions {
     list-style: none;
     padding: 0;
@@ -477,9 +492,9 @@ const CSS = `
     align-items: center;
     gap: 8px;
     font-family: 'Inter', sans-serif;
-    font-size: clamp(11px, 0.9vw, 12.5px);
-    font-weight: 420;
-    color: #3D3120;
+    font-size: clamp(11px, 0.85vw, 12.5px);
+    font-weight: 450;
+    color: #2d3748;
     line-height: 1.4;
   }
   .pp-card__check {
@@ -488,15 +503,15 @@ const CSS = `
     justify-content: center;
     width: 18px;
     height: 18px;
-    background: linear-gradient(135deg, rgba(196,151,42,0.15), rgba(196,151,42,0.08));
+    background: linear-gradient(135deg, rgba(212,160,23,0.15), rgba(212,160,23,0.08));
     border-radius: 50%;
-    border: 1px solid rgba(196,151,42,0.28);
+    border: 1px solid rgba(212,160,23,0.28);
     flex-shrink: 0;
   }
   .pp-card__check svg {
     width: 9px;
     height: 9px;
-    stroke: #C4972A;
+    stroke: #D4A017;
     fill: none;
     stroke-width: 2.5;
     stroke-linecap: round;
@@ -505,50 +520,51 @@ const CSS = `
 
   .pp-card__footer { margin-top: auto; }
 
+  /* ── CTA: Inter, 600 weight, 0.01em ── */
   .pp-card__cta--filled {
     display: block;
     width: 100%;
     padding: clamp(10px, 1.5vw, 12px) 0;
-    background: #C4972A;
-    color: #1A1A1A;
+    background: linear-gradient(135deg, #F7C948 0%, #D4A017 100%);
+    color: #111111;
     font-family: 'Inter', sans-serif;
-    font-size: clamp(12px, 1vw, 13.5px);
+    font-size: clamp(0.85rem, 0.95vw, 0.95rem);
     font-weight: 600;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.01em;
     text-align: center;
     border: none;
     border-radius: 12px;
     cursor: pointer;
     text-decoration: none;
     transition: background 0.25s ease, transform 0.22s ease, box-shadow 0.25s ease;
-    box-shadow: 0 2px 10px rgba(196,151,42,0.28);
+    box-shadow: 0 2px 10px rgba(212,160,23,0.28);
   }
-  .pp-card__cta--filled:hover { background: #A07820; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(196,151,42,0.38); }
-  .pp-card__cta--filled:focus-visible { outline: 2px solid #C4972A; outline-offset: 3px; }
+  .pp-card__cta--filled:hover { background: #F7C948; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(212,160,23,0.38); }
+  .pp-card__cta--filled:focus-visible { outline: 2px solid #D4A017; outline-offset: 3px; }
 
   .pp-card__cta--outline {
     display: block;
     width: 100%;
     padding: clamp(10px, 1.5vw, 12px) 0;
     background: transparent;
-    color: #3D3120;
+    color: #2d3748;
     font-family: 'Inter', sans-serif;
-    font-size: clamp(12px, 1vw, 13.5px);
-    font-weight: 550;
-    letter-spacing: 0.03em;
+    font-size: clamp(0.85rem, 0.95vw, 0.95rem);
+    font-weight: 600;
+    letter-spacing: 0.01em;
     text-align: center;
-    border: 1.5px solid rgba(196,151,42,0.22);
+    border: 1.5px solid rgba(212,160,23,0.22);
     border-radius: 12px;
     cursor: pointer;
     text-decoration: none;
     transition: border-color 0.25s ease, background 0.25s ease;
   }
-  .pp-card__cta--outline:hover { border-color: #C4972A; background: rgba(196,151,42,0.07); }
-  .pp-card__cta--outline:focus-visible { outline: 2px solid #C4972A; outline-offset: 3px; }
+  .pp-card__cta--outline:hover { border-color: #D4A017; background: rgba(212,160,23,0.07); }
+  .pp-card__cta--outline:focus-visible { outline: 2px solid #D4A017; outline-offset: 3px; }
 
   /* ── Trust strip ── */
   .pp-trust-strip {
-    border-top: 1px solid rgba(196,151,42,0.22);
+    border-top: 1px solid rgba(212,160,23,0.22);
     padding: clamp(28px, 4vw, 44px) clamp(20px, 5vw, 48px);
     max-width: 1280px;
     margin: 0 auto;
@@ -563,9 +579,9 @@ const CSS = `
     align-items: center;
     gap: 10px;
     font-family: 'Inter', sans-serif;
-    font-size: clamp(12px, 1.1vw, 13.5px);
-    font-weight: 480;
-    color: #3D3120;
+    font-size: clamp(0.8rem, 0.95vw, 0.9rem);
+    font-weight: 450;
+    color: #2d3748;
     white-space: nowrap;
   }
   .pp-trust-icon {
@@ -574,9 +590,9 @@ const CSS = `
     justify-content: center;
     width: 34px;
     height: 34px;
-    background: linear-gradient(135deg, #FDF6E3, #FEF9ED);
+    background: linear-gradient(135deg, #FFF8E6, #FFFBEF);
     border-radius: 50%;
-    border: 1px solid rgba(196,151,42,0.22);
+    border: 1px solid rgba(212,160,23,0.22);
     font-size: 16px;
     flex-shrink: 0;
   }
@@ -609,7 +625,7 @@ function CheckIcon() {
   );
 }
 
-// ── ClockIcon (inline, tiny) ──────────────────────────────────────────────────
+// ── ClockIcon ──────────────────────────────────────────────────────────────────
 function ClockIcon() {
   return (
     <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -647,18 +663,15 @@ function PackageCard({ pkg }) {
       className={`pp-card${pkg.featured ? " pp-card--featured" : ""}`}
       aria-label={`${pkg.title} — ${pkg.duration} package`}
     >
-      {/* Signature: slanted ribbon badge */}
       <div className={`pp-card__badge${pkg.badgeDark ? " pp-card__badge--dark" : ""}`}>
         {pkg.badge}
       </div>
 
-      {/* Icon tile */}
       <div className="pp-card__icon-wrap" aria-hidden="true">
         {pkg.icon}
       </div>
 
       <div className="pp-card__body">
-        {/* Duration pill */}
         <span className="pp-card__duration">
           <ClockIcon />
           {pkg.duration}
@@ -670,7 +683,6 @@ function PackageCard({ pkg }) {
 
         <div className="pp-card__divider" aria-hidden="true" />
 
-        {/* Inclusions */}
         <ul className="pp-card__inclusions" aria-label={`What's included in ${pkg.title}`}>
           {pkg.inclusions.map((item) => (
             <li key={item} className="pp-card__inclusion">
@@ -704,23 +716,20 @@ export default function PopularPackages() {
   const cardWrapRefs     = useRef([]);
   const observedSet      = useRef(new Set());
 
-  // ── Banner entrance — opt-in animation ──────────────────────────────────
   useEffect(() => {
     const section = sectionRef.current;
     const content = bannerContentRef.current;
     if (!section || !content) return;
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduced) return; // CSS default (opacity:1) handles static render
+    if (reduced) return;
 
-    // Mark section so CSS arms the opacity:0 start states
     section.classList.add("pp-anim-ready");
 
     const els = content.querySelectorAll(
       ".pp-banner__eyebrow, .pp-banner__heading, .pp-banner__subtext, .pp-banner__actions"
     );
 
-    // Tiny delay ensures the hidden state is painted before transition fires
     const timer = setTimeout(() => {
       els.forEach((el) => el.classList.add("pp-visible"));
     }, 60);
@@ -728,15 +737,12 @@ export default function PopularPackages() {
     return () => clearTimeout(timer);
   }, []);
 
-  // ── Card lift-in — IntersectionObserver ──────────────────────────────────
-  // Cards are VISIBLE by default. The observer adds a CSS animation
-  // class when they enter the viewport — purely additive, never hides them.
   const setCardRef = useCallback((node, i) => {
     if (!node || observedSet.current.has(i)) return;
     cardWrapRefs.current[i] = node;
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduced) return; // no animation needed — card already visible
+    if (reduced) return;
 
     const card = node.querySelector(".pp-card");
     if (!card) return;
@@ -746,7 +752,6 @@ export default function PopularPackages() {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             observedSet.current.add(i);
-            // Stagger via animation-delay on the class
             card.style.animationDelay = `${i * 80}ms`;
             card.classList.add("pp-lift-in");
             observer.disconnect();
@@ -783,7 +788,6 @@ export default function PopularPackages() {
         id="packages"
         aria-labelledby="pp-main-heading"
       >
-        {/* ── Hero banner ── */}
         <div className="pp-banner" aria-label="Popular packages hero banner">
           <img
             className="pp-banner__img"
@@ -831,7 +835,6 @@ export default function PopularPackages() {
           </div>
         </div>
 
-        {/* ── Packages grid ── */}
         <div className="pp-grid-section">
           <header className="pp-grid-header">
             <span className="pp-section-eyebrow">Curated for You</span>
@@ -862,7 +865,6 @@ export default function PopularPackages() {
           </div>
         </div>
 
-        {/* ── Trust strip ── */}
         <div
           className="pp-trust-strip"
           role="list"

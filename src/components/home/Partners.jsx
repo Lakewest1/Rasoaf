@@ -5,7 +5,7 @@
 // A premium trust reinforcement section featuring partner logos from airlines,
 // hotels, accreditation bodies, and travel authorities.
 //
-// Design: White/light background, grayscale logos with color on hover
+// Design System: Manrope (headings) · Inter (body) · Yellow/Black brand
 // Layout: Logo grid with optional auto-scrolling carousel
 // Animation: Fade-up on scroll, hover scale, infinite scroll
 // Responsive: 6 → 4 → 3 → 2 columns
@@ -196,9 +196,9 @@ function PartnerCard({ partner, index, inView }) {
           padding: "clamp(16px, 2vw, 28px)",
           background: hovered ? "#ffffff" : "rgba(255,255,255,0.6)",
           borderRadius: "16px",
-          border: `1px solid ${hovered ? "rgba(196,151,42,0.15)" : "rgba(0,0,0,0.04)"}`,
+          border: `1px solid ${hovered ? "rgba(212,160,23,0.15)" : "rgba(0,0,0,0.04)"}`,
           boxShadow: hovered
-            ? "0 8px 32px rgba(0,0,0,0.06), 0 4px 16px rgba(196,151,42,0.06)"
+            ? "0 8px 32px rgba(0,0,0,0.06), 0 4px 16px rgba(212,160,23,0.06)"
             : "0 2px 8px rgba(0,0,0,0.03), 0 1px 2px rgba(0,0,0,0.02)",
           transform: hovered ? "translateY(-4px) scale(1.03)" : "translateY(0) scale(1)",
           transition: "all 0.35s cubic-bezier(0.25, 1, 0.5, 1)",
@@ -247,7 +247,7 @@ function PartnerCard({ partner, index, inView }) {
               fontFamily: "'Inter', sans-serif",
               fontSize: "clamp(10px, 0.9vw, 13px)",
               fontWeight: 600,
-              color: hovered ? "#0a0a2e" : "#4a5568",
+              color: hovered ? "#111111" : "#4a5568",
               textAlign: "center",
               transition: "color 0.3s ease",
               lineHeight: 1.2,
@@ -268,14 +268,14 @@ function PartnerCard({ partner, index, inView }) {
               fontFamily: "'Inter', sans-serif",
               fontSize: "clamp(8px, 0.6vw, 10px)",
               fontWeight: 500,
-              color: "#C4972A",
+              color: "#D4A017",
               background: "rgba(255,255,255,0.95)",
               padding: "4px 12px",
               borderRadius: "50px",
               boxShadow: "0 2px 10px rgba(0,0,0,0.06)",
               whiteSpace: "nowrap",
               animation: "tooltip-fade 0.3s ease",
-              border: "1px solid rgba(196,151,42,0.1)",
+              border: "1px solid rgba(212,160,23,0.1)",
             }}
           >
             {partner.description}
@@ -293,8 +293,8 @@ function PartnerCard({ partner, index, inView }) {
             fontWeight: 500,
             textTransform: "uppercase",
             letterSpacing: "0.06em",
-            color: hovered ? "#C4972A" : "rgba(0,0,0,0.2)",
-            background: hovered ? "rgba(196,151,42,0.06)" : "rgba(0,0,0,0.03)",
+            color: hovered ? "#D4A017" : "rgba(0,0,0,0.2)",
+            background: hovered ? "rgba(212,160,23,0.06)" : "rgba(0,0,0,0.03)",
             padding: "2px 8px",
             borderRadius: "50px",
             transition: "all 0.3s ease",
@@ -409,8 +409,9 @@ export default function Partners() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400;1,600;1,700&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,450;14..32,500;14..32,600;14..32,700;14..32,800&display=swap');
+        /* ── Rasoaf Design System Typography ── */
+        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;450;500;600;700;800&display=swap');
 
         @keyframes tooltip-fade {
           from { opacity: 0; transform: translateX(-50%) translateY(4px); }
@@ -419,7 +420,7 @@ export default function Partners() {
 
         .partners-section {
           padding: clamp(48px, 8vh, 80px) clamp(16px, 4vw, 48px);
-          background: linear-gradient(180deg, #FAF5E8 0%, #FFFDF7 50%, #FFFFFF 100%);
+          background: linear-gradient(180deg, #FFF8E6 0%, #FFFBEF 50%, #FFFFFF 100%);
           position: relative;
           overflow: hidden;
         }
@@ -431,7 +432,7 @@ export default function Partners() {
           left: 0;
           right: 0;
           height: 1px;
-          background: linear-gradient(90deg, transparent, rgba(196,151,42,0.08), transparent);
+          background: linear-gradient(90deg, transparent, rgba(212,160,23,0.08), transparent);
         }
 
         .partners-container {
@@ -457,31 +458,33 @@ export default function Partners() {
         .partners-header .eyebrow-line {
           width: clamp(24px, 3vw, 40px);
           height: 1.5px;
-          background: #C4972A;
+          background: #D4A017;
           border-radius: 999px;
         }
 
+        /* ── Eyebrow: Inter, uppercase, 0.18em ── */
         .partners-header .eyebrow-text {
           font-family: 'Inter', sans-serif;
-          font-size: clamp(9px, 0.9vw, 11px);
+          font-size: clamp(0.7rem, 0.8vw, 0.8rem);
           font-weight: 700;
-          letter-spacing: 3px;
+          letter-spacing: 0.18em;
           text-transform: uppercase;
-          color: #C4972A;
+          color: #D4A017;
         }
 
+        /* ── Heading: Manrope, 700-800 weight, -0.02em ── */
         .partners-header h2 {
-          font-family: 'Playfair Display', Georgia, serif;
-          font-size: clamp(1.6rem, 3.5vw, 2.8rem);
-          font-weight: 700;
-          color: #0a0a2e;
+          font-family: 'Manrope', sans-serif;
+          font-weight: 800;
+          font-size: clamp(1.8rem, 3.5vw, 2.8rem);
           letter-spacing: -0.02em;
-          line-height: 1.2;
+          line-height: 1.1;
+          color: #111111;
           margin-bottom: 12px;
         }
 
         .partners-header h2 .highlight {
-          color: #C4972A;
+          color: #D4A017;
           position: relative;
         }
 
@@ -492,18 +495,19 @@ export default function Partners() {
           left: 0;
           right: 0;
           height: 2.5px;
-          background: linear-gradient(90deg, #C4972A, rgba(196,151,42,0.2));
+          background: linear-gradient(90deg, #D4A017, rgba(212,160,23,0.2));
           border-radius: 3px;
         }
 
+        /* ── Supporting Text: Inter, 400 weight, 1.7 line-height ── */
         .partners-header p {
           font-family: 'Inter', sans-serif;
-          font-size: clamp(14px, 1.2vw, 16px);
-          color: #5a5a6a;
+          font-size: clamp(0.95rem, 1.1vw, 1.05rem);
+          font-weight: 400;
+          line-height: 1.7;
+          color: #5F5F5F;
           max-width: 520px;
           margin: 0 auto;
-          line-height: 1.7;
-          font-weight: 400;
         }
 
         .partners-header .header-animate {
@@ -513,7 +517,7 @@ export default function Partners() {
                       transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        /* ── Category Tags ──────────────────────────────────────────────── */
+        /* ── Category Tags: Inter ── */
         .category-tags {
           display: flex;
           flex-wrap: wrap;
@@ -539,7 +543,7 @@ export default function Partners() {
         }
 
         .category-tag svg {
-          color: #C4972A;
+          color: #D4A017;
           width: 14px;
           height: 14px;
         }
@@ -621,12 +625,12 @@ export default function Partners() {
 
         .partners-carousel::before {
           left: 0;
-          background: linear-gradient(90deg, rgba(250,245,232,0.9) 0%, transparent 100%);
+          background: linear-gradient(90deg, rgba(255,248,230,0.9) 0%, transparent 100%);
         }
 
         .partners-carousel::after {
           right: 0;
-          background: linear-gradient(90deg, transparent 0%, rgba(250,245,232,0.9) 100%);
+          background: linear-gradient(90deg, transparent 0%, rgba(255,248,230,0.9) 100%);
         }
 
         @media (max-width: 768px) {
@@ -745,7 +749,7 @@ export default function Partners() {
               style={{
                 flex: 1,
                 height: 1,
-                background: "linear-gradient(90deg, transparent, rgba(196,151,42,0.08))",
+                background: "linear-gradient(90deg, transparent, rgba(212,160,23,0.08))",
               }}
             />
             <div
@@ -759,14 +763,14 @@ export default function Partners() {
                 color: "rgba(0,0,0,0.2)",
               }}
             >
-              <CheckCircle size={12} color="#C4972A" />
+              <CheckCircle size={12} color="#D4A017" />
               <span>200+ Partners Worldwide</span>
             </div>
             <div
               style={{
                 flex: 1,
                 height: 1,
-                background: "linear-gradient(90deg, rgba(196,151,42,0.08), transparent)",
+                background: "linear-gradient(90deg, rgba(212,160,23,0.08), transparent)",
               }}
             />
           </div>

@@ -24,8 +24,7 @@ import {
 //   Only the marquee translateX runs — single compositor-thread transform,
 //   zero layout impact, smooth on every Android/iOS device.
 //
-// The isMobile JS checks are replaced with CSS @media throughout so the
-// correct behaviour is applied regardless of SSR or resize edge cases.
+// Design System: Manrope (headings) · Inter (body) · Yellow/Black brand
 // ─────────────────────────────────────────────────────────────────────────────
 
 function useReveal(threshold = 0.2) {
@@ -38,22 +37,26 @@ function useReveal(threshold = 0.2) {
 // Trust Tags Data
 // ─────────────────────────────────────────────────────────────────────────────
 const TRUST_TAGS = [
-  { id: 1,  label: "DBS Checked",           icon: ShieldCheck,   color: "#C4972A" },
-  { id: 2,  label: "CQC Compliant",         icon: BadgeCheck,    color: "#C4972A" },
-  { id: 3,  label: "Weekly Pay",            icon: Wallet,        color: "#C4972A" },
-  { id: 4,  label: "24/7 Support",          icon: Clock3,        color: "#C4972A" },
-  { id: 5,  label: "Fast Placement",        icon: Zap,           color: "#C4972A" },
-  { id: 6,  label: "NHS Opportunities",     icon: Building2,     color: "#005EB8" },
-  { id: 7,  label: "Dedicated Consultants", icon: Users,         color: "#C4972A" },
-  { id: 8,  label: "Flexible Shifts",       icon: CalendarDays,  color: "#C4972A" },
-  { id: 9,  label: "Career Development",    icon: TrendingUp,    color: "#C4972A" },
-  { id: 10, label: "Training Support",      icon: GraduationCap, color: "#C4972A" },
+  { id: 1,  label: "DBS Checked",           icon: ShieldCheck,   color: "#D4A017" },
+  { id: 2,  label: "CQC Compliant",         icon: BadgeCheck,    color: "#D4A017" },
+  { id: 3,  label: "Weekly Pay",            icon: Wallet,        color: "#D4A017" },
+  { id: 4,  label: "24/7 Support",          icon: Clock3,        color: "#D4A017" },
+  { id: 5,  label: "Fast Placement",        icon: Zap,           color: "#D4A017" },
+  { id: 6,  label: "NHS Opportunities",     icon: Building2,     color: "#D4A017" },
+  { id: 7,  label: "Dedicated Consultants", icon: Users,         color: "#D4A017" },
+  { id: 8,  label: "Flexible Shifts",       icon: CalendarDays,  color: "#D4A017" },
+  { id: 9,  label: "Career Development",    icon: TrendingUp,    color: "#D4A017" },
+  { id: 10, label: "Training Support",      icon: GraduationCap, color: "#D4A017" },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
 // CSS
 // ─────────────────────────────────────────────────────────────────────────────
 const CSS = `
+  /* ── Rasoaf Design System Typography ── */
+  @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;450;500;600;700;800&display=swap');
+
   /* ── Marquee track ───────────────────────────────────────────────────────
      Single translateX on the container — one compositor layer, works fine
      on every mobile device. Speed is set via CSS custom property so the
@@ -110,12 +113,12 @@ const CSS = `
     inset: 0;
     border-radius: 50%;
     background: #ffffff;
-    border: 1.5px solid rgba(196,151,42,0.25);
+    border: 1.5px solid rgba(212,160,23,0.25);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04), 0 0 0 1px rgba(196,151,42,0.06);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04), 0 0 0 1px rgba(212,160,23,0.06);
     overflow: hidden;
     transition: box-shadow 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
   }
@@ -123,10 +126,10 @@ const CSS = `
   @media (hover: hover) {
     .tb-card:hover .tb-face {
       box-shadow:
-        0 0 18px rgba(196,151,42,0.35),
+        0 0 18px rgba(212,160,23,0.35),
         0 4px 16px rgba(0,0,0,0.08),
-        0 0 0 1px rgba(196,151,42,0.18);
-      border-color: rgba(196,151,42,0.45);
+        0 0 0 1px rgba(212,160,23,0.18);
+      border-color: rgba(212,160,23,0.45);
       transform: scale(1.05);
     }
   }
@@ -140,7 +143,7 @@ const CSS = `
     position: absolute;
     inset: 6px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(196,151,42,0.06), transparent 70%);
+    background: radial-gradient(circle, rgba(212,160,23,0.06), transparent 70%);
     pointer-events: none;
     animation: tb-pulse 2.5s ease-in-out infinite;
   }
@@ -151,7 +154,7 @@ const CSS = `
     top: 0; left: -55%;
     width: 50%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(196,151,42,0.12), transparent);
+    background: linear-gradient(90deg, transparent, rgba(212,160,23,0.12), transparent);
     transform: skewX(-20deg);
     pointer-events: none;
     opacity: 0;
@@ -181,7 +184,7 @@ const CSS = `
     }
   }
 
-  /* ── Label ── */
+  /* ── Label: Inter, 9px, 600 weight ── */
   .tb-label {
     font-family: 'Inter', sans-serif;
     font-weight: 600;
@@ -206,7 +209,7 @@ const CSS = `
     position: absolute;
     inset: -3px;
     border-radius: 50%;
-    border: 1px solid rgba(196,151,42,0.12);
+    border: 1px solid rgba(212,160,23,0.12);
     pointer-events: none;
     animation: tb-ring-cw  8s linear infinite;
   }
@@ -214,7 +217,7 @@ const CSS = `
     position: absolute;
     inset: -6px;
     border-radius: 50%;
-    border: 1px solid rgba(196,151,42,0.06);
+    border: 1px solid rgba(212,160,23,0.06);
     pointer-events: none;
     animation: tb-ring-ccw 10s linear infinite;
   }
@@ -228,7 +231,7 @@ const CSS = `
     position: absolute;
     inset: 0;
     border-radius: 50%;
-    border: 1.5px solid #C4972A;
+    border: 1.5px solid #D4A017;
     pointer-events: none;
     opacity: 0;
     animation: none;
@@ -422,22 +425,21 @@ export default function TrustBadges({ className = "", variant = "light" }) {
         ref={ref}
         className={`${className}${inView ? " tb-section-reveal" : ""}`}
         style={{
-          // padding controlled by CSS @media — no JS isMobile branch
           padding: "20px 0",
           background: isDark
             ? "linear-gradient(135deg, #0a1628 0%, #0f1d3d 100%)"
-            : "linear-gradient(135deg, #ffffff 0%, #fefcf8 100%)",
+            : "linear-gradient(135deg, #ffffff 0%, #FFF8E6 100%)",
           position: "relative",
           overflow: "hidden",
         }}
       >
-        {/* Subtle background radial */}
+        {/* Subtle background radial — gold accent */}
         <div
           style={{
             position: "absolute",
             inset: 0,
             backgroundImage:
-              "radial-gradient(circle at 20% 50%, rgba(196,151,42,0.03), transparent 70%)",
+              "radial-gradient(circle at 20% 50%, rgba(212,160,23,0.03), transparent 70%)",
             pointerEvents: "none",
           }}
         />
@@ -452,7 +454,7 @@ export default function TrustBadges({ className = "", variant = "light" }) {
         >
           <TrustMarquee items={TRUST_TAGS} isInView={inView} />
 
-          {/* Subtle bottom divider — hidden on mobile via CSS */}
+          {/* Subtle bottom divider — gold accent */}
           <div className="tb-divider-wrap">
             <div
               style={{
@@ -466,7 +468,7 @@ export default function TrustBadges({ className = "", variant = "light" }) {
                 style={{
                   width: 50,
                   height: 1,
-                  background: "rgba(196,151,42,0.15)",
+                  background: "rgba(212,160,23,0.15)",
                   borderRadius: 999,
                 }}
               />

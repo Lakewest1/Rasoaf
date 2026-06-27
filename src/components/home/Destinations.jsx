@@ -5,7 +5,7 @@
 // A premium destination showcase section that inspires visitors by showcasing
 // key pilgrimage and travel destinations.
 //
-// Design: Yellow/warm backgrounds, black text, cream cards, gold accents
+// Design System: Manrope (headings) · Inter (body) · Yellow/Black brand
 // Layout: Full-width hero banner + 6 destination cards in responsive grid
 // Animation: Fade-up on scroll, hover lift with image zoom
 // Responsive: 3 → 2 → 1 columns (desktop → tablet → mobile)
@@ -133,7 +133,7 @@ function HeroBanner({ inView }) {
           position: "absolute",
           inset: 0,
           background: `
-            linear-gradient(135deg, rgba(196,151,42,0.12) 0%, rgba(0,0,0,0.35) 40%, rgba(0,0,0,0.5) 100%),
+            linear-gradient(135deg, rgba(212,160,23,0.12) 0%, rgba(0,0,0,0.35) 40%, rgba(0,0,0,0.5) 100%),
             linear-gradient(0deg, rgba(0,0,0,0.5) 0%, transparent 60%)
           `,
           zIndex: 1,
@@ -148,7 +148,7 @@ function HeroBanner({ inView }) {
           left: "10%",
           right: "10%",
           height: "3px",
-          background: "linear-gradient(90deg, transparent, #C4972A, transparent)",
+          background: "linear-gradient(90deg, transparent, #D4A017, transparent)",
           zIndex: 2,
           opacity: inView ? 1 : 0,
           transition: "opacity 0.8s ease 0.4s",
@@ -172,7 +172,7 @@ function HeroBanner({ inView }) {
           transition: "opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1)",
         }}
       >
-        {/* Eyebrow */}
+        {/* Eyebrow: Inter, uppercase, 0.18em */}
         <div
           style={{
             display: "inline-flex",
@@ -185,18 +185,18 @@ function HeroBanner({ inView }) {
             style={{
               width: "clamp(24px, 3vw, 40px)",
               height: "1.5px",
-              background: "rgba(196,151,42,0.6)",
+              background: "rgba(212,160,23,0.6)",
               borderRadius: "999px",
             }}
           />
           <span
             style={{
               fontFamily: "'Inter', sans-serif",
-              fontSize: "clamp(9px, 0.85vw, 11px)",
+              fontSize: "clamp(0.7rem, 0.8vw, 0.8rem)",
               fontWeight: 700,
-              letterSpacing: "0.28em",
+              letterSpacing: "0.18em",
               textTransform: "uppercase",
-              color: "rgba(196,151,42,0.9)",
+              color: "rgba(212,160,23,0.9)",
             }}
           >
             Explore With Confidence
@@ -205,39 +205,39 @@ function HeroBanner({ inView }) {
             style={{
               width: "clamp(24px, 3vw, 40px)",
               height: "1.5px",
-              background: "rgba(196,151,42,0.6)",
+              background: "rgba(212,160,23,0.6)",
               borderRadius: "999px",
             }}
           />
         </div>
 
-        {/* Heading */}
+        {/* Heading: Manrope, 700-800 weight, -0.02em */}
         <h2
           style={{
-            fontFamily: "'Playfair Display', Georgia, serif",
+            fontFamily: "'Manrope', sans-serif",
+            fontWeight: 800,
             fontSize: "clamp(1.8rem, 4.5vw, 3.5rem)",
-            fontWeight: 700,
-            color: "#ffffff",
             lineHeight: 1.1,
             letterSpacing: "-0.02em",
+            color: "#ffffff",
             marginBottom: "clamp(8px, 1.5vw, 16px)",
             maxWidth: "700px",
             textShadow: "0 2px 20px rgba(0,0,0,0.3)",
           }}
         >
           Discover Sacred &{" "}
-          <span style={{ color: "#C4972A" }}>Iconic Destinations</span>
+          <span style={{ color: "#F7C948" }}>Iconic Destinations</span>
         </h2>
 
-        {/* Supporting Text */}
+        {/* Supporting Text: Inter, 400 weight, 1.7 line-height */}
         <p
           style={{
             fontFamily: "'Inter', sans-serif",
-            fontSize: "clamp(13px, 1.2vw, 16px)",
+            fontSize: "clamp(0.88rem, 1.1vw, 1rem)",
             fontWeight: 400,
+            lineHeight: 1.7,
             color: "rgba(255,255,255,0.85)",
             maxWidth: "560px",
-            lineHeight: 1.7,
             marginBottom: 0,
           }}
         >
@@ -279,9 +279,9 @@ function DestinationCard({ destination, index, inView }) {
           height: "100%",
           display: "flex",
           flexDirection: "column",
-          border: `1px solid ${hovered ? "rgba(196,151,42,0.30)" : "rgba(0,0,0,0.05)"}`,
+          border: `1px solid ${hovered ? "rgba(212,160,23,0.30)" : "rgba(0,0,0,0.05)"}`,
           boxShadow: hovered
-            ? "0 16px 48px rgba(0,0,0,0.10), 0 4px 16px rgba(196,151,42,0.08)"
+            ? "0 16px 48px rgba(0,0,0,0.10), 0 4px 16px rgba(212,160,23,0.08)"
             : "0 2px 12px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02)",
           transform: hovered ? "translateY(-6px)" : "translateY(0)",
           transition: "all 0.4s cubic-bezier(0.25, 1, 0.5, 1)",
@@ -341,7 +341,7 @@ function DestinationCard({ destination, index, inView }) {
               letterSpacing: "0.08em",
               textTransform: "uppercase",
               color: "#ffffff",
-              background: "rgba(196,151,42,0.85)",
+              background: "rgba(212,160,23,0.85)",
               backdropFilter: "blur(8px)",
               WebkitBackdropFilter: "blur(8px)",
               padding: "4px 14px",
@@ -370,7 +370,7 @@ function DestinationCard({ destination, index, inView }) {
               textShadow: "0 1px 8px rgba(0,0,0,0.3)",
             }}
           >
-            <MapPin size={14} color="#C4972A" />
+            <MapPin size={14} color="#D4A017" />
             <span>{destination.location}</span>
           </div>
 
@@ -386,11 +386,11 @@ function DestinationCard({ destination, index, inView }) {
               zIndex: 2,
             }}
           >
-            <Star size={12} fill="#C4972A" color="#C4972A" />
-            <Star size={12} fill="#C4972A" color="#C4972A" />
-            <Star size={12} fill="#C4972A" color="#C4972A" />
-            <Star size={12} fill="#C4972A" color="#C4972A" />
-            <Star size={12} fill="#C4972A" color="#C4972A" />
+            <Star size={12} fill="#D4A017" color="#D4A017" />
+            <Star size={12} fill="#D4A017" color="#D4A017" />
+            <Star size={12} fill="#D4A017" color="#D4A017" />
+            <Star size={12} fill="#D4A017" color="#D4A017" />
+            <Star size={12} fill="#D4A017" color="#D4A017" />
           </div>
         </div>
 
@@ -403,13 +403,13 @@ function DestinationCard({ destination, index, inView }) {
             flexDirection: "column",
           }}
         >
-          {/* Title */}
+          {/* ── Card Title: Manrope ── */}
           <h3
             style={{
-              fontFamily: "'Playfair Display', Georgia, serif",
-              fontSize: "clamp(1.1rem, 1.5vw, 1.35rem)",
+              fontFamily: "'Manrope', sans-serif",
+              fontSize: "clamp(1.1rem, 1.4vw, 1.25rem)",
               fontWeight: 700,
-              color: "#0a0a2e",
+              color: "#111111",
               marginBottom: "clamp(4px, 0.5vw, 8px)",
               lineHeight: 1.2,
               letterSpacing: "-0.01em",
@@ -419,14 +419,14 @@ function DestinationCard({ destination, index, inView }) {
             {destination.name}
           </h3>
 
-          {/* Description */}
+          {/* ── Description: Inter ── */}
           <p
             style={{
               fontFamily: "'Inter', sans-serif",
-              fontSize: "clamp(12px, 0.95vw, 13.5px)",
+              fontSize: "clamp(0.8rem, 0.9vw, 0.88rem)",
               fontWeight: 400,
-              color: "#4a5568",
-              lineHeight: 1.6,
+              lineHeight: 1.7,
+              color: "#5F5F5F",
               marginBottom: "clamp(14px, 1.8vw, 20px)",
               flex: 1,
             }}
@@ -434,16 +434,17 @@ function DestinationCard({ destination, index, inView }) {
             {destination.description}
           </p>
 
-          {/* CTA */}
+          {/* CTA: Inter, 600 weight, 0.01em */}
           <div
             style={{
               display: "flex",
               alignItems: "center",
               gap: "8px",
               fontFamily: "'Inter', sans-serif",
-              fontSize: "clamp(12px, 0.9vw, 13px)",
+              fontSize: "clamp(0.8rem, 0.85vw, 0.85rem)",
               fontWeight: 600,
-              color: hovered ? "#C4972A" : "#0a0a2e",
+              letterSpacing: "0.01em",
+              color: hovered ? "#D4A017" : "#111111",
               transition: "all 0.3s ease",
               paddingTop: "clamp(8px, 1vw, 12px)",
               borderTop: "1px solid rgba(0,0,0,0.04)",
@@ -469,7 +470,7 @@ function DestinationCard({ destination, index, inView }) {
               width: "4px",
               height: "4px",
               borderRadius: "50%",
-              background: "#C4972A",
+              background: "#D4A017",
               opacity: hovered ? 1 : 0.1,
               transform: hovered ? "scale(1)" : "scale(0.5)",
               transition: "all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)",
@@ -504,12 +505,13 @@ export default function Destinations() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400;1,600;1,700&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,450;14..32,500;14..32,600;14..32,700;14..32,800&display=swap');
+        /* ── Rasoaf Design System Typography ── */
+        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;450;500;600;700;800&display=swap');
 
         .destinations-section {
           padding: clamp(48px, 8vh, 80px) clamp(16px, 4vw, 48px);
-          background: linear-gradient(180deg, #FFF9E6 0%, #FFFDF7 50%, #FAF5E8 100%);
+          background: linear-gradient(180deg, #FFF8E6 0%, #FFFBEF 50%, #FFFDF5 100%);
           position: relative;
           overflow: hidden;
         }
@@ -522,8 +524,8 @@ export default function Destinations() {
           right: 0;
           bottom: 0;
           background-image: 
-            radial-gradient(circle at 15% 30%, rgba(196,151,42,0.04) 0%, transparent 40%),
-            radial-gradient(circle at 85% 70%, rgba(196,151,42,0.04) 0%, transparent 40%);
+            radial-gradient(circle at 15% 30%, rgba(212,160,23,0.04) 0%, transparent 40%),
+            radial-gradient(circle at 85% 70%, rgba(212,160,23,0.04) 0%, transparent 40%);
           pointer-events: none;
           z-index: 0;
         }
@@ -667,7 +669,7 @@ export default function Destinations() {
               style={{
                 flex: 1,
                 height: 1,
-                background: "linear-gradient(90deg, transparent, rgba(196,151,42,0.12))",
+                background: "linear-gradient(90deg, transparent, rgba(212,160,23,0.12))",
               }}
             />
             <div
@@ -675,7 +677,7 @@ export default function Destinations() {
                 width: 6,
                 height: 6,
                 borderRadius: "50%",
-                background: "#C4972A",
+                background: "#D4A017",
                 opacity: 0.4,
               }}
             />
@@ -683,7 +685,7 @@ export default function Destinations() {
               style={{
                 flex: 1,
                 height: 1,
-                background: "linear-gradient(90deg, rgba(196,151,42,0.12), transparent)",
+                background: "linear-gradient(90deg, rgba(212,160,23,0.12), transparent)",
               }}
             />
           </div>

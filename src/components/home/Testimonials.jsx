@@ -5,7 +5,7 @@
 // A premium social proof section featuring authentic pilgrim experiences.
 // Designed to build trust, emotional reassurance, and credibility.
 //
-// Design: Soft yellow background, black text, white/glass cards, gold accents
+// Design System: Manrope (headings) · Inter (body) · Yellow/Black brand
 // Layout: Featured testimonial + 3-column grid
 // Animation: Fade-up on scroll, hover lift, staggered reveal
 // Responsive: 3 → 2 → 1 columns (desktop → tablet → mobile)
@@ -204,8 +204,8 @@ function StarRating({ rating, size = 16 }) {
         <Star
           key={i}
           size={size}
-          fill={i < rating ? "#C4972A" : "none"}
-          color={i < rating ? "#C4972A" : "rgba(0,0,0,0.12)"}
+          fill={i < rating ? "#D4A017" : "none"}
+          color={i < rating ? "#D4A017" : "rgba(0,0,0,0.12)"}
           strokeWidth={i < rating ? 0 : 1.5}
         />
       ))}
@@ -218,7 +218,7 @@ function QuoteIcon({ size = 32 }) {
   return (
     <div
       style={{
-        color: "rgba(196,151,42,0.12)",
+        color: "rgba(212,160,23,0.12)",
         position: "absolute",
         top: "clamp(12px, 1.5vw, 20px)",
         right: "clamp(12px, 1.5vw, 20px)",
@@ -261,11 +261,11 @@ function FeaturedTestimonial({ testimonial, inView }) {
       >
         <div
           style={{
-            background: "linear-gradient(135deg, #FFF9E6 0%, #FFF3D6 100%)",
+            background: "linear-gradient(135deg, #FFF8E6 0%, #FFFBEF 100%)",
             borderRadius: "24px",
             padding: "clamp(28px, 4vw, 48px) clamp(24px, 3vw, 40px)",
-            border: "1px solid rgba(196,151,42,0.15)",
-            boxShadow: "0 4px 24px rgba(196,151,42,0.08)",
+            border: "1px solid rgba(212,160,23,0.15)",
+            boxShadow: "0 4px 24px rgba(212,160,23,0.08)",
             position: "relative",
             overflow: "hidden",
           }}
@@ -278,7 +278,7 @@ function FeaturedTestimonial({ testimonial, inView }) {
               left: 0,
               right: 0,
               height: "4px",
-              background: "linear-gradient(90deg, #C4972A, #e8b840, #C4972A)",
+              background: "linear-gradient(90deg, #D4A017, #F7C948, #D4A017)",
               borderRadius: "24px 24px 0 0",
             }}
           />
@@ -293,10 +293,10 @@ function FeaturedTestimonial({ testimonial, inView }) {
               alignItems: "center",
               gap: "6px",
               fontFamily: "'Inter', sans-serif",
-              fontSize: "clamp(10px, 0.8vw, 12px)",
+              fontSize: "clamp(0.65rem, 0.75vw, 0.8rem)",
               fontWeight: 600,
-              color: "#C4972A",
-              background: "rgba(196,151,42,0.1)",
+              color: "#D4A017",
+              background: "rgba(212,160,23,0.1)",
               padding: "4px 14px",
               borderRadius: "50px",
               marginBottom: "12px",
@@ -318,13 +318,15 @@ function FeaturedTestimonial({ testimonial, inView }) {
             }}
           >
             <div>
+              {/* ── Name: Manrope ── */}
               <h3
                 style={{
-                  fontFamily: "'Playfair Display', Georgia, serif",
-                  fontSize: "clamp(1.2rem, 1.8vw, 1.6rem)",
+                  fontFamily: "'Manrope', sans-serif",
+                  fontSize: "clamp(1.2rem, 1.6vw, 1.5rem)",
                   fontWeight: 700,
-                  color: "#0a0a2e",
+                  color: "#111111",
                   marginBottom: "2px",
+                  letterSpacing: "-0.01em",
                 }}
               >
                 {testimonial.name}
@@ -340,8 +342,8 @@ function FeaturedTestimonial({ testimonial, inView }) {
                 <span
                   style={{
                     fontFamily: "'Inter', sans-serif",
-                    fontSize: "clamp(12px, 0.9vw, 14px)",
-                    color: "#5a5a6a",
+                    fontSize: "clamp(0.8rem, 0.85vw, 0.9rem)",
+                    color: "#5F5F5F",
                     display: "flex",
                     alignItems: "center",
                     gap: "4px",
@@ -353,8 +355,8 @@ function FeaturedTestimonial({ testimonial, inView }) {
                 <span
                   style={{
                     fontFamily: "'Inter', sans-serif",
-                    fontSize: "clamp(11px, 0.8vw, 12px)",
-                    color: "#5a5a6a",
+                    fontSize: "clamp(0.7rem, 0.75vw, 0.8rem)",
+                    color: "#5F5F5F",
                     background: "rgba(0,0,0,0.04)",
                     padding: "2px 12px",
                     borderRadius: "50px",
@@ -367,11 +369,11 @@ function FeaturedTestimonial({ testimonial, inView }) {
             <StarRating rating={testimonial.rating} size={20} />
           </div>
 
-          {/* Content */}
+          {/* ── Content: Inter ── */}
           <p
             style={{
               fontFamily: "'Inter', sans-serif",
-              fontSize: "clamp(14px, 1.1vw, 16px)",
+              fontSize: "clamp(0.9rem, 1vw, 1rem)",
               color: "#2d3748",
               lineHeight: 1.8,
               marginBottom: "16px",
@@ -381,7 +383,7 @@ function FeaturedTestimonial({ testimonial, inView }) {
             {testimonial.fullText.length > 300 && (
               <span
                 style={{
-                  color: "#C4972A",
+                  color: "#D4A017",
                   fontWeight: 600,
                   cursor: "pointer",
                   marginLeft: "4px",
@@ -402,7 +404,7 @@ function FeaturedTestimonial({ testimonial, inView }) {
               justifyContent: "space-between",
               gap: "12px",
               paddingTop: "16px",
-              borderTop: "1px solid rgba(196,151,42,0.1)",
+              borderTop: "1px solid rgba(212,160,23,0.1)",
             }}
           >
             <div
@@ -415,9 +417,9 @@ function FeaturedTestimonial({ testimonial, inView }) {
               <span
                 style={{
                   fontFamily: "'Inter', sans-serif",
-                  fontSize: "clamp(11px, 0.8vw, 13px)",
+                  fontSize: "clamp(0.7rem, 0.75vw, 0.85rem)",
                   fontWeight: 600,
-                  color: "#C4972A",
+                  color: "#D4A017",
                 }}
               >
                 ⭐ Featured Testimonial
@@ -430,9 +432,9 @@ function FeaturedTestimonial({ testimonial, inView }) {
                 alignItems: "center",
                 gap: "6px",
                 fontFamily: "'Inter', sans-serif",
-                fontSize: "clamp(12px, 0.9vw, 14px)",
+                fontSize: "clamp(0.8rem, 0.85vw, 0.9rem)",
                 fontWeight: 600,
-                color: "#C4972A",
+                color: "#D4A017",
                 background: "none",
                 border: "none",
                 cursor: "pointer",
@@ -441,7 +443,7 @@ function FeaturedTestimonial({ testimonial, inView }) {
                 transition: "all 0.3s ease",
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = "rgba(196,151,42,0.08)";
+                e.currentTarget.style.background = "rgba(212,160,23,0.08)";
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.background = "transparent";
@@ -518,7 +520,7 @@ function FeaturedTestimonial({ testimonial, inView }) {
                 transition: "all 0.3s ease",
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = "rgba(196,151,42,0.1)";
+                e.currentTarget.style.background = "rgba(212,160,23,0.1)";
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.background = "rgba(0,0,0,0.04)";
@@ -530,11 +532,12 @@ function FeaturedTestimonial({ testimonial, inView }) {
             <div style={{ marginTop: "8px" }}>
               <h3
                 style={{
-                  fontFamily: "'Playfair Display', Georgia, serif",
+                  fontFamily: "'Manrope', sans-serif",
                   fontSize: "clamp(1.3rem, 2vw, 1.8rem)",
                   fontWeight: 700,
-                  color: "#0a0a2e",
+                  color: "#111111",
                   marginBottom: "4px",
+                  letterSpacing: "-0.01em",
                 }}
               >
                 {testimonial.name}
@@ -551,8 +554,8 @@ function FeaturedTestimonial({ testimonial, inView }) {
                 <span
                   style={{
                     fontFamily: "'Inter', sans-serif",
-                    fontSize: "clamp(13px, 0.9vw, 15px)",
-                    color: "#5a5a6a",
+                    fontSize: "clamp(0.85rem, 0.9vw, 0.95rem)",
+                    color: "#5F5F5F",
                     display: "flex",
                     alignItems: "center",
                     gap: "4px",
@@ -567,7 +570,7 @@ function FeaturedTestimonial({ testimonial, inView }) {
               <div
                 style={{
                   fontFamily: "'Inter', sans-serif",
-                  fontSize: "clamp(14px, 1vw, 16px)",
+                  fontSize: "clamp(0.9rem, 1vw, 1rem)",
                   color: "#2d3748",
                   lineHeight: 1.9,
                   whiteSpace: "pre-wrap",
@@ -589,9 +592,9 @@ function FeaturedTestimonial({ testimonial, inView }) {
                     <summary
                       style={{
                         fontFamily: "'Inter', sans-serif",
-                        fontSize: "clamp(12px, 0.9vw, 14px)",
+                        fontSize: "clamp(0.8rem, 0.85vw, 0.9rem)",
                         fontWeight: 600,
-                        color: "#C4972A",
+                        color: "#D4A017",
                         cursor: "pointer",
                       }}
                     >
@@ -601,7 +604,7 @@ function FeaturedTestimonial({ testimonial, inView }) {
                     <div
                       style={{
                         fontFamily: "'Inter', sans-serif",
-                        fontSize: "clamp(14px, 1vw, 16px)",
+                        fontSize: "clamp(0.9rem, 1vw, 1rem)",
                         color: "#2d3748",
                         lineHeight: 1.9,
                         marginTop: "12px",
@@ -670,8 +673,8 @@ function TestimonialCard({ testimonial, index, inView }) {
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.transform = "translateY(-4px)";
-            e.currentTarget.style.boxShadow = "0 8px 32px rgba(0,0,0,0.08), 0 4px 16px rgba(196,151,42,0.06)";
-            e.currentTarget.style.borderColor = "rgba(196,151,42,0.15)";
+            e.currentTarget.style.boxShadow = "0 8px 32px rgba(0,0,0,0.08), 0 4px 16px rgba(212,160,23,0.06)";
+            e.currentTarget.style.borderColor = "rgba(212,160,23,0.15)";
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.transform = "translateY(0)";
@@ -694,14 +697,16 @@ function TestimonialCard({ testimonial, index, inView }) {
             }}
           >
             <div>
+              {/* ── Name: Manrope ── */}
               <h4
                 style={{
-                  fontFamily: "'Playfair Display', Georgia, serif",
-                  fontSize: "clamp(1rem, 1.2vw, 1.15rem)",
+                  fontFamily: "'Manrope', sans-serif",
+                  fontSize: "clamp(1rem, 1.1vw, 1.1rem)",
                   fontWeight: 700,
-                  color: "#0a0a2e",
+                  color: "#111111",
                   marginBottom: "2px",
                   lineHeight: 1.2,
+                  letterSpacing: "-0.01em",
                 }}
               >
                 {testimonial.name}
@@ -717,8 +722,8 @@ function TestimonialCard({ testimonial, index, inView }) {
                 <span
                   style={{
                     fontFamily: "'Inter', sans-serif",
-                    fontSize: "clamp(10px, 0.8vw, 12px)",
-                    color: "#6b6b7a",
+                    fontSize: "clamp(0.65rem, 0.75vw, 0.8rem)",
+                    color: "#5F5F5F",
                     display: "flex",
                     alignItems: "center",
                     gap: "3px",
@@ -731,10 +736,10 @@ function TestimonialCard({ testimonial, index, inView }) {
                   <span
                     style={{
                       fontFamily: "'Inter', sans-serif",
-                      fontSize: "clamp(8px, 0.6vw, 10px)",
+                      fontSize: "clamp(0.5rem, 0.55vw, 0.65rem)",
                       fontWeight: 600,
-                      color: "#C4972A",
-                      background: "rgba(196,151,42,0.08)",
+                      color: "#D4A017",
+                      background: "rgba(212,160,23,0.08)",
                       padding: "2px 10px",
                       borderRadius: "50px",
                     }}
@@ -754,23 +759,23 @@ function TestimonialCard({ testimonial, index, inView }) {
               alignItems: "center",
               gap: "4px",
               fontFamily: "'Inter', sans-serif",
-              fontSize: "clamp(8px, 0.6vw, 10px)",
+              fontSize: "clamp(0.5rem, 0.55vw, 0.65rem)",
               fontWeight: 500,
               color: "rgba(0,0,0,0.4)",
               marginBottom: "10px",
             }}
           >
-            <BadgeCheck size={12} color="#C4972A" />
+            <BadgeCheck size={12} color="#D4A017" />
             <span>Verified Pilgrim</span>
             <span style={{ color: "rgba(0,0,0,0.15)" }}>•</span>
             <span>{testimonial.journeyType} {testimonial.year}</span>
           </div>
 
-          {/* Content */}
+          {/* ── Content: Inter ── */}
           <p
             style={{
               fontFamily: "'Inter', sans-serif",
-              fontSize: "clamp(12px, 0.9vw, 14px)",
+              fontSize: "clamp(0.8rem, 0.85vw, 0.9rem)",
               color: "#2d3748",
               lineHeight: 1.7,
               flex: 1,
@@ -781,7 +786,7 @@ function TestimonialCard({ testimonial, index, inView }) {
             {testimonial.fullText.length > 180 && (
               <span
                 style={{
-                  color: "#C4972A",
+                  color: "#D4A017",
                   fontWeight: 600,
                   cursor: "pointer",
                   marginLeft: "3px",
@@ -806,7 +811,7 @@ function TestimonialCard({ testimonial, index, inView }) {
             <span
               style={{
                 fontFamily: "'Inter', sans-serif",
-                fontSize: "clamp(9px, 0.7vw, 11px)",
+                fontSize: "clamp(0.6rem, 0.65vw, 0.7rem)",
                 color: "rgba(0,0,0,0.3)",
                 display: "flex",
                 alignItems: "center",
@@ -823,9 +828,9 @@ function TestimonialCard({ testimonial, index, inView }) {
                 alignItems: "center",
                 gap: "4px",
                 fontFamily: "'Inter', sans-serif",
-                fontSize: "clamp(10px, 0.8vw, 12px)",
+                fontSize: "clamp(0.65rem, 0.75vw, 0.8rem)",
                 fontWeight: 600,
-                color: "#C4972A",
+                color: "#D4A017",
                 background: "none",
                 border: "none",
                 cursor: "pointer",
@@ -834,7 +839,7 @@ function TestimonialCard({ testimonial, index, inView }) {
                 transition: "all 0.3s ease",
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = "rgba(196,151,42,0.06)";
+                e.currentTarget.style.background = "rgba(212,160,23,0.06)";
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.background = "transparent";
@@ -898,7 +903,7 @@ function TestimonialCard({ testimonial, index, inView }) {
                 transition: "all 0.3s ease",
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = "rgba(196,151,42,0.1)";
+                e.currentTarget.style.background = "rgba(212,160,23,0.1)";
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.background = "rgba(0,0,0,0.04)";
@@ -910,11 +915,12 @@ function TestimonialCard({ testimonial, index, inView }) {
             <div style={{ marginTop: "8px" }}>
               <h3
                 style={{
-                  fontFamily: "'Playfair Display', Georgia, serif",
+                  fontFamily: "'Manrope', sans-serif",
                   fontSize: "clamp(1.3rem, 2vw, 1.8rem)",
                   fontWeight: 700,
-                  color: "#0a0a2e",
+                  color: "#111111",
                   marginBottom: "4px",
+                  letterSpacing: "-0.01em",
                 }}
               >
                 {testimonial.name}
@@ -931,8 +937,8 @@ function TestimonialCard({ testimonial, index, inView }) {
                 <span
                   style={{
                     fontFamily: "'Inter', sans-serif",
-                    fontSize: "clamp(13px, 0.9vw, 15px)",
-                    color: "#5a5a6a",
+                    fontSize: "clamp(0.85rem, 0.9vw, 0.95rem)",
+                    color: "#5F5F5F",
                     display: "flex",
                     alignItems: "center",
                     gap: "4px",
@@ -947,7 +953,7 @@ function TestimonialCard({ testimonial, index, inView }) {
               <div
                 style={{
                   fontFamily: "'Inter', sans-serif",
-                  fontSize: "clamp(14px, 1vw, 16px)",
+                  fontSize: "clamp(0.9rem, 1vw, 1rem)",
                   color: "#2d3748",
                   lineHeight: 1.9,
                   whiteSpace: "pre-wrap",
@@ -968,9 +974,9 @@ function TestimonialCard({ testimonial, index, inView }) {
                     <summary
                       style={{
                         fontFamily: "'Inter', sans-serif",
-                        fontSize: "clamp(12px, 0.9vw, 14px)",
+                        fontSize: "clamp(0.8rem, 0.85vw, 0.9rem)",
                         fontWeight: 600,
-                        color: "#C4972A",
+                        color: "#D4A017",
                         cursor: "pointer",
                       }}
                     >
@@ -980,7 +986,7 @@ function TestimonialCard({ testimonial, index, inView }) {
                     <div
                       style={{
                         fontFamily: "'Inter', sans-serif",
-                        fontSize: "clamp(14px, 1vw, 16px)",
+                        fontSize: "clamp(0.9rem, 1vw, 1rem)",
                         color: "#2d3748",
                         lineHeight: 1.9,
                         marginTop: "12px",
@@ -1022,12 +1028,13 @@ export default function Testimonials() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400;1,600;1,700&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,450;14..32,500;14..32,600;14..32,700;14..32,800&display=swap');
+        /* ── Rasoaf Design System Typography ── */
+        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;450;500;600;700;800&display=swap');
 
         .testimonials-section {
           padding: clamp(48px, 8vh, 80px) clamp(16px, 4vw, 48px);
-          background: linear-gradient(180deg, #FFF9E6 0%, #FFFDF7 50%, #FAF5E8 100%);
+          background: linear-gradient(180deg, #FFF8E6 0%, #FFFBEF 50%, #FFFDF5 100%);
           position: relative;
           overflow: hidden;
         }
@@ -1040,8 +1047,8 @@ export default function Testimonials() {
           right: 0;
           bottom: 0;
           background-image: 
-            radial-gradient(circle at 10% 30%, rgba(196,151,42,0.04) 0%, transparent 40%),
-            radial-gradient(circle at 90% 70%, rgba(196,151,42,0.04) 0%, transparent 40%);
+            radial-gradient(circle at 10% 30%, rgba(212,160,23,0.04) 0%, transparent 40%),
+            radial-gradient(circle at 90% 70%, rgba(212,160,23,0.04) 0%, transparent 40%);
           pointer-events: none;
           z-index: 0;
         }
@@ -1069,17 +1076,18 @@ export default function Testimonials() {
         .testimonials-header .eyebrow-line {
           width: clamp(24px, 3vw, 40px);
           height: 1.5px;
-          background: #C4972A;
+          background: #D4A017;
           border-radius: 999px;
         }
 
+        /* ── Eyebrow: Inter, uppercase, 0.18em ── */
         .testimonials-header .eyebrow-text {
           font-family: 'Inter', sans-serif;
-          font-size: clamp(9px, 0.9vw, 11px);
+          font-size: clamp(0.7rem, 0.8vw, 0.8rem);
           font-weight: 700;
-          letter-spacing: 3px;
+          letter-spacing: 0.18em;
           text-transform: uppercase;
-          color: #C4972A;
+          color: #D4A017;
         }
 
         .testimonials-header .trust-line {
@@ -1087,9 +1095,9 @@ export default function Testimonials() {
           align-items: center;
           gap: 6px;
           font-family: 'Inter', sans-serif;
-          font-size: clamp(11px, 0.9vw, 13px);
+          font-size: clamp(0.7rem, 0.8vw, 0.85rem);
           font-weight: 500;
-          color: #5a5a6a;
+          color: #5F5F5F;
           margin-top: 4px;
           margin-bottom: 8px;
         }
@@ -1098,22 +1106,23 @@ export default function Testimonials() {
           width: 4px;
           height: 4px;
           border-radius: 50%;
-          background: #C4972A;
+          background: #D4A017;
           opacity: 0.4;
         }
 
+        /* ── Heading: Manrope, 700-800 weight, -0.02em ── */
         .testimonials-header h2 {
-          font-family: 'Playfair Display', Georgia, serif;
-          font-size: clamp(1.6rem, 3.5vw, 2.8rem);
-          font-weight: 700;
-          color: #0a0a2e;
+          font-family: 'Manrope', sans-serif;
+          font-weight: 800;
+          font-size: clamp(1.8rem, 3.5vw, 2.8rem);
           letter-spacing: -0.02em;
-          line-height: 1.2;
+          line-height: 1.1;
+          color: #111111;
           margin-bottom: 12px;
         }
 
         .testimonials-header h2 .highlight {
-          color: #C4972A;
+          color: #D4A017;
           position: relative;
         }
 
@@ -1124,18 +1133,19 @@ export default function Testimonials() {
           left: 0;
           right: 0;
           height: 2.5px;
-          background: linear-gradient(90deg, #C4972A, rgba(196,151,42,0.2));
+          background: linear-gradient(90deg, #D4A017, rgba(212,160,23,0.2));
           border-radius: 3px;
         }
 
+        /* ── Supporting Text: Inter, 400 weight, 1.7 line-height ── */
         .testimonials-header p {
           font-family: 'Inter', sans-serif;
-          font-size: clamp(14px, 1.2vw, 16px);
-          color: #5a5a6a;
+          font-size: clamp(0.95rem, 1.1vw, 1.05rem);
+          font-weight: 400;
+          line-height: 1.7;
+          color: #5F5F5F;
           max-width: 520px;
           margin: 0 auto;
-          line-height: 1.7;
-          font-weight: 400;
         }
 
         .testimonials-header .header-animate {
@@ -1232,7 +1242,7 @@ export default function Testimonials() {
           border-radius: 4px;
         }
         .testimonials-modal-content::-webkit-scrollbar-thumb {
-          background: #C4972A;
+          background: #D4A017;
           border-radius: 4px;
         }
       `}</style>
@@ -1306,7 +1316,7 @@ export default function Testimonials() {
               style={{
                 flex: 1,
                 height: 1,
-                background: "linear-gradient(90deg, transparent, rgba(196,151,42,0.12))",
+                background: "linear-gradient(90deg, transparent, rgba(212,160,23,0.12))",
               }}
             />
             <div
@@ -1314,7 +1324,7 @@ export default function Testimonials() {
                 width: 6,
                 height: 6,
                 borderRadius: "50%",
-                background: "#C4972A",
+                background: "#D4A017",
                 opacity: 0.4,
               }}
             />
@@ -1322,7 +1332,7 @@ export default function Testimonials() {
               style={{
                 flex: 1,
                 height: 1,
-                background: "linear-gradient(90deg, rgba(196,151,42,0.12), transparent)",
+                background: "linear-gradient(90deg, rgba(212,160,23,0.12), transparent)",
               }}
             />
           </div>

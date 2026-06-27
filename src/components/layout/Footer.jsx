@@ -5,7 +5,7 @@
 // A premium, high-trust footer that reinforces credibility, improves
 // navigation, and encourages final conversions.
 //
-// Design: Dark charcoal background, gold accents, light text
+// Design System: Manrope (headings) · Inter (body) · Yellow/Black brand
 // Layout: 4-column responsive grid + bottom bar
 // Animation: Hover glow, scale, slide-in effects
 // Responsive: 4 → 2 → 1 columns (desktop → tablet → mobile)
@@ -194,14 +194,14 @@ function FooterBrand({ inView }) {
             width: "48px",
             height: "48px",
             borderRadius: "12px",
-            background: "linear-gradient(135deg, #C4972A, #e8b840)",
+            background: "linear-gradient(135deg, #D4A017, #F7C948)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            color: "#0a0a2e",
+            color: "#111111",
             fontWeight: 800,
             fontSize: "20px",
-            fontFamily: "'Playfair Display', serif",
+            fontFamily: "'Manrope', serif",
             flexShrink: 0,
           }}
         >
@@ -210,7 +210,7 @@ function FooterBrand({ inView }) {
         <div>
           <div
             style={{
-              fontFamily: "'Playfair Display', serif",
+              fontFamily: "'Manrope', sans-serif",
               fontSize: "clamp(1.1rem, 1.3vw, 1.4rem)",
               fontWeight: 700,
               color: "#ffffff",
@@ -224,7 +224,7 @@ function FooterBrand({ inView }) {
               fontFamily: "'Inter', sans-serif",
               fontSize: "clamp(8px, 0.6vw, 10px)",
               fontWeight: 500,
-              color: "rgba(196,151,42,0.7)",
+              color: "rgba(212,160,23,0.7)",
               letterSpacing: "0.08em",
               textTransform: "uppercase",
             }}
@@ -338,7 +338,7 @@ function FooterLinks({ inView }) {
                 fontFamily: "'Inter', sans-serif",
                 fontSize: "clamp(12px, 0.85vw, 14px)",
                 fontWeight: 400,
-                color: hoveredLink === link.name ? "#C4972A" : "rgba(255,255,255,0.6)",
+                color: hoveredLink === link.name ? "#D4A017" : "rgba(255,255,255,0.6)",
                 textDecoration: "none",
                 display: "inline-flex",
                 alignItems: "center",
@@ -354,7 +354,7 @@ function FooterLinks({ inView }) {
                   opacity: hoveredLink === link.name ? 1 : 0,
                   transform: hoveredLink === link.name ? "translateX(0)" : "translateX(-6px)",
                   transition: "all 0.3s ease",
-                  color: "#C4972A",
+                  color: "#D4A017",
                 }}
               />
               <span>{link.name}</span>
@@ -366,7 +366,7 @@ function FooterLinks({ inView }) {
                     left: "0",
                     width: "100%",
                     height: "1.5px",
-                    background: "#C4972A",
+                    background: "#D4A017",
                     borderRadius: "999px",
                   }}
                 />
@@ -427,7 +427,7 @@ function FooterServices({ inView }) {
                   fontFamily: "'Inter', sans-serif",
                   fontSize: "clamp(12px, 0.85vw, 14px)",
                   fontWeight: 400,
-                  color: isHovered ? "#C4972A" : "rgba(255,255,255,0.6)",
+                  color: isHovered ? "#D4A017" : "rgba(255,255,255,0.6)",
                   textDecoration: "none",
                   display: "inline-flex",
                   alignItems: "center",
@@ -439,7 +439,7 @@ function FooterServices({ inView }) {
                 <Icon
                   size={14}
                   style={{
-                    color: isHovered ? "#C4972A" : "rgba(255,255,255,0.2)",
+                    color: isHovered ? "#D4A017" : "rgba(255,255,255,0.2)",
                     transition: "color 0.3s ease",
                   }}
                 />
@@ -501,10 +501,10 @@ function FooterContact({ inView }) {
             textDecoration: "none",
             transition: "color 0.3s ease",
           }}
-          onMouseEnter={(e) => e.currentTarget.style.color = "#C4972A"}
+          onMouseEnter={(e) => e.currentTarget.style.color = "#D4A017"}
           onMouseLeave={(e) => e.currentTarget.style.color = "rgba(255,255,255,0.7)"}
         >
-          <Phone size={16} color="#C4972A" />
+          <Phone size={16} color="#D4A017" />
           <span>+234 123 456 7890</span>
         </a>
 
@@ -521,10 +521,10 @@ function FooterContact({ inView }) {
             textDecoration: "none",
             transition: "color 0.3s ease",
           }}
-          onMouseEnter={(e) => e.currentTarget.style.color = "#C4972A"}
+          onMouseEnter={(e) => e.currentTarget.style.color = "#D4A017"}
           onMouseLeave={(e) => e.currentTarget.style.color = "rgba(255,255,255,0.7)"}
         >
-          <Mail size={16} color="#C4972A" />
+          <Mail size={16} color="#D4A017" />
           <span>rasoaf24@gmail.com</span>
         </a>
 
@@ -539,7 +539,7 @@ function FooterContact({ inView }) {
             color: "rgba(255,255,255,0.7)",
           }}
         >
-          <MapPin size={16} color="#C4972A" />
+          <MapPin size={16} color="#D4A017" />
           <span>Lagos, Nigeria</span>
         </div>
       </div>
@@ -604,9 +604,9 @@ function FooterContact({ inView }) {
             width: "100%",
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = "rgba(196,151,42,0.1)";
-            e.currentTarget.style.borderColor = "rgba(196,151,42,0.2)";
-            e.currentTarget.style.color = "#C4972A";
+            e.currentTarget.style.background = "rgba(212,160,23,0.1)";
+            e.currentTarget.style.borderColor = "rgba(212,160,23,0.2)";
+            e.currentTarget.style.color = "#D4A017";
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.background = "rgba(255,255,255,0.06)";
@@ -636,8 +636,9 @@ export default function Footer() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400;1,600;1,700&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,450;14..32,500;14..32,600;14..32,700;14..32,800&display=swap');
+        /* ── Rasoaf Design System Typography ── */
+        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;450;500;600;700;800&display=swap');
 
         @keyframes cta-pulse {
           0%, 100% { box-shadow: 0 4px 24px rgba(37, 211, 102, 0.45); }
@@ -659,7 +660,7 @@ export default function Footer() {
           transform: translateX(-50%);
           width: clamp(80px, 20vw, 200px);
           height: 2px;
-          background: linear-gradient(90deg, transparent, #C4972A, transparent);
+          background: linear-gradient(90deg, transparent, #D4A017, transparent);
           border-radius: 999px;
         }
 
@@ -672,7 +673,7 @@ export default function Footer() {
           transform: translateX(-50%);
           width: 60%;
           height: 30%;
-          background: radial-gradient(ellipse at center, rgba(196,151,42,0.03) 0%, transparent 70%);
+          background: radial-gradient(ellipse at center, rgba(212,160,23,0.03) 0%, transparent 70%);
           pointer-events: none;
         }
 
@@ -711,12 +712,12 @@ export default function Footer() {
           display: inline-flex;
           align-items: center;
           gap: 6px;
-          color: rgba(196,151,42,0.6);
+          color: rgba(212,160,23,0.6);
           font-weight: 500;
         }
 
         .footer-bottom .trust-badge svg {
-          color: #C4972A;
+          color: #D4A017;
         }
 
         .footer-bottom-links {
@@ -733,7 +734,7 @@ export default function Footer() {
         }
 
         .footer-bottom-links a:hover {
-          color: #C4972A;
+          color: #D4A017;
         }
 
         .footer-bottom-links .divider {
