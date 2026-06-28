@@ -1,5 +1,5 @@
 // Rasaof-logo.jsx (With golden border)
-import rasaof from '../images/rasaof.jpg';
+import rasaof from '../images/rasaof.png';
 import { useState } from 'react';
 
 export default function RasaofLogo({ size = 48, className = "" }) {

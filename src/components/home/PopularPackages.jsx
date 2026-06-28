@@ -605,6 +605,18 @@ export default function PopularPackages() {
           color: #111111;
         }
 
+        /* ── Remove background on smaller screens ── */
+        @media (max-width: 768px) {
+          .pp-section {
+            background: transparent;
+          }
+        }
+        @media (max-width: 480px) {
+          .pp-section {
+            background: transparent;
+          }
+        }
+
         /* ── Banner ── */
         .pp-banner {
           position: relative;
@@ -669,6 +681,18 @@ export default function PopularPackages() {
           color: #F7C948;
           margin-bottom: clamp(8px, 1.2vw, 14px);
           display: block;
+        }
+
+        /* ── Add margin-top to "Travel With Confidence" on smaller screens ── */
+        @media (max-width: 768px) {
+          .pp-banner__eyebrow {
+            margin-top: clamp(32px, 8vh, 48px);
+          }
+        }
+        @media (max-width: 480px) {
+          .pp-banner__eyebrow {
+            margin-top: clamp(40px, 10vh, 60px);
+          }
         }
 
         .pp-banner__heading {

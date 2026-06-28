@@ -552,6 +552,18 @@ export default function HajjJourneyTimeline() {
           overflow: hidden;
         }
 
+        /* ── Remove background on smaller screens ── */
+        @media (max-width: 768px) {
+          .timeline-section {
+            background: transparent;
+          }
+        }
+        @media (max-width: 480px) {
+          .timeline-section {
+            background: transparent;
+          }
+        }
+
         .timeline-container {
           max-width: 1200px;
           margin: 0 auto;

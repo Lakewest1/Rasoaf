@@ -520,6 +520,18 @@ export default function WhyChooseUs() {
           overflow: hidden;
         }
 
+        /* ── Remove background on smaller screens ── */
+        @media (max-width: 768px) {
+          .why-choose-section {
+            background: transparent;
+          }
+        }
+        @media (max-width: 480px) {
+          .why-choose-section {
+            background: transparent;
+          }
+        }
+
         /* Subtle decorative elements - adjusted for white background */
         .why-choose-section::before {
           content: '';

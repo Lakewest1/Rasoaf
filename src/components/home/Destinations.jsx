@@ -1,21 +1,12 @@
 // src/components/home/Destinations.jsx
 // ─────────────────────────────────────────────────────────────────────────────
 // RASOAF Travels and Tours — Destinations Section
-//
-// A premium destination showcase section that inspires visitors by showcasing
-// key pilgrimage and travel destinations.
-//
-// Design System: Manrope (headings) · Inter (body) · Yellow/Black brand
-// Layout: Full-width hero banner + 6 destination cards in responsive grid
-// Animation: Fade-up on scroll, hover lift with image zoom
-// Responsive: 3 → 2 → 1 columns (desktop → tablet → mobile)
-// Mobile: Carousel slider with RTL (right to left) sliding
+// Background: #ffffff (white)
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useRef, useEffect, useState, useCallback } from "react";
 import { MapPin, ArrowRight, Star, ChevronLeft, ChevronRight } from "lucide-react";
 
-// ── Destination Data ──────────────────────────────────────────────────────────
 const DESTINATIONS = [
   {
     id: 1,
@@ -73,7 +64,6 @@ const DESTINATIONS = [
   },
 ];
 
-// ── Hook: IntersectionObserver for scroll animation ──────────────────────
 function useInView(threshold = 0.12) {
   const ref = useRef(null);
   const [inView, setInView] = useState(false);
@@ -99,7 +89,6 @@ function useInView(threshold = 0.12) {
   return [ref, inView];
 }
 
-// ── Hero Banner ──────────────────────────────────────────────────────────────
 function HeroBanner({ inView }) {
   return (
     <div
@@ -115,7 +104,6 @@ function HeroBanner({ inView }) {
         isolation: "isolate",
       }}
     >
-      {/* Background Image */}
       <div
         style={{
           position: "absolute",
@@ -128,7 +116,6 @@ function HeroBanner({ inView }) {
         }}
       />
 
-      {/* Overlay */}
       <div
         style={{
           position: "absolute",
@@ -141,7 +128,6 @@ function HeroBanner({ inView }) {
         }}
       />
 
-      {/* Gold accent line */}
       <div
         style={{
           position: "absolute",
@@ -156,7 +142,6 @@ function HeroBanner({ inView }) {
         }}
       />
 
-      {/* Content */}
       <div
         style={{
           position: "absolute",
@@ -173,7 +158,6 @@ function HeroBanner({ inView }) {
           transition: "opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1)",
         }}
       >
-        {/* Eyebrow: Inter, uppercase, 0.18em */}
         <div
           style={{
             display: "inline-flex",
@@ -212,7 +196,6 @@ function HeroBanner({ inView }) {
           />
         </div>
 
-        {/* Heading: Manrope, 700-800 weight, -0.02em */}
         <h2
           style={{
             fontFamily: "'Manrope', sans-serif",
@@ -230,7 +213,6 @@ function HeroBanner({ inView }) {
           <span style={{ color: "#F7C948" }}>Iconic Destinations</span>
         </h2>
 
-        {/* Supporting Text: Inter, 400 weight, 1.7 line-height */}
         <p
           style={{
             fontFamily: "'Inter', sans-serif",
@@ -251,7 +233,6 @@ function HeroBanner({ inView }) {
   );
 }
 
-// ── Destination Card ──────────────────────────────────────────────────────────
 function DestinationCard({ destination, index, inView, isCarousel = false }) {
   const [hovered, setHovered] = useState(false);
   const delay = 0.08 * index;
@@ -292,7 +273,6 @@ function DestinationCard({ destination, index, inView, isCarousel = false }) {
           cursor: "pointer",
         }}
       >
-        {/* Image Container */}
         <div
           style={{
             position: "relative",
@@ -319,7 +299,6 @@ function DestinationCard({ destination, index, inView, isCarousel = false }) {
             }}
           />
 
-          {/* Image Overlay */}
           <div
             style={{
               position: "absolute",
@@ -332,7 +311,6 @@ function DestinationCard({ destination, index, inView, isCarousel = false }) {
             }}
           />
 
-          {/* Badge */}
           <div
             style={{
               position: "absolute",
@@ -356,7 +334,6 @@ function DestinationCard({ destination, index, inView, isCarousel = false }) {
             {destination.badge}
           </div>
 
-          {/* Location */}
           <div
             style={{
               position: "absolute",
@@ -377,7 +354,6 @@ function DestinationCard({ destination, index, inView, isCarousel = false }) {
             <span>{destination.location}</span>
           </div>
 
-          {/* Star rating indicator */}
           <div
             style={{
               position: "absolute",
@@ -397,7 +373,6 @@ function DestinationCard({ destination, index, inView, isCarousel = false }) {
           </div>
         </div>
 
-        {/* Content */}
         <div
           style={{
             padding: "clamp(16px, 2vw, 22px) clamp(16px, 2vw, 22px) clamp(18px, 2.2vw, 24px)",
@@ -406,7 +381,6 @@ function DestinationCard({ destination, index, inView, isCarousel = false }) {
             flexDirection: "column",
           }}
         >
-          {/* Card Title: Manrope */}
           <h3
             style={{
               fontFamily: "'Manrope', sans-serif",
@@ -422,7 +396,6 @@ function DestinationCard({ destination, index, inView, isCarousel = false }) {
             {destination.name}
           </h3>
 
-          {/* Description: Inter */}
           <p
             style={{
               fontFamily: "'Inter', sans-serif",
@@ -437,7 +410,6 @@ function DestinationCard({ destination, index, inView, isCarousel = false }) {
             {destination.description}
           </p>
 
-          {/* CTA: Inter, 600 weight, 0.01em */}
           <div
             style={{
               display: "flex",
@@ -464,7 +436,6 @@ function DestinationCard({ destination, index, inView, isCarousel = false }) {
             />
           </div>
 
-          {/* Gold accent dot */}
           <div
             style={{
               position: "absolute",
@@ -486,7 +457,6 @@ function DestinationCard({ destination, index, inView, isCarousel = false }) {
   );
 }
 
-// ── Carousel for Mobile ──────────────────────────────────────────────────────
 function DestinationCarousel({ destinations, inView }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
@@ -496,77 +466,39 @@ function DestinationCarousel({ destinations, inView }) {
 
   const goToSlide = useCallback((index) => {
     if (isTransitioning) return;
-    
     setIsTransitioning(true);
     let newIndex = index;
-    
     if (index < 0) newIndex = totalSlides - 1;
     if (index >= totalSlides) newIndex = 0;
-    
     setCurrentIndex(newIndex);
-    
-    setTimeout(() => {
-      setIsTransitioning(false);
-    }, 500);
+    setTimeout(() => setIsTransitioning(false), 500);
   }, [isTransitioning, totalSlides]);
 
   const goToNext = useCallback(() => {
-    const nextIndex = currentIndex + 1;
-    if (nextIndex >= totalSlides) {
-      goToSlide(0);
-    } else {
-      goToSlide(nextIndex);
-    }
+    goToSlide(currentIndex + 1 >= totalSlides ? 0 : currentIndex + 1);
   }, [currentIndex, goToSlide, totalSlides]);
 
   const goToPrev = useCallback(() => {
-    const prevIndex = currentIndex - 1;
-    if (prevIndex < 0) {
-      goToSlide(totalSlides - 1);
-    } else {
-      goToSlide(prevIndex);
-    }
+    goToSlide(currentIndex - 1 < 0 ? totalSlides - 1 : currentIndex - 1);
   }, [currentIndex, goToSlide, totalSlides]);
 
-  // Auto-play - RTL (right to left) every 4 seconds
   useEffect(() => {
     if (isPaused || !inView) return;
-
-    autoPlayRef.current = setInterval(() => {
-      goToNext();
-    }, 4000);
-
-    return () => {
-      if (autoPlayRef.current) {
-        clearInterval(autoPlayRef.current);
-      }
-    };
+    autoPlayRef.current = setInterval(goToNext, 4000);
+    return () => clearInterval(autoPlayRef.current);
   }, [isPaused, inView, goToNext]);
 
-  // Pause on hover/touch
-  const handleMouseEnter = () => setIsPaused(true);
-  const handleMouseLeave = () => setIsPaused(false);
-  const handleTouchStart = () => setIsPaused(true);
-  const handleTouchEnd = () => setIsPaused(false);
-
-  // Calculate translateX for RTL sliding
   const translateX = -(currentIndex * (100 / totalSlides));
 
   return (
     <div
       className="destinations-carousel"
-      style={{
-        position: "relative",
-        overflow: "hidden",
-        width: "100%",
-        padding: "0 4px",
-      }}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
+      style={{ position: "relative", overflow: "hidden", width: "100%", padding: "0 4px" }}
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+      onTouchStart={() => setIsPaused(true)}
+      onTouchEnd={() => setIsPaused(false)}
     >
-      {/* Slides Container - RTL sliding */}
       <div
         style={{
           display: "flex",
@@ -596,107 +528,56 @@ function DestinationCarousel({ destinations, inView }) {
         ))}
       </div>
 
-      {/* Navigation Buttons */}
       <button
         onClick={goToPrev}
-        className="destinations-carousel-nav destinations-carousel-nav--prev"
+        className="destinations-carousel-nav"
         aria-label="Previous destination"
         style={{
-          position: "absolute",
-          left: "4px",
-          top: "50%",
-          transform: "translateY(-50%)",
-          width: "36px",
-          height: "36px",
-          borderRadius: "50%",
-          background: "#ffffff",
+          position: "absolute", left: "4px", top: "50%",
+          transform: "translateY(-50%)", width: "36px", height: "36px",
+          borderRadius: "50%", background: "#ffffff",
           border: "1px solid rgba(212,160,23,0.15)",
           boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          cursor: "pointer",
-          color: "#D4A017",
-          transition: "all 0.3s ease",
-          zIndex: 5,
-          padding: 0,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          cursor: "pointer", color: "#D4A017", transition: "all 0.3s ease",
+          zIndex: 5, padding: 0,
         }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.background = "#D4A017";
-          e.currentTarget.style.color = "#ffffff";
-          e.currentTarget.style.transform = "translateY(-50%) scale(1.05)";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.background = "#ffffff";
-          e.currentTarget.style.color = "#D4A017";
-          e.currentTarget.style.transform = "translateY(-50%) scale(1)";
-        }}
+        onMouseEnter={(e) => { e.currentTarget.style.background = "#D4A017"; e.currentTarget.style.color = "#ffffff"; }}
+        onMouseLeave={(e) => { e.currentTarget.style.background = "#ffffff"; e.currentTarget.style.color = "#D4A017"; }}
       >
         <ChevronLeft size={18} strokeWidth={2.5} />
       </button>
 
       <button
         onClick={goToNext}
-        className="destinations-carousel-nav destinations-carousel-nav--next"
+        className="destinations-carousel-nav"
         aria-label="Next destination"
         style={{
-          position: "absolute",
-          right: "4px",
-          top: "50%",
-          transform: "translateY(-50%)",
-          width: "36px",
-          height: "36px",
-          borderRadius: "50%",
-          background: "#ffffff",
+          position: "absolute", right: "4px", top: "50%",
+          transform: "translateY(-50%)", width: "36px", height: "36px",
+          borderRadius: "50%", background: "#ffffff",
           border: "1px solid rgba(212,160,23,0.15)",
           boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          cursor: "pointer",
-          color: "#D4A017",
-          transition: "all 0.3s ease",
-          zIndex: 5,
-          padding: 0,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          cursor: "pointer", color: "#D4A017", transition: "all 0.3s ease",
+          zIndex: 5, padding: 0,
         }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.background = "#D4A017";
-          e.currentTarget.style.color = "#ffffff";
-          e.currentTarget.style.transform = "translateY(-50%) scale(1.05)";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.background = "#ffffff";
-          e.currentTarget.style.color = "#D4A017";
-          e.currentTarget.style.transform = "translateY(-50%) scale(1)";
-        }}
+        onMouseEnter={(e) => { e.currentTarget.style.background = "#D4A017"; e.currentTarget.style.color = "#ffffff"; }}
+        onMouseLeave={(e) => { e.currentTarget.style.background = "#ffffff"; e.currentTarget.style.color = "#D4A017"; }}
       >
         <ChevronRight size={18} strokeWidth={2.5} />
       </button>
 
-      {/* Dots Indicator */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          gap: "8px",
-          marginTop: "16px",
-          paddingBottom: "4px",
-          flexWrap: "wrap",
-        }}
-      >
+      <div style={{ display: "flex", justifyContent: "center", gap: "8px", marginTop: "16px", paddingBottom: "4px", flexWrap: "wrap" }}>
         {destinations.map((_, index) => (
           <button
             key={index}
             onClick={() => goToSlide(index)}
             style={{
               width: index === currentIndex ? "24px" : "8px",
-              height: "8px",
-              borderRadius: "4px",
-              border: "none",
+              height: "8px", borderRadius: "4px", border: "none",
               background: index === currentIndex ? "#D4A017" : "rgba(212,160,23,0.2)",
-              transition: "all 0.3s ease",
-              cursor: "pointer",
-              padding: 0,
+              transition: "all 0.3s ease", cursor: "pointer", padding: 0,
             }}
             aria-label={`Go to destination ${index + 1}`}
           />
@@ -706,18 +587,9 @@ function DestinationCarousel({ destinations, inView }) {
   );
 }
 
-// ── Helper: clamp for inline styles ─────────────────────────────────────────
-function clamp(min, pref, max) {
-  return `clamp(${min}px, ${pref}, ${max}px)`;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Destinations — Main Component
-// ─────────────────────────────────────────────────────────────────────────────
 export default function Destinations() {
   const [sectionRef, inView] = useInView(0.1);
   const [heroInView, setHeroInView] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     if (inView) {
@@ -726,41 +598,23 @@ export default function Destinations() {
     }
   }, [inView]);
 
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
-
   return (
     <>
       <style>{`
-        /* ── Rasoaf Design System Typography ── */
         @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;450;500;600;700;800&display=swap');
 
         .destinations-section {
           padding: clamp(48px, 8vh, 80px) clamp(16px, 4vw, 48px);
-          background: linear-gradient(180deg, #FFF8E6 0%, #FFFBEF 50%, #FFFDF5 100%);
+          /* ── CHANGED: white background ── */
+          background: #ffffff;
           position: relative;
           overflow: hidden;
         }
 
+        /* ── CHANGED: ::before radial glows removed (invisible on white) ── */
         .destinations-section::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background-image: 
-            radial-gradient(circle at 15% 30%, rgba(212,160,23,0.04) 0%, transparent 40%),
-            radial-gradient(circle at 85% 70%, rgba(212,160,23,0.04) 0%, transparent 40%);
-          pointer-events: none;
-          z-index: 0;
+          content: none;
         }
 
         .destinations-container {
@@ -770,7 +624,6 @@ export default function Destinations() {
           z-index: 1;
         }
 
-        /* ── Destinations Grid ───────────────────────────────────────────── */
         .destinations-grid {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
@@ -783,11 +636,8 @@ export default function Destinations() {
           height: 100%;
         }
 
-        .destination-card {
-          cursor: pointer;
-        }
+        .destination-card { cursor: pointer; }
 
-        /* ── Carousel ────────────────────────────────────────────────────── */
         .destinations-carousel {
           position: relative;
           overflow: hidden;
@@ -795,16 +645,9 @@ export default function Destinations() {
           display: none;
         }
 
-        .destinations-carousel-nav {
-          transition: all 0.3s ease;
-        }
-        .destinations-carousel-nav:active {
-          transform: translateY(-50%) scale(0.95) !important;
-        }
+        .destinations-carousel-nav { transition: all 0.3s ease; }
+        .destinations-carousel-nav:active { transform: translateY(-50%) scale(0.95) !important; }
 
-        /* ── Responsive ──────────────────────────────────────────────────── */
-
-        /* Tablet: 2 columns */
         @media (max-width: 1024px) {
           .destinations-grid {
             grid-template-columns: repeat(2, 1fr);
@@ -812,87 +655,41 @@ export default function Destinations() {
           }
         }
 
-        /* Mobile: Carousel */
         @media (max-width: 768px) {
           .destinations-section {
             padding: clamp(36px, 5vh, 52px) clamp(14px, 3vw, 20px);
           }
-          .destinations-grid {
-            display: none;
-          }
-          .destinations-carousel {
-            display: block !important;
-          }
+          .destinations-grid { display: none; }
+          .destinations-carousel { display: block !important; }
         }
 
         @media (min-width: 769px) {
-          .destinations-carousel {
-            display: none !important;
-          }
+          .destinations-carousel { display: none !important; }
         }
 
         @media (max-width: 480px) {
-          .destinations-section {
-            padding: 28px 12px 40px;
-          }
-          .destinations-carousel-nav {
-            width: 32px !important;
-            height: 32px !important;
-          }
-          .destinations-carousel-nav svg {
-            width: 16px !important;
-            height: 16px !important;
-          }
+          .destinations-section { padding: 28px 12px 40px; }
+          .destinations-carousel-nav { width: 32px !important; height: 32px !important; }
+          .destinations-carousel-nav svg { width: 16px !important; height: 16px !important; }
         }
 
-        /* ── Reduced Motion ──────────────────────────────────────────────── */
         @media (prefers-reduced-motion: reduce) {
-          .destination-card-wrapper {
-            opacity: 1 !important;
-            transform: none !important;
-            transition: none !important;
-          }
-          .destinations-hero > div:last-child {
-            opacity: 1 !important;
-            transform: none !important;
-          }
-          .destinations-hero > div:first-child {
-            transform: none !important;
-          }
-          .destination-card {
-            transition: none !important;
-          }
-          .destination-card:hover {
-            transform: none !important;
-          }
-          .destination-card img {
-            transition: none !important;
-          }
-          .destination-card:hover img {
-            transform: none !important;
-          }
+          .destination-card-wrapper,
+          .destination-card,
+          .destination-card img,
+          .destinations-hero > div,
           .destinations-carousel > div:first-child {
+            opacity: 1 !important;
+            transform: none !important;
             transition: none !important;
           }
         }
 
-        /* ── Hover: no touch devices ────────────────────────────────────── */
         @media (hover: none) {
-          .destination-card {
-            transform: none !important;
-          }
-          .destination-card:hover {
-            transform: none !important;
-          }
-          .destination-card img {
-            transform: none !important;
-          }
-          .destination-card:hover img {
-            transform: none !important;
-          }
-          .destination-card .view-packages-arrow {
-            transform: none !important;
-          }
+          .destination-card,
+          .destination-card:hover,
+          .destination-card img,
+          .destination-card:hover img { transform: none !important; }
         }
       `}</style>
 
@@ -903,10 +700,8 @@ export default function Destinations() {
         id="destinations"
       >
         <div className="destinations-container">
-          {/* Hero Banner */}
           <HeroBanner inView={heroInView} />
 
-          {/* ── Desktop/Tablet Grid ── */}
           <div className="destinations-grid">
             {DESTINATIONS.map((destination, index) => (
               <DestinationCard
@@ -919,10 +714,8 @@ export default function Destinations() {
             ))}
           </div>
 
-          {/* ── Mobile Carousel ── */}
           <DestinationCarousel destinations={DESTINATIONS} inView={inView} />
 
-          {/* Bottom Divider */}
           <div
             style={{
               marginTop: "clamp(40px, 6vh, 56px)",
@@ -933,29 +726,9 @@ export default function Destinations() {
               transition: "opacity 0.8s ease 0.8s",
             }}
           >
-            <div
-              style={{
-                flex: 1,
-                height: 1,
-                background: "linear-gradient(90deg, transparent, rgba(212,160,23,0.12))",
-              }}
-            />
-            <div
-              style={{
-                width: 6,
-                height: 6,
-                borderRadius: "50%",
-                background: "#D4A017",
-                opacity: 0.4,
-              }}
-            />
-            <div
-              style={{
-                flex: 1,
-                height: 1,
-                background: "linear-gradient(90deg, rgba(212,160,23,0.12), transparent)",
-              }}
-            />
+            <div style={{ flex: 1, height: 1, background: "linear-gradient(90deg, transparent, rgba(212,160,23,0.12))" }} />
+            <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#D4A017", opacity: 0.4 }} />
+            <div style={{ flex: 1, height: 1, background: "linear-gradient(90deg, rgba(212,160,23,0.12), transparent)" }} />
           </div>
         </div>
       </section>

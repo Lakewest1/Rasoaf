@@ -1253,9 +1253,16 @@ export default function Testimonials() {
 
         .testimonials-section {
           padding: clamp(48px, 8vh, 80px) clamp(16px, 4vw, 48px);
-          background: linear-gradient(180deg, #FFF8E6 0%, #FFFBEF 50%, #FFFDF5 100%);
+          background: #ffffff;
           position: relative;
           overflow: hidden;
+        }
+
+        /* ── Change background to white on larger screens ── */
+        @media (min-width: 769px) {
+          .testimonials-section {
+            background: #ffffff;
+          }
         }
 
         .testimonials-section::before {
@@ -1266,8 +1273,8 @@ export default function Testimonials() {
           right: 0;
           bottom: 0;
           background-image: 
-            radial-gradient(circle at 10% 30%, rgba(212,160,23,0.04) 0%, transparent 40%),
-            radial-gradient(circle at 90% 70%, rgba(212,160,23,0.04) 0%, transparent 40%);
+            radial-gradient(circle at 10% 30%, rgba(212,160,23,0.03) 0%, transparent 40%),
+            radial-gradient(circle at 90% 70%, rgba(212,160,23,0.03) 0%, transparent 40%);
           pointer-events: none;
           z-index: 0;
         }
@@ -1413,6 +1420,7 @@ export default function Testimonials() {
         @media (max-width: 768px) {
           .testimonials-section {
             padding: clamp(36px, 5vh, 52px) clamp(14px, 3vw, 20px);
+            background: transparent;
           }
           .testimonials-grid {
             display: none;
@@ -1428,15 +1436,10 @@ export default function Testimonials() {
           }
         }
 
-        @media (min-width: 769px) {
-          .testimonials-carousel {
-            display: none !important;
-          }
-        }
-
         @media (max-width: 480px) {
           .testimonials-section {
             padding: 28px 12px 40px;
+            background: transparent;
           }
           .testimonials-carousel-nav {
             width: 32px !important;
@@ -1445,6 +1448,12 @@ export default function Testimonials() {
           .testimonials-carousel-nav svg {
             width: 16px !important;
             height: 16px !important;
+          }
+        }
+
+        @media (min-width: 769px) {
+          .testimonials-carousel {
+            display: none !important;
           }
         }
 
