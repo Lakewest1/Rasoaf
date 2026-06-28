@@ -1,19 +1,16 @@
 // src/components/home/Gallery.jsx
 // ─────────────────────────────────────────────────────────────────────────────
 // RASOAF Travels and Tours — Gallery Section
-// v3 — White background + Mobile Carousel
+// v4 — Uniform image heights across all screen sizes
 //
-//  Changes in v3:
-//  ├─ BACKGROUND CHANGED TO PURE WHITE
-//  │   └─ Background: #ffffff (was yellow gradient)
-//  ├─ MOBILE CAROUSEL ADDED
-//  │   ├─ Slides auto-play every 4 seconds (RTL - right to left)
-//  │   ├─ Left/Right navigation buttons
-//  │   ├─ Dots indicator for current position
-//  │   └─ Pause on hover/touch
-//  ├─ DESKTOP MASONRY GRID PRESERVED
-//  │   └─ 4 columns on desktop, 3 on tablet, unchanged
-//  └─ All existing animations, hover effects, and lightbox preserved
+//  Changes in v4:
+//  ├─ ALL IMAGES NOW HAVE SAME HEIGHT ON ALL SCREENS
+//  │   ├─ Desktop: 280px uniform height (was variable)
+//  │   ├─ Tablet: 240px uniform height
+//  │   └─ Mobile: 220px uniform height
+//  ├─ IMAGES USE object-fit: cover TO MAINTAIN ASPECT RATIO
+//  │   └─ Crops from center to fill container
+//  └─ All other settings, animations, and features preserved
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useRef, useEffect, useState, useCallback, useMemo } from "react";
@@ -34,7 +31,7 @@ import {
 const GALLERY_IMAGES = [
   {
     id: 1,
-    src: "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=800&q=80",
+    src: "https://res.cloudinary.com/dbqdgvvgq/image/upload/v1781876161/meca-people_oe25kj.png",
     alt: "Pilgrims performing Tawaf around the Kaaba at Masjid al-Haram",
     title: "Tawaf at the Kaaba",
     category: "pilgrims",
@@ -43,8 +40,8 @@ const GALLERY_IMAGES = [
   },
   {
     id: 2,
-    src: "https://images.unsplash.com/photo-1544644181-1484b3fdfc62?w=800&q=80",
-    alt: "The Prophet's Mosque in Madinah at sunset",
+    src: "https://res.cloudinary.com/dbqdgvvgq/image/upload/v1782651800/SOAR-FreeTrial-BuildAndSell-Guide_2_oefktk.docx.jpg",
+    alt: "The Prophet's Mosque in Madinah at sunrise",
     title: "Masjid an-Nabawi at Sunset",
     category: "holy-sites",
     description: "The radiant Prophet's Mosque in Madinah",
@@ -88,7 +85,7 @@ const GALLERY_IMAGES = [
   },
   {
     id: 7,
-    src: "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=800&q=80",
+    src: "https://res.cloudinary.com/dbqdgvvgq/image/upload/v1782653783/SOAR-FreeTrial-BuildAndSell-Guide_2_nmnzar.docx.jpg",
     alt: "Modern transportation for pilgrims",
     title: "Comfortable Transport",
     category: "transport",
@@ -97,7 +94,7 @@ const GALLERY_IMAGES = [
   },
   {
     id: 8,
-    src: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=800&q=80",
+    src: "https://res.cloudinary.com/dbqdgvvgq/image/upload/v1781877246/meca-people_fizgef.jpg",
     alt: "Pilgrims praying at the Grand Mosque",
     title: "Moments of Prayer",
     category: "pilgrims",
@@ -106,8 +103,8 @@ const GALLERY_IMAGES = [
   },
   {
     id: 9,
-    src: "https://images.unsplash.com/photo-1581833971358-1c8ff9f1c0c1?w=800&q=80",
-    alt: "Group of pilgrims in traditional Ihram attire in Mecca",
+    src: "https://res.cloudinary.com/dbqdgvvgq/image/upload/v1782597320/worktrhough-for-Engineers_q46mrq.jpg",
+    alt: "Family in traditional Ihram attire in Mecca",
     title: "United in Faith",
     category: "groups",
     description: "Diverse pilgrims united in their sacred journey",
@@ -124,7 +121,7 @@ const GALLERY_IMAGES = [
   },
   {
     id: 11,
-    src: "https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=800&q=80",
+    src: "https://res.cloudinary.com/dbqdgvvgq/image/upload/v1782652550/SOAR-FreeTrial-BuildAndSell-Guide_1_hz5z69.docx.jpg",
     alt: "Hotel accommodation with a view of the Holy Mosque",
     title: "Hotels with a View",
     category: "hotels",
@@ -133,10 +130,28 @@ const GALLERY_IMAGES = [
   },
   {
     id: 12,
-    src: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=800&q=80",
+    src: "https://res.cloudinary.com/dbqdgvvgq/image/upload/v1782597422/Musa_Olalekan_SOC_Detection_CV_v3_1_zgduc1.jpg",
     alt: "Group of pilgrims walking together in Madinah",
-    title: "Walking Together",
+    title: "Cooperate Together",
     category: "groups",
+    description: "Community and solidarity in every step",
+    featured: false,
+  },
+  {
+    id: 13,
+    src: "https://res.cloudinary.com/dbqdgvvgq/image/upload/v1781876182/mecapeople2_btukrr.png",
+    alt: "Group of pilgrims prayying together in Mekkah",
+    title: "Arafat day",
+    category: "groups",
+    description: "Community and solidarity in every step",
+    featured: false,
+  },
+  {
+    id: 14,
+    src: "https://res.cloudinary.com/dbqdgvvgq/image/upload/v1782597276/worktrhough-for-Engineers_aevuhp.jpg",
+    alt: " Individual pilgrim in Mekkah",
+    title: "Tawaf at the Kaaba",
+    category: "pilgrims",
     description: "Community and solidarity in every step",
     featured: false,
   },
@@ -171,6 +186,9 @@ const GALLERY_CSS = `
     --ff-body:    'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     --sp-section: clamp(48px, 8vh, 80px);
     --sp-content: clamp(16px, 4vw, 48px);
+    --gl-img-height: 280px;
+    --gl-img-height-tablet: 240px;
+    --gl-img-height-mobile: 220px;
   }
 
   .gl-section {
@@ -313,15 +331,14 @@ const GALLERY_CSS = `
 
   /* ── Masonry Grid ── */
   .gl-grid {
-    column-count: 4;
-    column-gap: clamp(12px, 1.5vw, 20px);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: clamp(12px, 1.5vw, 20px);
   }
 
   /* ── Gallery Item ── */
   .gl-item {
     position: relative;
-    break-inside: avoid;
-    margin-bottom: clamp(12px, 1.5vw, 20px);
     border-radius: 18px;
     overflow: hidden;
     cursor: pointer;
@@ -336,6 +353,7 @@ const GALLERY_CSS = `
       opacity   0.6s cubic-bezier(0.16, 1, 0.3, 1),
       transform 0.6s cubic-bezier(0.16, 1, 0.3, 1),
       box-shadow 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    height: var(--gl-img-height);
   }
 
   .gl-item--visible {
@@ -353,9 +371,10 @@ const GALLERY_CSS = `
 
   .gl-item img {
     width: 100%;
-    height: auto;
+    height: 100%;
     display: block;
     object-fit: cover;
+    object-position: center;
     transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
   }
 
@@ -621,7 +640,13 @@ const GALLERY_CSS = `
 
   /* ── Responsive ── */
   @media (max-width: 1024px) {
-    .gl-grid { column-count: 3; column-gap: clamp(12px, 1.8vw, 18px); }
+    .gl-grid {
+      grid-template-columns: repeat(3, 1fr);
+      gap: clamp(12px, 1.8vw, 18px);
+    }
+    .gl-item {
+      height: var(--gl-img-height-tablet);
+    }
   }
 
   @media (max-width: 768px) {
@@ -630,6 +655,9 @@ const GALLERY_CSS = `
     }
     .gl-grid { display: none; }
     .gl-carousel { display: block !important; }
+    .gl-item {
+      height: var(--gl-img-height-mobile);
+    }
     .gl-lightbox-title { font-size: clamp(1.3rem, 4vw, 1.75rem); }
   }
 
@@ -1222,7 +1250,7 @@ export default function Gallery() {
             }
           </p>
 
-          {/* Desktop Masonry Grid */}
+          {/* Desktop Grid - Uniform Height */}
           <div className="gl-grid" role="list" aria-label="Gallery of Hajj and Umrah moments">
             {filteredImages.map((image, index) => (
               <div key={image.id} role="listitem">

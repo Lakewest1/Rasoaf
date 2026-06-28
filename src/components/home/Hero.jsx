@@ -1,18 +1,16 @@
 // components/RasoafHero.jsx
 // ─────────────────────────────────────────────────────────────────────────────
 // RASOAF TRAVELS AND TOURS LIMITED
-// v21 — Increased background height + padding on smaller screens
+// v24 — 3 rotating BG videos + image slides display for 3 seconds
 //
-//  Changes in v21:
-//  ├─ BACKGROUND HEIGHT INCREASED (smaller screens only)
-//  │   ├─ Mobile (≤768px): 65% (was 55%) — +10%
-//  │   ├─ Small Mobile (≤480px): 60% (was 50%) — +10%
-//  │   └─ Tablet: 58% (was 55%) — +3%
-//  ├─ BACKGROUND PADDING BOTTOM ADDED
-//  │   ├─ Mobile (≤768px): padding-bottom: 20px added to bg-wrapper
-//  │   ├─ Small Mobile (≤480px): padding-bottom: 16px added to bg-wrapper
-//  │   └─ Ensures background extends lower for trust badge visibility
-//  └─ All other settings unchanged from v20
+//  Changes in v24:
+//  ├─ BG_VIDEO NOW ROTATES BETWEEN 3 VIDEOS
+//  │   ├─ Video 1: WA0005_q9gvbi.mp4
+//  │   ├─ Video 2: WA0000_tl1nxg.mp4  
+//  │   └─ Video 3: WA0005_tei906.mp4
+//  ├─ IMAGE SLIDES NOW DISPLAY FOR 3 SECONDS (was 10s)
+//  ├─ PROMO VIDEOS STILL DISPLAY FOR 4 SECONDS EACH
+//  └─ All other settings unchanged from v23
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useState, useEffect, useRef, useCallback } from "react";
@@ -44,7 +42,7 @@ const PANELS = [
     tag: "Curated Experience",
   },
   {
-    src: "https://res.cloudinary.com/dbqdgvvgq/image/upload/v1781877246/meca-people_fizgef.jpg",
+    src: "https://res.cloudinary.com/dbqdgvvgq/image/upload/v1782597320/worktrhough-for-Engineers_q46mrq.jpg",
     alt: "International flight — visa services",
     label: "Visa Services",
     tag: "Fast Processing",
@@ -64,32 +62,66 @@ const getPanelSlices = () => {
 // 2× clone for seamless GSAP loop
 const MARQUEE_PANELS = [...PANELS, ...PANELS];
 
-const BG_VIDEO =
-  "https://res.cloudinary.com/dbqdgvvgq/video/upload/v1781351650/3473-170690984_medium_h9g9gt.mp4";
+// ── 3 rotating background videos ─────────────────────────────────────────────
+const BG_VIDEOS = [
+  "https://res.cloudinary.com/dbqdgvvgq/video/upload/v1782647090/VID-20260628-WA0005_q9gvbi.mp4",
+  "https://res.cloudinary.com/dbqdgvvgq/video/upload/v1782646887/VID-20260628-WA0000_tl1nxg.mp4",
+  "https://res.cloudinary.com/dbqdgvvgq/video/upload/v1782647185/VID-20260628-WA0005_tei906.mp4",
+];
 
 const TV_VIDEO =
   "https://res.cloudinary.com/dbqdgvvgq/video/upload/v1781354114/3473-170690984_medium_vlr3ri.mp4";
+
+// ── Promotional videos (all display for exactly 4 seconds) ───────────────────
+const VIDEO_SLIDES = [
+  {
+    src: "https://res.cloudinary.com/dbqdgvvgq/video/upload/v1782647090/VID-20260628-WA0005_q9gvbi.mp4",
+    type: "video/mp4",
+  },
+  {
+    src: "https://res.cloudinary.com/dbqdgvvgq/video/upload/v1782646485/Lakewest_SOAR_Platform_Case_Study_1_sgalpd.docx.mp4",
+    type: "video/mp4",
+  },
+  {
+    src: "https://res.cloudinary.com/dbqdgvvgq/video/upload/v1782646551/VID-20260628-WA0001_f3w0wk.mp4",
+    type: "video/mp4",
+  },
+  {
+    src: "https://res.cloudinary.com/dbqdgvvgq/video/upload/v1782647090/VID-20260628-WA0005_q9gvbi.mp4",
+    type: "video/mp4",
+  },
+];
+
+// Fixed 4-second display for promo videos
+const VIDEO_DISPLAY_DURATION = 4000; // 4 seconds in milliseconds
+// Image slides display for 3 seconds
+const IMAGE_DISPLAY_DURATION = 3; // 3 seconds for GSAP delayedCall
 
 const BG_SLIDES = [
   {
     src: "https://res.cloudinary.com/dbqdgvvgq/image/upload/v1781839939/SOAR-FreeTrial-BuildAndSell-Guide_2_nmnzar.docx.png",
     position: "50% 55%",
+    type: "image",
   },
   {
     src: "https://res.cloudinary.com/dbqdgvvgq/image/upload/v1781876161/meca-people_oe25kj.png",
     position: "50% 50%",
+    type: "image",
   },
   {
     src: "https://res.cloudinary.com/dbqdgvvgq/image/upload/v1781877261/konevi-islam-4399868_1920_gsrsap.jpg",
     position: "50% 60%",
+    type: "image",
   },
   {
     src: "https://res.cloudinary.com/dbqdgvvgq/image/upload/v1781877301/mohamed_hassan-hajj-8794441_1920_gsrsap.png",
     position: "50% 45%",
+    type: "image",
   },
   {
     src: "https://res.cloudinary.com/dbqdgvvgq/image/upload/v1781877246/meca-people_fizgef.jpg",
     position: "50% 55%",
+    type: "image",
   },
 ];
 
@@ -948,7 +980,6 @@ const CSS = `
       min-height: 80vh;
       padding-top: clamp(70px, 8vh, 100px);
     }
-    /* v21: Tablet background — height 58% (was 55%), padding-bottom: 8px */
     .rh-bg-wrapper {
       height: 58%;
       padding-bottom: 8px;
@@ -976,7 +1007,6 @@ const CSS = `
       padding-top: clamp(80px, 10vh, 110px);
       overflow: hidden;
     }
-    /* v21: Mobile background — height 65% (was 55%), padding-bottom: 20px */
     .rh-bg-wrapper {
       height: 65%;
       padding-bottom: 20px;
@@ -1024,7 +1054,6 @@ const CSS = `
       padding-top: clamp(90px, 12vh, 130px);
       overflow: hidden;
     }
-    /* v21: Small mobile background — height 60% (was 50%), padding-bottom: 16px */
     .rh-bg-wrapper {
       height: 60%;
       padding-bottom: 16px;
@@ -1156,6 +1185,7 @@ export default function RasoafHero() {
   const rootRef            = useRef(null);
   const heroRef            = useRef(null);
   const videoRef           = useRef(null);
+  const promoVideoRef      = useRef(null);
   const tvVideoRef         = useRef(null);
   const tvContainerRef     = useRef(null);
   const supTextRef         = useRef(null);
@@ -1175,6 +1205,8 @@ export default function RasoafHero() {
   const bgSlideBRef        = useRef(null);
   const bgSlideIndex       = useRef(0);
   const bgModeRef          = useRef("video");
+  const videoSlideIndex    = useRef(0);
+  const bgVideoIndex       = useRef(0);  // Track which of the 3 BG videos is active
   const rafHandleRef       = useRef(null);
   const magnetMapRef       = useRef(new Map());
 
@@ -1271,42 +1303,103 @@ export default function RasoafHero() {
     }
   }, []);
 
-  // ── Background slide cycle ───────────────────────────────────────────────
+  // ── Background slide cycle (3 rotating BG videos + 4s promo + 3s images) ─
   useEffect(() => {
     if (typeof window === "undefined") return;
     const mm = gsap.matchMedia();
 
     mm.add("(prefers-reduced-motion: no-preference)", () => {
       const videoEl  = videoRef.current;
+      const promoEl  = promoVideoRef.current;
       const slideAEl = bgSlideARef.current;
       const slideBEl = bgSlideBRef.current;
-      if (!videoEl || !slideAEl || !slideBEl) return;
+      if (!videoEl || !slideAEl || !slideBEl || !promoEl) return;
+
+      // Set up promotional video element
+      promoEl.muted = true;
+      promoEl.playsInline = true;
+      promoEl.style.opacity = "0";
+      promoEl.className = "rh-bgslide";
+
+      // Initialize with first BG video
+      videoEl.src = BG_VIDEOS[0];
 
       gsap.set(videoEl,  { opacity: 1, className: "rh-bgvid active" });
       gsap.set(slideAEl, { opacity: 0, className: "rh-bgslide" });
       gsap.set(slideBEl, { opacity: 0, className: "rh-bgslide" });
+      gsap.set(promoEl,  { opacity: 0, className: "rh-bgslide" });
 
       if (isMobileRef.current) return;
 
       let nextSlideIdx = 0;
       let cycleTimer   = null;
 
-      const runCycle = () => {
+      const playPromoVideo = () => {
+        const videoData = VIDEO_SLIDES[videoSlideIndex.current % VIDEO_SLIDES.length];
+        promoEl.src = videoData.src;
+        promoEl.load();
+        
+        return new Promise((resolve) => {
+          // Force play and then stop after exactly 4 seconds
+          promoEl.oncanplay = () => {
+            promoEl.play().catch(() => {});
+          };
+          
+          // Always stop after exactly 4 seconds regardless of video state
+          const forceStopTimer = setTimeout(() => {
+            if (promoEl) {
+              promoEl.pause();
+              promoEl.currentTime = 0;
+            }
+            resolve();
+          }, VIDEO_DISPLAY_DURATION);
+          
+          // Clean up if video ends naturally before 4 seconds
+          promoEl.onended = () => {
+            clearTimeout(forceStopTimer);
+            resolve();
+          };
+        });
+      };
+
+      const runCycle = async () => {
         if (bgModeRef.current === "video") {
+          // Show a promotional video for exactly 4 seconds
+          videoSlideIndex.current++;
+          bgModeRef.current = "promo";
+          
+          gsap.set(promoEl, { opacity: 0, scale: 1.04, className: "rh-bgslide active" });
+          gsap.to(videoEl, { opacity: 0, duration: 1.5, ease: "power3.inOut",
+            onComplete: () => gsap.set(videoEl, { className: "rh-bgvid" }),
+          });
+          gsap.to(promoEl, { opacity: 1, scale: 1, duration: 2.0, ease: "power3.out" });
+          
+          await playPromoVideo();
+          cycleTimer = gsap.delayedCall(0.5, runCycle);
+          
+        } else if (bgModeRef.current === "promo") {
+          // Show an image slide for exactly 3 seconds
           const slideData = BG_SLIDES[nextSlideIdx % BG_SLIDES.length];
           const slideEl   = bgSlideIndex.current % 2 === 0 ? slideAEl : slideBEl;
           slideEl.src = slideData.src;
           slideEl.style.objectPosition = slideData.position;
+          
           gsap.set(slideEl, { opacity: 0, scale: 1.04, className: "rh-bgslide active" });
-          gsap.to(videoEl,  { opacity: 0, duration: 1.8, ease: "power3.inOut",
-            onComplete: () => gsap.set(videoEl, { className: "rh-bgvid" }),
+          gsap.to(promoEl, { opacity: 0, duration: 1.8, ease: "power3.inOut",
+            onComplete: () => gsap.set(promoEl, { className: "rh-bgslide" }),
           });
           gsap.to(slideEl, { opacity: 1, scale: 1, duration: 2.4, ease: "power3.out" });
           bgSlideIndex.current++;
           nextSlideIdx++;
           bgModeRef.current = "image";
-          cycleTimer = gsap.delayedCall(10, runCycle);
-        } else {
+          cycleTimer = gsap.delayedCall(IMAGE_DISPLAY_DURATION, runCycle);
+          
+        } else if (bgModeRef.current === "image") {
+          // Show the next background video (rotate through 3 BG_VIDEOS)
+          const nextBgVideo = BG_VIDEOS[bgVideoIndex.current % BG_VIDEOS.length];
+          videoEl.src = nextBgVideo;
+          bgVideoIndex.current++;
+          
           const prevSlideEl =
             (bgSlideIndex.current - 1) % 2 === 0 ? slideAEl : slideBEl;
           gsap.set(videoEl, { opacity: 0, className: "rh-bgvid active" });
@@ -1584,9 +1677,16 @@ export default function RasoafHero() {
               style={{ objectPosition: BG_SLIDES[1].position }}
             />
             <video
+              ref={promoVideoRef}
+              className="rh-bgslide"
+              muted
+              playsInline
+              preload="auto"
+              aria-hidden="true"
+            />
+            <video
               ref={videoRef}
               className="rh-bgvid active"
-              src={BG_VIDEO}
               autoPlay loop muted playsInline preload="auto"
               aria-hidden="true"
             />
