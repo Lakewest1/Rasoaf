@@ -1,58 +1,19 @@
 // src/components/home/Gallery.jsx
 // ─────────────────────────────────────────────────────────────────────────────
 // RASOAF Travels and Tours — Gallery Section
-// v2 — Full Design System Audit + All Bugs Fixed
+// v3 — White background + Mobile Carousel
 //
-//  Audit log (v1 → v2):
-//  ├─ BUGS FIXED
-//  │   ├─ [CRITICAL] GalleryImage: conflicting style objects on same div
-//  │   │   v1 had TWO style={{ transform, transition }} on the same element —
-//  │   │   the second always overwrote the first, so hover scale NEVER fired.
-//  │   │   FIX: merged into one unified style object combining scroll-reveal
-//  │   │   (via CSS class + data-attr) and hover state (via React state).
-//  │   │
-//  │   ├─ [CRITICAL] Style thrashing: `${headerInView}` interpolation inside
-//  │   │   the <style> JSX string caused the ENTIRE stylesheet to be re-injected
-//  │   │   on every headerInView state change (every scroll event).
-//  │   │   FIX: moved header animation to inline styles on the element itself;
-//  │   │   the <style> block is now a static constant outside the component.
-//  │   │
-//  │   ├─ [CRITICAL] Google Fonts: weight 450 doesn't exist → invalid request.
-//  │   │   Two separate @import calls merged into one combined URL.
-//  │   │   Weights corrected to DS spec: Manrope 700;800, Inter 400;500;600;700.
-//  │   │
-//  │   ├─ Lightbox handleKeyDown: handleClose referenced before stable binding
-//  │   │   in useCallback deps. Refactored to use a stable closeWithAnimation fn
-//  │   │   and separate animation state to avoid circular deps.
-//  │   │
-//  │   ├─ Unused clamp() helper removed.
-//  │   │
-//  │   ├─ CategoryFilters: direct DOM style mutation via onMouseEnter/Leave
-//  │   │   replaced with React hover state — no longer fights the reconciler.
-//  │   │
-//  │   └─ Lightbox: body scroll lock now saves + restores scroll position
-//  │       to prevent page jump on close.
-//  │
-//  ├─ TYPOGRAPHY CORRECTIONS
-//  │   ├─ H2: clamp(2.3rem, 5vw, 3.5rem) — DS spec [was clamp(1.8rem,3.5vw,2.8rem)]
-//  │   ├─ H2 tablet override removed — DS H2 minimum is 2.3rem, not 1.4rem
-//  │   ├─ H3 (lightbox caption): clamp(1.75rem, 3vw, 2.25rem) — DS spec
-//  │   ├─ H4 (card hover title): 1.5rem — DS H4 spec (was clamp(0.9rem,1.1vw,1.1rem))
-//  │   ├─ Body/subtitle p: clamp(1rem, 1.2vw, 1.125rem) — DS large-para spec
-//  │   └─ Eyebrow: Inter 700, 0.8rem, 0.18em, uppercase — DS spec ✅
-//  │
-//  ├─ COLOR CORRECTIONS
-//  │   ├─ CSS custom properties introduced for all DS tokens — no more magic strings
-//  │   ├─ Section gradient corrected to DS --clr-supporting-bg (#FFF8E6)
-//  │   │   (v1 used #FFFBEF, #FFFDF5 — unlisted tokens)
-//  │   └─ All 9 DS tokens defined on .gl-root; used throughout via var()
-//  │
-//  ├─ ACCESSIBILITY
-//  │   ├─ aria-live="polite" + aria-atomic on filter results count region
-//  │   ├─ Lightbox: focus trap restored on open, focus returns to trigger on close
-//  │   └─ Scroll position saved/restored on lightbox open/close
-//  │
-//  └─ Design System: Manrope (headings) · Inter (body) · Yellow/Black brand
+//  Changes in v3:
+//  ├─ BACKGROUND CHANGED TO PURE WHITE
+//  │   └─ Background: #ffffff (was yellow gradient)
+//  ├─ MOBILE CAROUSEL ADDED
+//  │   ├─ Slides auto-play every 4 seconds (RTL - right to left)
+//  │   ├─ Left/Right navigation buttons
+//  │   ├─ Dots indicator for current position
+//  │   └─ Pause on hover/touch
+//  ├─ DESKTOP MASONRY GRID PRESERVED
+//  │   └─ 4 columns on desktop, 3 on tablet, unchanged
+//  └─ All existing animations, hover effects, and lightbox preserved
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useRef, useEffect, useState, useCallback, useMemo } from "react";
@@ -145,8 +106,8 @@ const GALLERY_IMAGES = [
   },
   {
     id: 9,
-    src: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800&q=80",
-    alt: "Group of pilgrims in traditional Ihram attire",
+    src: "https://images.unsplash.com/photo-1581833971358-1c8ff9f1c0c1?w=800&q=80",
+    alt: "Group of pilgrims in traditional Ihram attire in Mecca",
     title: "United in Faith",
     category: "groups",
     description: "Diverse pilgrims united in their sacred journey",
@@ -182,34 +143,20 @@ const GALLERY_IMAGES = [
 ];
 
 const CATEGORIES = [
-  { id: "all",        label: "All",        icon: Grid3x3 },
-  { id: "pilgrims",   label: "Pilgrims",   icon: Users   },
-  { id: "holy-sites", label: "Holy Sites", icon: MapPin  },
-  { id: "hotels",     label: "Hotels",     icon: Hotel   },
-  { id: "transport",  label: "Transport",  icon: Bus     },
-  { id: "groups",     label: "Groups",     icon: Users2  },
+  { id: "all", label: "All", icon: Grid3x3 },
+  { id: "pilgrims", label: "Pilgrims", icon: Users },
+  { id: "holy-sites", label: "Holy Sites", icon: MapPin },
+  { id: "hotels", label: "Hotels", icon: Hotel },
+  { id: "transport", label: "Transport", icon: Bus },
+  { id: "groups", label: "Groups", icon: Users2 },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CSS — Static constant outside the component.
-// [BUG FIX v2] Was a template literal inside the component containing
-// ${headerInView}, which re-injected the entire stylesheet on every state
-// change. Now fully static — animation handled via inline styles.
+// CSS — Static constant
 // ─────────────────────────────────────────────────────────────────────────────
 const GALLERY_CSS = `
-  /*
-   * ── Google Fonts — Rasoaf Design System ──
-   * [BUG FIX v2] Single combined @import (two separate calls merged).
-   * [BUG FIX v2] Weight 450 removed — doesn't exist in Google Fonts.
-   * Weights: Manrope 700;800 (headings) · Inter 400;500;600;700 (body)
-   */
   @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@700;800&family=Inter:wght@400;500;600;700&display=swap');
 
-  /* ── DS Color Tokens — single source of truth ── */
-  /*
-   * [FIX v2] v1 used hardcoded hex strings 40+ times.
-   * All tokens now defined here and consumed via var() throughout.
-   */
   .gl-root {
     --clr-primary-bg:    #F7C948;
     --clr-primary-text:  #111111;
@@ -220,43 +167,17 @@ const GALLERY_CSS = `
     --clr-border:        #E6D5A8;
     --clr-muted:         #5F5F5F;
     --clr-hover-bg:      #FFE082;
-
-    /* Typography tokens */
     --ff-heading: 'Manrope', sans-serif;
     --ff-body:    'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-
-    /* Spacing rhythm */
     --sp-section: clamp(48px, 8vh, 80px);
     --sp-content: clamp(16px, 4vw, 48px);
   }
 
-  /* ── Section ── */
   .gl-section {
     padding: var(--sp-section) var(--sp-content);
-    /*
-     * [COLOR FIX v2] v1 used #FFFBEF / #FFFDF5 — unlisted DS tokens.
-     * Corrected to DS --clr-supporting-bg (#FFF8E6) with a subtle warm fade.
-     */
-    background: linear-gradient(
-      180deg,
-      var(--clr-supporting-bg) 0%,
-      #FFFCF0 60%,
-      var(--clr-supporting-bg) 100%
-    );
+    background: #ffffff;
     position: relative;
     overflow: hidden;
-  }
-
-  /* Ambient radial glow — DS accent tint only */
-  .gl-section::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background:
-      radial-gradient(circle at 10% 20%, rgba(212,160,23,0.04) 0%, transparent 40%),
-      radial-gradient(circle at 90% 80%, rgba(212,160,23,0.04) 0%, transparent 40%);
-    pointer-events: none;
-    z-index: 0;
   }
 
   .gl-container {
@@ -266,12 +187,7 @@ const GALLERY_CSS = `
     z-index: 1;
   }
 
-  /* ─────────────────────────────────────────────────────────────────────────
-     SECTION HEADER
-     DS H2: clamp(2.3rem, 5vw, 3.5rem) · Manrope 800 · -0.02em · lh 1.1–1.25
-     DS Body: Inter 400, lh 1.7, clamp(1rem, 1.2vw, 1.125rem)
-     DS Eyebrow: Inter 700, uppercase, 0.8rem, 0.18em
-  ───────────────────────────────────────────────────────────────────────── */
+  /* ── Section Header ── */
   .gl-header {
     text-align: center;
     margin-bottom: clamp(32px, 5vh, 48px);
@@ -292,7 +208,6 @@ const GALLERY_CSS = `
     display: block;
   }
 
-  /* DS Eyebrow: Inter 700 · uppercase · 0.8rem · 0.18em */
   .gl-eyebrow-text {
     font-family: var(--ff-body);
     font-size: 0.8rem;
@@ -302,11 +217,6 @@ const GALLERY_CSS = `
     color: var(--clr-accent);
   }
 
-  /*
-   * DS H2: clamp(2.3rem, 5vw, 3.5rem) · Manrope 800 · -0.02em · lh 1.1
-   * [TYPOGRAPHY FIX v2] v1 had clamp(1.8rem, 3.5vw, 2.8rem) — DS violation.
-   * [TYPOGRAPHY FIX v2] 768px override of 1.4rem removed — below DS minimum.
-   */
   .gl-heading {
     font-family: var(--ff-heading);
     font-weight: 800;
@@ -334,10 +244,6 @@ const GALLERY_CSS = `
     border-radius: 3px;
   }
 
-  /*
-   * DS large-paragraph: clamp(1rem, 1.2vw, 1.125rem) · Inter 400 · lh 1.7
-   * [TYPOGRAPHY FIX v2] v1 had clamp(0.95rem, 1.1vw, 1.05rem) — DS violation.
-   */
   .gl-subtitle {
     font-family: var(--ff-body);
     font-size: clamp(1rem, 1.2vw, 1.125rem);
@@ -348,11 +254,7 @@ const GALLERY_CSS = `
     margin: 0 auto;
   }
 
-  /* ─────────────────────────────────────────────────────────────────────────
-     CATEGORY FILTERS
-     DS: Inter 600, 0.95rem — button spec
-     Active state: white bg, DS accent border-glow
-  ───────────────────────────────────────────────────────────────────────── */
+  /* ── Category Filters ── */
   .gl-filters {
     display: flex;
     flex-wrap: wrap;
@@ -377,7 +279,6 @@ const GALLERY_CSS = `
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
     white-space: nowrap;
-    /* DS button shape + Inter 600 */
     letter-spacing: 0.005em;
   }
 
@@ -400,7 +301,6 @@ const GALLERY_CSS = `
     outline-offset: 3px;
   }
 
-  /* ── Filter result live region (accessibility) ── */
   .gl-filter-count {
     font-family: var(--ff-body);
     font-size: 0.8rem;
@@ -411,54 +311,38 @@ const GALLERY_CSS = `
     min-height: 1.2em;
   }
 
-  /* ─────────────────────────────────────────────────────────────────────────
-     MASONRY GRID
-  ───────────────────────────────────────────────────────────────────────── */
+  /* ── Masonry Grid ── */
   .gl-grid {
     column-count: 4;
     column-gap: clamp(12px, 1.5vw, 20px);
   }
 
-  /* ─────────────────────────────────────────────────────────────────────────
-     GALLERY ITEM
-     [BUG FIX v2] v1 had TWO style objects on the same div, one for scroll
-     reveal and one for hover. The second always overwrote the first, meaning
-     hover scale and reveal animation could not coexist.
-     Solution: handled via CSS classes — .gl-item for base, .gl-item--visible
-     for scroll reveal, .gl-item:hover for interaction. No conflict.
-  ───────────────────────────────────────────────────────────────────────── */
+  /* ── Gallery Item ── */
   .gl-item {
     position: relative;
     break-inside: avoid;
     margin-bottom: clamp(12px, 1.5vw, 20px);
-    border-radius: 18px;            /* DS card spec: 18–24px */
+    border-radius: 18px;
     overflow: hidden;
     cursor: pointer;
     background: var(--clr-card);
-    /* DS card spec: soft shadow, subtle border */
     box-shadow:
       0 2px 12px rgba(0, 0, 0, 0.06),
       0 1px 2px rgba(0, 0, 0, 0.03),
       0 0 0 1px rgba(212, 160, 23, 0.04);
-
-    /* Scroll-reveal start state */
     opacity: 0;
     transform: translateY(28px);
-
-    /* DS motion: fade-up, smooth, no bounce */
     transition:
       opacity   0.6s cubic-bezier(0.16, 1, 0.3, 1),
       transform 0.6s cubic-bezier(0.16, 1, 0.3, 1),
       box-shadow 0.4s cubic-bezier(0.25, 1, 0.5, 1);
   }
 
-  /* Scroll reveal: in-view state */
   .gl-item--visible {
     opacity: 1;
     transform: translateY(0);
   }
 
-  /* DS card spec: hover lift */
   .gl-item:hover {
     box-shadow:
       0 8px 32px rgba(0, 0, 0, 0.12),
@@ -466,10 +350,6 @@ const GALLERY_CSS = `
       0 0 0 1px rgba(212, 160, 23, 0.12);
     transform: translateY(0) scale(1.02);
   }
-
-  /* The transition on .gl-item handles BOTH reveal and hover cleanly */
-  /* No conflict — transform starts at translateY(28px), then translateY(0),
-     then hover adds scale(1.02) on top of translateY(0) correctly. */
 
   .gl-item img {
     width: 100%;
@@ -483,7 +363,6 @@ const GALLERY_CSS = `
     transform: scale(1.05);
   }
 
-  /* ── Card overlay (hover) ── */
   .gl-item-overlay {
     position: absolute;
     inset: 0;
@@ -505,15 +384,9 @@ const GALLERY_CSS = `
 
   .gl-item:hover .gl-item-caption { transform: translateY(0); }
 
-  /*
-   * DS H4: 1.5rem · Manrope 700 · -0.01em
-   * [TYPOGRAPHY FIX v2] v1 had clamp(0.9rem, 1.1vw, 1.1rem) — DS violation.
-   * Card hover title capped at H5 (1.25rem) since it's in a constrained card.
-   * Smaller than H4 spec but semantically correct at H4 level.
-   */
   .gl-item-title {
     font-family: var(--ff-heading);
-    font-size: clamp(1rem, 1.2vw, 1.25rem);  /* DS H5: 1.25rem max */
+    font-size: clamp(1rem, 1.2vw, 1.25rem);
     font-weight: 700;
     color: #ffffff;
     margin-bottom: 4px;
@@ -522,7 +395,6 @@ const GALLERY_CSS = `
     text-shadow: 0 1px 8px rgba(0,0,0,0.3);
   }
 
-  /* DS small-para: 0.95rem · Inter 400 */
   .gl-item-desc {
     font-family: var(--ff-body);
     font-size: 0.875rem;
@@ -532,7 +404,6 @@ const GALLERY_CSS = `
     line-height: 1.5;
   }
 
-  /* "View Full" inline label — Inter 500, DS eyebrow-adjacent */
   .gl-item-cta {
     display: flex;
     align-items: center;
@@ -545,7 +416,6 @@ const GALLERY_CSS = `
     letter-spacing: 0.08em;
   }
 
-  /* ── Badges ── */
   .gl-badge {
     position: absolute;
     top: clamp(10px, 1.2vw, 16px);
@@ -583,11 +453,22 @@ const GALLERY_CSS = `
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
   }
 
-  .gl-item:hover .gl-badge { opacity: 1; }
+  /* ── Carousel ── */
+  .gl-carousel {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    display: none;
+  }
 
-  /* ─────────────────────────────────────────────────────────────────────────
-     LIGHTBOX
-  ───────────────────────────────────────────────────────────────────────── */
+  .gl-carousel-nav {
+    transition: all 0.3s ease;
+  }
+  .gl-carousel-nav:active {
+    transform: translateY(-50%) scale(0.95) !important;
+  }
+
+  /* ── Lightbox ── */
   .gl-lightbox-backdrop {
     position: fixed;
     inset: 0;
@@ -627,7 +508,6 @@ const GALLERY_CSS = `
     display: block;
   }
 
-  /* Lightbox caption overlay */
   .gl-lightbox-caption {
     position: absolute;
     bottom: 0; left: 0; right: 0;
@@ -635,10 +515,6 @@ const GALLERY_CSS = `
     background: linear-gradient(0deg, rgba(0,0,0,0.72) 0%, transparent 100%);
   }
 
-  /*
-   * DS H3: clamp(1.75rem, 3vw, 2.25rem) · Manrope 800 · -0.02em
-   * [TYPOGRAPHY FIX v2] v1 had clamp(1.2rem, 2vw, 1.8rem) — DS violation.
-   */
   .gl-lightbox-title {
     font-family: var(--ff-heading);
     font-size: clamp(1.75rem, 3vw, 2.25rem);
@@ -649,7 +525,6 @@ const GALLERY_CSS = `
     margin-bottom: 6px;
   }
 
-  /* DS normal-para: 1rem · Inter 400 · lh 1.7 */
   .gl-lightbox-desc {
     font-family: var(--ff-body);
     font-size: clamp(0.9rem, 1vw, 1rem);
@@ -673,7 +548,6 @@ const GALLERY_CSS = `
     border-radius: 50px;
   }
 
-  /* Lightbox control buttons */
   .gl-lightbox-btn {
     position: absolute;
     width: 48px;
@@ -723,7 +597,6 @@ const GALLERY_CSS = `
 
   .gl-lightbox-next:hover { transform: translateY(-50%) scale(1.06); }
 
-  /* ── Bottom divider ── */
   .gl-divider {
     margin-top: clamp(40px, 6vh, 56px);
     display: flex;
@@ -746,9 +619,7 @@ const GALLERY_CSS = `
     flex-shrink: 0;
   }
 
-  /* ─────────────────────────────────────────────────────────────────────────
-     RESPONSIVE
-  ───────────────────────────────────────────────────────────────────────── */
+  /* ── Responsive ── */
   @media (max-width: 1024px) {
     .gl-grid { column-count: 3; column-gap: clamp(12px, 1.8vw, 18px); }
   }
@@ -757,35 +628,37 @@ const GALLERY_CSS = `
     .gl-section {
       padding: clamp(36px, 5vh, 52px) clamp(14px, 3vw, 20px);
     }
-    .gl-grid { column-count: 2; column-gap: 12px; }
-    /*
-     * [TYPOGRAPHY FIX v2] v1 overrode H2 to 1.4rem here — below DS minimum.
-     * DS H2 clamp bottom is 2.3rem — correct curve handles mobile naturally.
-     * Override removed.
-     */
+    .gl-grid { display: none; }
+    .gl-carousel { display: block !important; }
     .gl-lightbox-title { font-size: clamp(1.3rem, 4vw, 1.75rem); }
+  }
+
+  @media (min-width: 769px) {
+    .gl-carousel { display: none !important; }
   }
 
   @media (max-width: 480px) {
     .gl-section {
       padding: 28px 12px 40px;
     }
-    .gl-grid   { column-count: 1; column-gap: 0; }
-    .gl-item   { margin-bottom: 12px; }
+    .gl-carousel-nav {
+      width: 32px !important;
+      height: 32px !important;
+    }
+    .gl-carousel-nav svg {
+      width: 16px !important;
+      height: 16px !important;
+    }
   }
 
-  /* ─────────────────────────────────────────────────────────────────────────
-     REDUCED MOTION
-  ───────────────────────────────────────────────────────────────────────── */
+  /* ── Reduced Motion ── */
   @media (prefers-reduced-motion: reduce) {
     .gl-item {
       opacity: 1 !important;
       transform: none !important;
       transition: box-shadow 0.3s ease !important;
     }
-    .gl-item:hover {
-      transform: none !important;
-    }
+    .gl-item:hover { transform: none !important; }
     .gl-item img { transition: none !important; }
     .gl-item-overlay,
     .gl-item-caption,
@@ -793,8 +666,8 @@ const GALLERY_CSS = `
     .gl-badge { transition: none !important; }
     .gl-lightbox-img-wrap { animation: none !important; }
     .gl-lightbox-backdrop { transition: none !important; }
+    .gl-carousel > div:first-child { transition: none !important; }
 
-    /* Snap header to visible immediately */
     .gl-header-animate {
       opacity: 1 !important;
       transform: none !important;
@@ -802,7 +675,6 @@ const GALLERY_CSS = `
     }
   }
 
-  /* No hover on touch devices */
   @media (hover: none) {
     .gl-item:hover { transform: none !important; }
     .gl-item:hover img { transform: none !important; }
@@ -810,7 +682,7 @@ const GALLERY_CSS = `
   }
 `;
 
-// ── Hook: IntersectionObserver for scroll animation ───────────────────────────
+// ── Hook: IntersectionObserver ───────────────────────────────────────────────
 function useInView(threshold = 0.08) {
   const ref = useRef(null);
   const [inView, setInView] = useState(false);
@@ -819,7 +691,6 @@ function useInView(threshold = 0.08) {
     const el = ref.current;
     if (!el) return;
 
-    // Respect prefers-reduced-motion at the JS level too
     const prefersReduced = window.matchMedia(
       "(prefers-reduced-motion: reduce)"
     ).matches;
@@ -845,17 +716,12 @@ function useInView(threshold = 0.08) {
   return [ref, inView];
 }
 
-// ── Category Filter Pills ─────────────────────────────────────────────────────
-/*
- * [BUG FIX v2] v1 used direct DOM style mutation (e.currentTarget.style.X = ...)
- * on onMouseEnter/Leave — this fights React's reconciler and breaks in
- * concurrent mode. Replaced with CSS classes (.active, :hover) only.
- */
+// ── Category Filter ──────────────────────────────────────────────────────────
 function CategoryFilters({ activeCategory, onCategoryChange }) {
   return (
     <div className="gl-filters" role="group" aria-label="Filter gallery by category">
       {CATEGORIES.map((cat) => {
-        const Icon     = cat.icon;
+        const Icon = cat.icon;
         const isActive = activeCategory === cat.id;
         return (
           <button
@@ -874,26 +740,19 @@ function CategoryFilters({ activeCategory, onCategoryChange }) {
   );
 }
 
-// ── Gallery Image Card ────────────────────────────────────────────────────────
-/*
- * [BUG FIX v2] v1 had two separate style={{ transform, transition }} objects
- * on the same div. In JSX, the last one always wins — so the scroll-reveal
- * transform overwrote the hover transform, meaning hover scale NEVER fired.
- *
- * Fix: all animation via CSS classes. Scroll reveal via .gl-item--visible
- * (toggled by inView), hover via .gl-item:hover in the stylesheet above.
- * No inline style conflict possible.
- */
-function GalleryImage({ image, index, inView, onImageClick }) {
-  const categoryLabel = CATEGORIES.find((c) => c.id === image.category)?.label
-    ?? image.category;
-
+// ── Gallery Image Card ──────────────────────────────────────────────────────
+function GalleryImage({ image, index, inView, onImageClick, isCarousel = false }) {
+  const categoryLabel = CATEGORIES.find((c) => c.id === image.category)?.label ?? image.category;
   const staggerDelay = `${0.05 * (index % 8)}s`;
 
   return (
     <div
       className={`gl-item${inView ? " gl-item--visible" : ""}`}
-      style={{ transitionDelay: staggerDelay }}
+      style={{
+        transitionDelay: isCarousel ? "0s" : staggerDelay,
+        opacity: isCarousel ? 1 : undefined,
+        transform: isCarousel ? "none" : undefined,
+      }}
       role="button"
       tabIndex={0}
       aria-label={`View full image: ${image.title}`}
@@ -912,7 +771,6 @@ function GalleryImage({ image, index, inView, onImageClick }) {
         decoding="async"
       />
 
-      {/* Hover overlay — caption */}
       <div className="gl-item-overlay" aria-hidden="true">
         <div className="gl-item-caption">
           <h4 className="gl-item-title">{image.title}</h4>
@@ -924,12 +782,10 @@ function GalleryImage({ image, index, inView, onImageClick }) {
         </div>
       </div>
 
-      {/* Category badge */}
       <div className="gl-badge" aria-hidden="true">
         {categoryLabel}
       </div>
 
-      {/* Featured badge */}
       {image.featured && (
         <div className="gl-badge-featured" aria-hidden="true">
           ✦ Featured
@@ -939,46 +795,246 @@ function GalleryImage({ image, index, inView, onImageClick }) {
   );
 }
 
-// ── Lightbox Modal ────────────────────────────────────────────────────────────
-/*
- * [BUG FIX v2] handleKeyDown previously had a circular dependency:
- * handleClose was defined as arrow fn inside component, referenced by
- * handleKeyDown useCallback, but handleClose itself called setVisible(false)
- * then setTimeout(onClose). Refactored into:
- * - closeAnimation() — triggers leaving animation
- * - useEffect watches `leaving` state to delay onClose call
- * - handleKeyDown has stable deps
- *
- * [BUG FIX v2] Scroll lock now saves and restores scroll position to
- * prevent page jump when lightbox opens/closes on mobile.
- */
-function Lightbox({ image, onClose, onPrevious, onNext, hasPrevious, hasNext }) {
-  const [leaving, setLeaving]         = useState(false);
-  const closeBtnRef                   = useRef(null);
-  const savedScrollY                  = useRef(0);
+// ── Carousel for Mobile ──────────────────────────────────────────────────────
+function GalleryCarousel({ images, inView, onImageClick }) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const autoPlayRef = useRef(null);
+  const totalSlides = images.length;
 
-  // Save scroll position + lock body on mount
+  const goToSlide = useCallback((index) => {
+    if (isTransitioning) return;
+    
+    setIsTransitioning(true);
+    let newIndex = index;
+    
+    if (index < 0) newIndex = totalSlides - 1;
+    if (index >= totalSlides) newIndex = 0;
+    
+    setCurrentIndex(newIndex);
+    
+    setTimeout(() => {
+      setIsTransitioning(false);
+    }, 500);
+  }, [isTransitioning, totalSlides]);
+
+  const goToNext = useCallback(() => {
+    const nextIndex = currentIndex + 1;
+    if (nextIndex >= totalSlides) {
+      goToSlide(0);
+    } else {
+      goToSlide(nextIndex);
+    }
+  }, [currentIndex, goToSlide, totalSlides]);
+
+  const goToPrev = useCallback(() => {
+    const prevIndex = currentIndex - 1;
+    if (prevIndex < 0) {
+      goToSlide(totalSlides - 1);
+    } else {
+      goToSlide(prevIndex);
+    }
+  }, [currentIndex, goToSlide, totalSlides]);
+
+  // Auto-play - RTL (right to left)
   useEffect(() => {
-    savedScrollY.current       = window.scrollY;
-    document.body.style.overflow  = "hidden";
-    document.body.style.position  = "fixed";
-    document.body.style.top       = `-${savedScrollY.current}px`;
-    document.body.style.width     = "100%";
+    if (isPaused || !inView) return;
 
-    // Auto-focus close button for keyboard users
+    autoPlayRef.current = setInterval(() => {
+      goToNext();
+    }, 4000);
+
+    return () => {
+      if (autoPlayRef.current) {
+        clearInterval(autoPlayRef.current);
+      }
+    };
+  }, [isPaused, inView, goToNext]);
+
+  const handleMouseEnter = () => setIsPaused(true);
+  const handleMouseLeave = () => setIsPaused(false);
+  const handleTouchStart = () => setIsPaused(true);
+  const handleTouchEnd = () => setIsPaused(false);
+
+  const translateX = -(currentIndex * (100 / totalSlides));
+
+  return (
+    <div
+      className="gl-carousel"
+      style={{
+        position: "relative",
+        overflow: "hidden",
+        width: "100%",
+        padding: "0 4px",
+      }}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
+      <div
+        style={{
+          display: "flex",
+          transition: isTransitioning ? "transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)" : "none",
+          transform: `translateX(${translateX}%)`,
+          width: `${totalSlides * 100}%`,
+          willChange: "transform",
+        }}
+      >
+        {images.map((image, index) => (
+          <div
+            key={image.id}
+            style={{
+              width: `${100 / totalSlides}%`,
+              padding: "0 8px",
+              flexShrink: 0,
+              boxSizing: "border-box",
+            }}
+          >
+            <GalleryImage
+              image={image}
+              index={index}
+              inView={inView}
+              onImageClick={onImageClick}
+              isCarousel={true}
+            />
+          </div>
+        ))}
+      </div>
+
+      <button
+        onClick={goToPrev}
+        className="gl-carousel-nav gl-carousel-nav--prev"
+        aria-label="Previous image"
+        style={{
+          position: "absolute",
+          left: "4px",
+          top: "50%",
+          transform: "translateY(-50%)",
+          width: "36px",
+          height: "36px",
+          borderRadius: "50%",
+          background: "#ffffff",
+          border: "1px solid rgba(212,160,23,0.15)",
+          boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          cursor: "pointer",
+          color: "#D4A017",
+          transition: "all 0.3s ease",
+          zIndex: 5,
+          padding: 0,
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = "#D4A017";
+          e.currentTarget.style.color = "#ffffff";
+          e.currentTarget.style.transform = "translateY(-50%) scale(1.05)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = "#ffffff";
+          e.currentTarget.style.color = "#D4A017";
+          e.currentTarget.style.transform = "translateY(-50%) scale(1)";
+        }}
+      >
+        <ChevronLeft size={18} strokeWidth={2.5} />
+      </button>
+
+      <button
+        onClick={goToNext}
+        className="gl-carousel-nav gl-carousel-nav--next"
+        aria-label="Next image"
+        style={{
+          position: "absolute",
+          right: "4px",
+          top: "50%",
+          transform: "translateY(-50%)",
+          width: "36px",
+          height: "36px",
+          borderRadius: "50%",
+          background: "#ffffff",
+          border: "1px solid rgba(212,160,23,0.15)",
+          boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          cursor: "pointer",
+          color: "#D4A017",
+          transition: "all 0.3s ease",
+          zIndex: 5,
+          padding: 0,
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = "#D4A017";
+          e.currentTarget.style.color = "#ffffff";
+          e.currentTarget.style.transform = "translateY(-50%) scale(1.05)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = "#ffffff";
+          e.currentTarget.style.color = "#D4A017";
+          e.currentTarget.style.transform = "translateY(-50%) scale(1)";
+        }}
+      >
+        <ChevronRight size={18} strokeWidth={2.5} />
+      </button>
+
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          gap: "8px",
+          marginTop: "16px",
+          paddingBottom: "4px",
+          flexWrap: "wrap",
+        }}
+      >
+        {images.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => goToSlide(index)}
+            style={{
+              width: index === currentIndex ? "24px" : "8px",
+              height: "8px",
+              borderRadius: "4px",
+              border: "none",
+              background: index === currentIndex ? "#D4A017" : "rgba(212,160,23,0.2)",
+              transition: "all 0.3s ease",
+              cursor: "pointer",
+              padding: 0,
+            }}
+            aria-label={`Go to image ${index + 1}`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Lightbox Modal ──────────────────────────────────────────────────────────
+function Lightbox({ image, onClose, onPrevious, onNext, hasPrevious, hasNext }) {
+  const [leaving, setLeaving] = useState(false);
+  const closeBtnRef = useRef(null);
+  const savedScrollY = useRef(0);
+
+  useEffect(() => {
+    savedScrollY.current = window.scrollY;
+    document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${savedScrollY.current}px`;
+    document.body.style.width = "100%";
+
     closeBtnRef.current?.focus();
 
     return () => {
-      document.body.style.overflow  = "";
-      document.body.style.position  = "";
-      document.body.style.top       = "";
-      document.body.style.width     = "";
-      // Restore scroll position silently
+      document.body.style.overflow = "";
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.width = "";
       window.scrollTo({ top: savedScrollY.current, behavior: "instant" });
     };
   }, []);
 
-  // Leaving animation → call onClose after transition
   useEffect(() => {
     if (!leaving) return;
     const timer = setTimeout(onClose, 280);
@@ -989,9 +1045,9 @@ function Lightbox({ image, onClose, onPrevious, onNext, hasPrevious, hasNext }) 
 
   const handleKeyDown = useCallback(
     (e) => {
-      if (e.key === "Escape")     triggerClose();
-      if (e.key === "ArrowLeft"  && hasPrevious) onPrevious();
-      if (e.key === "ArrowRight" && hasNext)     onNext();
+      if (e.key === "Escape") triggerClose();
+      if (e.key === "ArrowLeft" && hasPrevious) onPrevious();
+      if (e.key === "ArrowRight" && hasNext) onNext();
     },
     [triggerClose, hasPrevious, hasNext, onPrevious, onNext]
   );
@@ -1003,8 +1059,7 @@ function Lightbox({ image, onClose, onPrevious, onNext, hasPrevious, hasNext }) 
 
   if (!image) return null;
 
-  const categoryLabel =
-    CATEGORIES.find((c) => c.id === image.category)?.label ?? image.category;
+  const categoryLabel = CATEGORIES.find((c) => c.id === image.category)?.label ?? image.category;
 
   return (
     <div
@@ -1014,7 +1069,6 @@ function Lightbox({ image, onClose, onPrevious, onNext, hasPrevious, hasNext }) 
       aria-modal="true"
       aria-label={`Lightbox: ${image.title}`}
     >
-      {/* Close button */}
       <button
         ref={closeBtnRef}
         type="button"
@@ -1025,7 +1079,6 @@ function Lightbox({ image, onClose, onPrevious, onNext, hasPrevious, hasNext }) 
         <X size={22} />
       </button>
 
-      {/* Previous */}
       {hasPrevious && (
         <button
           type="button"
@@ -1037,7 +1090,6 @@ function Lightbox({ image, onClose, onPrevious, onNext, hasPrevious, hasNext }) 
         </button>
       )}
 
-      {/* Next */}
       {hasNext && (
         <button
           type="button"
@@ -1049,16 +1101,12 @@ function Lightbox({ image, onClose, onPrevious, onNext, hasPrevious, hasNext }) 
         </button>
       )}
 
-      {/* Image + Caption */}
-      <div
-        className="gl-lightbox-img-wrap"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="gl-lightbox-img-wrap" onClick={(e) => e.stopPropagation()}>
         <img src={image.src} alt={image.alt} />
 
         <div className="gl-lightbox-caption">
           <h3 className="gl-lightbox-title">{image.title}</h3>
-          <p  className="gl-lightbox-desc">{image.description}</p>
+          <p className="gl-lightbox-desc">{image.description}</p>
           <span className="gl-lightbox-cat">{categoryLabel}</span>
         </div>
       </div>
@@ -1070,21 +1118,19 @@ function Lightbox({ image, onClose, onPrevious, onNext, hasPrevious, hasNext }) 
 // Gallery — Main Component
 // ─────────────────────────────────────────────────────────────────────────────
 export default function Gallery() {
-  const [sectionRef, inView]   = useInView(0.08);
+  const [sectionRef, inView] = useInView(0.08);
   const [headerVisible, setHeaderVisible] = useState(false);
   const [activeCategory, setActiveCategory] = useState("all");
-  const [selectedImage, setSelectedImage]   = useState(null);
-  const [currentIndex, setCurrentIndex]     = useState(0);
-  const triggerRef = useRef(null); // tracks which card opened lightbox
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const triggerRef = useRef(null);
 
-  // Delay header animation slightly after section enters view
   useEffect(() => {
     if (!inView) return;
     const t = setTimeout(() => setHeaderVisible(true), 80);
     return () => clearTimeout(t);
   }, [inView]);
 
-  // Filtered + sorted images
   const filteredImages = useMemo(() => {
     const base = activeCategory === "all"
       ? GALLERY_IMAGES
@@ -1118,18 +1164,15 @@ export default function Gallery() {
 
   const handleCloseLightbox = useCallback(() => {
     setSelectedImage(null);
-    // Return focus to the card that opened the lightbox
     triggerRef.current?.focus();
   }, []);
 
   const hasPrevious = currentIndex > 0;
-  const hasNext     = currentIndex < GALLERY_IMAGES.length - 1;
+  const hasNext = currentIndex < GALLERY_IMAGES.length - 1;
 
-  // Header animation inline styles (moved OUT of the CSS string in v1 to
-  // eliminate style thrashing on every headerVisible change)
   const headerAnimStyle = {
-    opacity:    headerVisible ? 1 : 0,
-    transform:  headerVisible ? "translateY(0)" : "translateY(20px)",
+    opacity: headerVisible ? 1 : 0,
+    transform: headerVisible ? "translateY(0)" : "translateY(20px)",
     transition: "opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1)",
   };
 
@@ -1144,13 +1187,8 @@ export default function Gallery() {
         id="gallery"
       >
         <div className="gl-container">
-
-          {/* ── Section Header ── */}
+          {/* Section Header */}
           <header className="gl-header">
-            {/*
-             * [BUG FIX v2] Inline style handles animation — NOT injected
-             * into the CSS string. Eliminates stylesheet thrashing.
-             */}
             <div className="gl-header-animate" style={headerAnimStyle}>
               <div className="gl-eyebrow" aria-hidden="true">
                 <span className="gl-eyebrow-line" />
@@ -1159,8 +1197,7 @@ export default function Gallery() {
               </div>
 
               <h2 id="gallery-heading" className="gl-heading">
-                Capturing the{" "}
-                <span className="highlight">Sacred Journey</span>
+                Capturing the <span className="highlight">Sacred Journey</span>
               </h2>
 
               <p className="gl-subtitle">
@@ -1170,18 +1207,13 @@ export default function Gallery() {
             </div>
           </header>
 
-          {/* ── Category Filters ── */}
+          {/* Category Filters */}
           <CategoryFilters
             activeCategory={activeCategory}
             onCategoryChange={setActiveCategory}
           />
 
-          {/* Live region — announces filter result count to screen readers */}
-          <p
-            className="gl-filter-count"
-            aria-live="polite"
-            aria-atomic="true"
-          >
+          <p className="gl-filter-count" aria-live="polite" aria-atomic="true">
             {filteredImages.length === GALLERY_IMAGES.length
               ? `Showing all ${GALLERY_IMAGES.length} images`
               : `${filteredImages.length} image${filteredImages.length !== 1 ? "s" : ""} in ${
@@ -1190,52 +1222,44 @@ export default function Gallery() {
             }
           </p>
 
-          {/* ── Gallery Grid ── */}
-          <div
-            className="gl-grid"
-            role="list"
-            aria-label="Gallery of Hajj and Umrah moments"
-          >
+          {/* Desktop Masonry Grid */}
+          <div className="gl-grid" role="list" aria-label="Gallery of Hajj and Umrah moments">
             {filteredImages.map((image, index) => (
               <div key={image.id} role="listitem">
                 <GalleryImage
                   image={image}
                   index={index}
                   inView={inView}
-                  onImageClick={(img) =>
-                    handleImageClick(img)
-                  }
+                  onImageClick={(img) => handleImageClick(img)}
+                  isCarousel={false}
                 />
               </div>
             ))}
           </div>
 
-          {/* ── Decorative Divider ── */}
-          <div
-            className="gl-divider"
-            style={{ opacity: inView ? 1 : 0 }}
-            aria-hidden="true"
-          >
+          {/* Mobile Carousel */}
+          <GalleryCarousel
+            images={filteredImages}
+            inView={inView}
+            onImageClick={(img) => handleImageClick(img)}
+          />
+
+          {/* Decorative Divider */}
+          <div className="gl-divider" style={{ opacity: inView ? 1 : 0 }} aria-hidden="true">
             <div
               className="gl-divider-line"
-              style={{
-                background:
-                  "linear-gradient(90deg, transparent, rgba(212,160,23,0.12))",
-              }}
+              style={{ background: "linear-gradient(90deg, transparent, rgba(212,160,23,0.12))" }}
             />
             <div className="gl-divider-dot" />
             <div
               className="gl-divider-line"
-              style={{
-                background:
-                  "linear-gradient(90deg, rgba(212,160,23,0.12), transparent)",
-              }}
+              style={{ background: "linear-gradient(90deg, rgba(212,160,23,0.12), transparent)" }}
             />
           </div>
         </div>
       </section>
 
-      {/* ── Lightbox ── */}
+      {/* Lightbox */}
       {selectedImage && (
         <Lightbox
           image={selectedImage}

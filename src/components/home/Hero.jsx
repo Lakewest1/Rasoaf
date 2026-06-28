@@ -1,64 +1,18 @@
 // components/RasoafHero.jsx
 // ─────────────────────────────────────────────────────────────────────────────
 // RASOAF TRAVELS AND TOURS LIMITED
-// v17 — Full Design System Audit + Complete Rebuild
+// v21 — Increased background height + padding on smaller screens
 //
-//  Audit log (v16 → v17):
-//  ├─ TYPOGRAPHY CORRECTIONS
-//  │   ├─ H1 clamp corrected: clamp(3rem,6vw,4.75rem) per DS spec
-//  │   │   (v16 had clamp(3rem,7vw,6.5rem) — too large, deviating from spec)
-//  │   ├─ H1 line-height corrected: 1.1–1.25 range → set to 1.15
-//  │   │   (v16 had 1.08 — outside the DS range)
-//  │   ├─ Subtitle font-size aligned: clamp(1rem,1.4vw,1.125rem) for large-para
-//  │   │   (v16 used clamp(0.95rem,1.2vw,1.125rem) — min was small-para size)
-//  │   ├─ Eyebrow letter-spacing: 0.18em ✅ already correct in v16
-//  │   ├─ Button font-size: 0.95rem ✅ already correct in v16
-//  │   ├─ Button letter-spacing: 0.01em ✅ already correct in v16
-//  │   ├─ Panel label: Manrope 700 ✅ already correct in v16
-//  │   ├─ Panel tag: Inter 500 uppercase ✅ already correct in v16
-//  │   └─ Google Fonts import: now includes all required weights
-//  │       (v16 had Inter:wght@400;500;600;700 — correct but order standardised)
-//  │       Added Manrope:wght@700;800 explicit (v16 ✅ had this)
-//  ├─ COLOR TOKEN CORRECTIONS
-//  │   ├─ TV error fallback bg was #0a1a2f/#0d1f3a — rogue blue, removed
-//  │   │   Replaced with #0a0a0a (--clr-dark-surface) + gold DS accent
-//  │   ├─ All 9 DS tokens enforced: primary-bg, primary-text, supporting-bg,
-//  │   │   card, accent, accent-2, border, muted, hover-bg
-//  │   ├─ Dark-surface derived tokens scoped correctly to .rh-root
-//  │   └─ No rogue blue/purple/green anywhere in the component
-//  ├─ FONT LOADING
-//  │   ├─ Google Fonts @import moved ABOVE the .rh-root rule block
-//  │   │   (v16 had it inside the CSS string but correctly at top — verified ✅)
-//  │   │   Added font-display:swap directive via URL param for performance
-//  │   └─ font-family declarations use DS token vars (--ff-heading, --ff-body)
-//  ├─ SPACING TOKENS
-//  │   ├─ --sp-section and --sp-content preserved from v16
-//  │   └─ Section vertical rhythm: consistent clamp-based margins throughout
-//  ├─ MOTION
-//  │   ├─ No bounce / spin / excessive parallax — verified clean ✅
-//  │   ├─ All GSAP tweens use ease: "power3.out" / "sine.inOut" / "power2.out"
-//  │   ├─ prefers-reduced-motion: full coverage (CSS + JS matchMedia) ✅
-//  │   └─ Panel float amplitude kept subtle (y: ±10px) ✅
-//  ├─ BUTTONS
-//  │   ├─ Primary: #F7C948→#D4A017 gradient, black text, 50px radius ✅
-//  │   ├─ Secondary: transparent, glass border, hover→warm yellow ✅
-//  │   └─ Both use Inter 600, 0.95rem, 0.01em — verified ✅
-//  ├─ CARDS / PANELS
-//  │   ├─ border-radius: 18px (within 18–24px spec) ✅
-//  │   ├─ Soft shadows, subtle border, hover lift ✅
-//  │   └─ Smooth transitions throughout ✅
-//  ├─ ACCESSIBILITY
-//  │   ├─ focus-visible unified with --clr-accent token ✅
-//  │   ├─ aria-labels corrected and expanded
-//  │   ├─ Semantic HTML: section, role="list", role="listitem" ✅
-//  │   └─ Keyboard nav: tabIndex, onKeyDown handlers ✅
-//  ├─ PERFORMANCE
-//  │   ├─ will-change scoped to animated elements only ✅
-//  │   ├─ contain: layout on mobile panels ✅
-//  │   ├─ GSAP context cleanup on all useEffects ✅
-//  │   ├─ CSS custom properties single source of truth ✅
-//  │   └─ @gsap/react NOT used — standard useEffect + gsap.context() ✅
-//  └─ Design System: Manrope (headings) · Inter (body) · Yellow/Black brand
+//  Changes in v21:
+//  ├─ BACKGROUND HEIGHT INCREASED (smaller screens only)
+//  │   ├─ Mobile (≤768px): 65% (was 55%) — +10%
+//  │   ├─ Small Mobile (≤480px): 60% (was 50%) — +10%
+//  │   └─ Tablet: 58% (was 55%) — +3%
+//  ├─ BACKGROUND PADDING BOTTOM ADDED
+//  │   ├─ Mobile (≤768px): padding-bottom: 20px added to bg-wrapper
+//  │   ├─ Small Mobile (≤480px): padding-bottom: 16px added to bg-wrapper
+//  │   └─ Ensures background extends lower for trust badge visibility
+//  └─ All other settings unchanged from v20
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useState, useEffect, useRef, useCallback } from "react";
@@ -96,6 +50,16 @@ const PANELS = [
     tag: "Fast Processing",
   },
 ];
+
+// ── Responsive panel slices ──────────────────────────────────────────────────
+const getPanelSlices = () => {
+  const w = typeof window !== "undefined" ? window.innerWidth : 1440;
+  if (w >= 1441) return { count: 4, width: "clamp(170px, 16vw, 240px)", height: "clamp(220px, 28vw, 320px)" };
+  if (w >= 1025) return { count: 4, width: "clamp(160px, 15vw, 210px)", height: "clamp(210px, 26vw, 300px)" };
+  if (w >= 769)  return { count: 3, width: "clamp(140px, 18vw, 180px)", height: "clamp(180px, 24vw, 240px)" };
+  if (w >= 481)  return { count: 2, width: "clamp(100px, 30vw, 140px)", height: "clamp(130px, 38vw, 180px)" };
+  return { count: 2, width: "clamp(80px, 35vw, 120px)", height: "clamp(110px, 44vw, 160px)" };
+};
 
 // 2× clone for seamless GSAP loop
 const MARQUEE_PANELS = [...PANELS, ...PANELS];
@@ -137,23 +101,11 @@ const TRUST_BADGES = [
 ];
 
 // ── CSS ───────────────────────────────────────────────────────────────────────
-// v17 Design System audit applied:
-//   H1      → clamp(3rem, 6vw, 4.75rem)   [DS spec — corrected from v16]
-//   H1 lh   → 1.15                         [within DS 1.1–1.25 — corrected]
-//   Subtitle → clamp(1rem, 1.4vw, 1.125rem) [large-para spec — corrected]
-//   Eyebrow → Inter 700, uppercase, 0.8rem, 0.18em [unchanged ✅]
-//   Buttons → Inter 600, 0.95rem, 0.01em  [unchanged ✅]
-//   TV error → DS dark-surface + gold only [rogue blue removed ✅]
-// ─────────────────────────────────────────────────────────────────────────────
 const CSS = `
   /* ── Google Fonts — Rasoaf Design System ── */
-  /* font-display=swap added for performance; weights match DS spec exactly */
   @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@700;800&family=Inter:wght@400;500;600;700&display=swap');
 
-  /* ── Design System Color Tokens ── */
-  /* All 9 DS tokens defined. No values deviate from the spec. */
   .rh-root {
-    /* Core DS palette */
     --clr-primary-bg:    #F7C948;
     --clr-primary-text:  #111111;
     --clr-supporting-bg: #FFF8E6;
@@ -163,8 +115,6 @@ const CSS = `
     --clr-border:        #E6D5A8;
     --clr-muted:         #5F5F5F;
     --clr-hover-bg:      #FFE082;
-
-    /* Dark-surface derived tokens (hero-internal only — no rogue blues) */
     --clr-dark-surface:  #0a0a0a;
     --clr-overlay-1:     rgba(0, 0, 0, 0.50);
     --clr-overlay-2:     rgba(0, 0, 0, 0.78);
@@ -172,12 +122,8 @@ const CSS = `
     --clr-glass-bg:      rgba(255, 255, 255, 0.06);
     --clr-accent-glow:   rgba(212, 160, 23, 0.35);
     --clr-accent-glow-2: rgba(212, 160, 23, 0.10);
-
-    /* DS Typography tokens */
     --ff-heading: 'Manrope', sans-serif;
     --ff-body:    'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-
-    /* DS Spacing rhythm */
     --sp-section: clamp(48px, 8vh, 96px);
     --sp-content: clamp(16px, 4vw, 48px);
   }
@@ -200,7 +146,7 @@ const CSS = `
   .rh-hero {
     position: relative;
     width: 100%;
-    min-height: 82vh;
+    min-height: 92vh;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -212,12 +158,12 @@ const CSS = `
     isolation: isolate;
   }
 
-  /* ── Background stack ── */
+  /* ── Background wrapper ────────────────────────────────────────────────── */
   .rh-bg-wrapper {
     position: absolute;
     top: 0; left: 0;
     width: 100%;
-    height: 50%;
+    height: 55%;
     z-index: 0;
     overflow: hidden;
     pointer-events: none;
@@ -245,12 +191,11 @@ const CSS = `
   }
   .rh-bgslide.active { opacity: 1; }
 
-  /* Rich glass mask — improves text contrast at all viewport heights */
   .rh-glass-mask {
     position: absolute;
     top: 0; left: 0;
     width: 100%;
-    height: 50%;
+    height: 55%;
     z-index: 1;
     pointer-events: none;
     background:
@@ -260,7 +205,6 @@ const CSS = `
     transition: opacity 0.6s ease;
   }
 
-  /* Layered overlay for cinematic depth */
   .rh-overlay {
     position: absolute;
     inset: 0;
@@ -272,7 +216,6 @@ const CSS = `
       linear-gradient(180deg, rgba(0,0,0,0.50) 0%, rgba(0,0,0,0.12) 50%, rgba(0,0,0,0.70) 100%);
   }
 
-  /* Warm amber edge vignette — reinforces yellow/black brand identity */
   .rh-vignette {
     position: absolute;
     inset: 0;
@@ -296,8 +239,8 @@ const CSS = `
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-top: clamp(25px, 4vh, 50px);
-    margin-bottom: clamp(20px, 3vh, 36px);
+    margin-top: clamp(20px, 3vh, 40px);
+    margin-bottom: clamp(16px, 2vh, 28px);
   }
 
   .rh-headline-wrapper {
@@ -306,7 +249,6 @@ const CSS = `
     opacity: 0;
   }
 
-  /* ── Eyebrow — DS spec: Inter 700 · uppercase · 0.8rem · 0.18em ── */
   .rh-sup-text {
     font-family: var(--ff-body);
     font-size: 0.8rem;
@@ -324,7 +266,6 @@ const CSS = `
     transform: translateY(8px);
     position: relative;
   }
-  /* Decorative flanking lines — ch-based so they scale with font */
   .rh-sup-text::before,
   .rh-sup-text::after {
     content: '';
@@ -336,16 +277,6 @@ const CSS = `
   }
   .rh-sup-text::after { transform: scaleX(-1); }
 
-  /*
-   * ── H1 — DS SPEC (v17 corrected) ──
-   * font-size: clamp(3rem, 6vw, 4.75rem)  ← DS H1 spec
-   * line-height: 1.15                      ← within DS 1.1–1.25 range
-   * letter-spacing: -0.02em               ← DS spec
-   * font-weight: 800                       ← Manrope 800 (DS max weight)
-   *
-   * v16 had: clamp(3rem, 7vw, 6.5rem) + line-height: 1.08
-   * Both deviated from spec — corrected here.
-   */
   .rh-headline {
     font-family: var(--ff-heading);
     font-weight: 800;
@@ -368,7 +299,6 @@ const CSS = `
     display: inline-block;
     will-change: transform, opacity;
   }
-  /* Italic accent — Manrope italic, gold via DS accent token */
   .rh-headline em {
     font-style: italic;
     font-weight: 700;
@@ -376,11 +306,6 @@ const CSS = `
     text-shadow: 0 0 48px rgba(212,160,23,0.18);
   }
 
-  /*
-   * ── Subtitle — DS spec (v17 corrected) ──
-   * DS large-paragraph: 1.125rem, Inter 400, line-height 1.7
-   * Min size corrected: 1rem (normal-para floor, not 0.95rem small-para)
-   */
   .rh-subtitle {
     font-family: var(--ff-body);
     font-size: clamp(1rem, 1.4vw, 1.125rem);
@@ -394,7 +319,6 @@ const CSS = `
     letter-spacing: 0.005em;
   }
 
-  /* ── CTA Row ── */
   .rh-cta-row {
     display: flex;
     align-items: center;
@@ -406,14 +330,6 @@ const CSS = `
     transform: translateY(14px);
   }
 
-  /*
-   * ── Primary Button — DS spec ──
-   * Background: #F7C948 → #D4A017 gradient (DS primary-bg → accent)
-   * Text: #111111 (DS primary-text), black
-   * Font: Inter 600, 0.95rem, letter-spacing 0.01em
-   * Shape: 50px border-radius (DS "rounded 50px")
-   * Hover: elevation + brightness lift
-   */
   .rh-cta-primary {
     display: inline-flex;
     align-items: center;
@@ -460,13 +376,6 @@ const CSS = `
   }
   .rh-cta-primary:hover svg { transform: translateX(4px); }
 
-  /*
-   * ── Secondary Button — DS spec ──
-   * Background: transparent (glass)
-   * Border: glass border → hover warm yellow
-   * Font: Inter 600, 0.95rem, 0.01em
-   * Shape: 50px radius
-   */
   .rh-cta-secondary {
     display: inline-flex;
     align-items: center;
@@ -513,7 +422,6 @@ const CSS = `
   }
   .rh-cta-secondary:hover svg { transform: translateX(4px); }
 
-  /* ── Focus-visible — unified using DS --clr-accent token ── */
   .rh-cta-primary:focus-visible,
   .rh-cta-secondary:focus-visible,
   .rh-panel:focus-visible,
@@ -524,7 +432,6 @@ const CSS = `
     border-radius: 4px;
   }
 
-  /* ── Trust Badges ── */
   .rh-trust-row {
     display: flex;
     align-items: center;
@@ -574,7 +481,7 @@ const CSS = `
   .rh-trust-badge .badge-check svg { width: 9px; height: 9px; }
 
   /* ─────────────────────────────────────────────────────────────────────────
-     MARQUEE
+     MARQUEE — Panels with travel scrapbook styling
   ───────────────────────────────────────────────────────────────────────── */
   .rh-marquee-wrap {
     position: relative;
@@ -611,56 +518,35 @@ const CSS = `
     padding: 0 clamp(6px, 1vw, 12px);
   }
 
-  @keyframes rh-marquee-css {
-    from { transform: translateX(0); }
-    to   { transform: translateX(-50%); }
-  }
-
-  @media (max-width: 768px) {
-    .rh-marquee-track {
-      will-change: auto;
-      animation: rh-marquee-css 28s linear infinite;
-    }
-    .rh-marquee-track:hover { animation-play-state: paused; }
-    .rh-panel-register {
-      opacity: 1 !important;
-      transform: translateY(0) scale(1) !important;
-      padding: 6px 13px 6px 10px;
-      font-size: 9px;
-    }
-  }
-
-  .rh-marquee-paused .rh-marquee-track {
-    animation-play-state: paused !important;
-  }
-
-  /* ─────────────────────────────────────────────────────────────────────────
-     PANELS
-     DS card spec: 18–24px border-radius, soft shadows, subtle border,
-     hover lift, smooth transitions, comfortable padding
-  ───────────────────────────────────────────────────────────────────────── */
   .rh-panel {
     position: relative;
     flex-shrink: 0;
-    width: clamp(180px, 20vw, 280px);
-    height: clamp(230px, 32vw, 360px);
+    width: clamp(160px, 15vw, 210px);
+    height: clamp(210px, 26vw, 300px);
     overflow: hidden;
     cursor: pointer;
-    border-radius: 18px;                  /* DS: 18–24px ✅ */
+    border-radius: 18px;
     clip-path: ellipse(58% 92% at 50% 92%);
     will-change: clip-path, transform;
     box-shadow:
       0 1px 3px rgba(0,0,0,0.06),
       0 8px 24px rgba(0,0,0,0.10),
-      0 0 0 1px rgba(212,160,23,0.06);    /* subtle DS border ✅ */
+      0 0 0 1px rgba(212,160,23,0.06);
     background: #1a1a1a;
     transition: box-shadow 0.5s ease;
+    transform: rotate(var(--panel-rotate, 0deg));
+    border: 1px solid rgba(255, 255, 255, 0.10);
   }
+  .rh-panel:nth-child(1) { --panel-rotate: -2.5deg; }
+  .rh-panel:nth-child(2) { --panel-rotate: 3deg; }
+  .rh-panel:nth-child(3) { --panel-rotate: -1.5deg; }
+  .rh-panel:nth-child(4) { --panel-rotate: 2deg; }
+
   .rh-panel:hover {
     box-shadow:
       0 2px 8px rgba(0,0,0,0.10),
       0 18px 44px rgba(0,0,0,0.16),
-      0 0 0 1px rgba(212,160,23,0.15);    /* hover lift ✅ */
+      0 0 0 1px rgba(212,160,23,0.15);
     z-index: 2;
   }
   .rh-panel img {
@@ -697,7 +583,6 @@ const CSS = `
     );
   }
 
-  /* Shimmer sweep — DS accent + accent-2 for brand depth */
   .rh-shimmer-sweep {
     position: absolute;
     top: 0; left: -150%; width: 60%; height: 100%;
@@ -713,7 +598,6 @@ const CSS = `
     );
   }
 
-  /* Panel shimmer line — uses --clr-accent-2 (#B8860B) */
   .rh-panel-shimmer {
     position: absolute;
     bottom: 0; left: 10%; right: 10%;
@@ -734,10 +618,9 @@ const CSS = `
     transition: opacity 0.45s ease, transform 0.45s cubic-bezier(0.25, 1, 0.5, 1);
   }
 
-  /* Panel label — DS: Manrope 700 (heading family) */
   .rh-panel-label {
     font-family: var(--ff-heading);
-    font-size: clamp(14px, 1.6vw, 18px);
+    font-size: clamp(13px, 1.4vw, 17px);
     font-weight: 700;
     color: #ffffff;
     letter-spacing: -0.01em;
@@ -747,10 +630,9 @@ const CSS = `
     animation: rhHeartPump 2.4s ease-in-out infinite;
   }
 
-  /* Panel tag — DS: Inter 500, uppercase */
   .rh-panel-tag {
     font-family: var(--ff-body);
-    font-size: clamp(7px, 0.7vw, 9px);
+    font-size: clamp(6.5px, 0.6vw, 8.5px);
     font-weight: 500;
     letter-spacing: 0.15em;
     text-transform: uppercase;
@@ -783,7 +665,6 @@ const CSS = `
   }
   .rh-panel:hover .rh-panel-corner { opacity: 1; transform: scale(1); }
 
-  /* Register pill — DS: Inter 600, uppercase, --clr-accent */
   .rh-panel-register {
     position: absolute;
     bottom: clamp(12px, 1.8vw, 18px);
@@ -844,6 +725,29 @@ const CSS = `
     box-shadow: 0 0 8px rgba(247,201,72,0.85);
   }
 
+  @keyframes rh-marquee-css {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  @media (max-width: 768px) {
+    .rh-marquee-track {
+      will-change: auto;
+      animation: rh-marquee-css 28s linear infinite;
+    }
+    .rh-marquee-track:hover { animation-play-state: paused; }
+    .rh-panel-register {
+      opacity: 1 !important;
+      transform: translateY(0) scale(1) !important;
+      padding: 6px 13px 6px 10px;
+      font-size: 9px;
+    }
+  }
+
+  .rh-marquee-paused .rh-marquee-track {
+    animation-play-state: paused !important;
+  }
+
   /* ─────────────────────────────────────────────────────────────────────────
      TV SECTION
   ───────────────────────────────────────────────────────────────────────── */
@@ -875,13 +779,12 @@ const CSS = `
       0 0 32px    var(--clr-accent-glow),
       0 0 64px    var(--clr-accent-glow-2),
       0 24px 52px -12px rgba(0,0,0,0.55);
-    background: var(--clr-dark-surface);  /* DS dark-surface — no rogue blue */
+    background: var(--clr-dark-surface);
     z-index: 201;
     aspect-ratio: 16 / 9;
     animation: rh-tv-glow 4s ease-in-out infinite;
   }
 
-  /* TV glow — uses DS accent + accent-2 tokens */
   @keyframes rh-tv-glow {
     0%, 100% {
       box-shadow:
@@ -894,7 +797,7 @@ const CSS = `
       box-shadow:
         0 0 0 1px rgba(212,160,23,0.22),
         0 0 44px rgba(212,160,23,0.48),
-        0 0 88px rgba(184,134,11,0.16),     /* --clr-accent-2 derived */
+        0 0 88px rgba(184,134,11,0.16),
         0 24px 52px -12px rgba(0,0,0,0.55);
     }
   }
@@ -905,32 +808,30 @@ const CSS = `
     background: var(--clr-dark-surface);
   }
 
-  /* ── TV error state — DS compliant (no rogue blues) ── */
   .rh-tv-error {
     width: 100%; height: 100%;
     display: flex; align-items: center; justify-content: center;
     flex-direction: column; gap: 8px;
-    background: var(--clr-dark-surface);   /* #0a0a0a — DS dark surface */
-    color: var(--clr-accent);             /* #D4A017 — DS accent */
+    background: var(--clr-dark-surface);
+    color: var(--clr-accent);
     font-family: var(--ff-body);
-    font-size: 0.875rem;                   /* DS captions size */
+    font-size: 0.875rem;
     text-align: center;
     padding: 20px;
   }
   .rh-tv-error__icon { font-size: 32px; }
   .rh-tv-error__title {
     font-weight: 600;
-    font-size: 0.95rem;                    /* DS small-para */
+    font-size: 0.95rem;
     color: var(--clr-accent);
     letter-spacing: 0.01em;
   }
   .rh-tv-error__sub {
-    font-size: 0.8rem;                     /* DS eyebrow size repurposed */
-    color: var(--clr-muted);              /* #5F5F5F — DS muted */
+    font-size: 0.8rem;
+    color: var(--clr-muted);
     opacity: 0.75;
   }
 
-  /* TV stand hardware */
   .rh-tv-stand {
     width: 70%; height: 6px;
     background: linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 100%);
@@ -969,7 +870,6 @@ const CSS = `
   .rh-tv-leg-left  { left: 25%; }
   .rh-tv-leg-right { right: 25%; }
 
-  /* TV controls — Inter 600 sizing */
   .rh-tv-controls {
     position: absolute;
     bottom: clamp(8px, 1.2vw, 14px);
@@ -995,7 +895,6 @@ const CSS = `
     border-color: rgba(212,160,23,0.72);
   }
 
-  /* TV badge — DS eyebrow style: Inter 700, uppercase, 0.12em */
   .rh-tv-badge {
     position: absolute;
     top: clamp(8px, 1.2vw, 14px);
@@ -1015,7 +914,6 @@ const CSS = `
     z-index: 210;
   }
 
-  /* Cinematic screen glass overlay */
   .rh-tv-glass {
     position: absolute;
     inset: 0;
@@ -1023,7 +921,6 @@ const CSS = `
     pointer-events: none;
   }
 
-  /* ── Keyframes ── */
   @keyframes rhHeartPump {
     0%, 100% { transform: scale(1); }
     15%       { transform: scale(1.06); }
@@ -1033,35 +930,65 @@ const CSS = `
   }
 
   /* ─────────────────────────────────────────────────────────────────────────
-     RESPONSIVE BREAKPOINTS
+     RESPONSIVE BREAKPOINTS — v21: Increased background height + padding
+     • Mobile (≤768px): height 65% (was 55%), padding-bottom: 20px
+     • Small Mobile (≤480px): height 60% (was 50%), padding-bottom: 16px
+     • Tablet: height 58% (was 55%), padding-bottom: 8px
   ───────────────────────────────────────────────────────────────────────── */
   @media (max-width: 1200px) {
-    .rh-hero { min-height: 80vh; }
+    .rh-hero { min-height: 85vh; }
+    .rh-panel {
+      width: clamp(150px, 14vw, 190px);
+      height: clamp(200px, 24vw, 270px);
+    }
   }
 
   @media (max-width: 1024px) and (min-width: 769px) {
     .rh-hero {
-      min-height: 78vh;
+      min-height: 80vh;
       padding-top: clamp(70px, 8vh, 100px);
     }
-    .rh-bg-wrapper, .rh-glass-mask { height: 48%; }
-    .rh-content { margin-top: clamp(25px, 4vh, 40px); }
-    /* Tablet H1 — stays within DS clamp curve */
-    .rh-headline { font-size: clamp(2.4rem, 5vw, 3.8rem); }
-    .rh-tv-container { max-width: 360px; }
-    .rh-panel {
-      width: clamp(160px, 22vw, 220px);
-      height: clamp(200px, 30vw, 280px);
+    /* v21: Tablet background — height 58% (was 55%), padding-bottom: 8px */
+    .rh-bg-wrapper {
+      height: 58%;
+      padding-bottom: 8px;
     }
+    .rh-glass-mask { height: 58%; }
+    .rh-bgvid,
+    .rh-bgslide {
+      object-fit: cover;
+      object-position: center top;
+      transform: scale(1.45);
+      transform-origin: center top;
+    }
+    .rh-content { margin-top: clamp(20px, 3vh, 30px); }
+    .rh-headline { font-size: clamp(2.4rem, 5vw, 3.8rem); }
+    .rh-panel {
+      width: clamp(130px, 18vw, 170px);
+      height: clamp(170px, 24vw, 230px);
+    }
+    .rh-tv-container { max-width: 360px; }
   }
 
   @media (max-width: 768px) {
     .rh-hero {
-      min-height: 75vh;
+      min-height: 70vh;
       padding-top: clamp(80px, 10vh, 110px);
       overflow: hidden;
     }
-    .rh-bg-wrapper, .rh-glass-mask { height: 45%; }
+    /* v21: Mobile background — height 65% (was 55%), padding-bottom: 20px */
+    .rh-bg-wrapper {
+      height: 65%;
+      padding-bottom: 20px;
+    }
+    .rh-glass-mask { height: 65%; }
+    .rh-bgvid,
+    .rh-bgslide {
+      object-fit: cover;
+      object-position: center top;
+      transform: scale(1.9);
+      transform-origin: center top;
+    }
     .rh-tv-screen   { animation: none !important; }
     .rh-panel       { will-change: auto; contain: layout; }
     .rh-panel img   { will-change: auto; }
@@ -1072,13 +999,14 @@ const CSS = `
       -webkit-backdrop-filter: blur(8px);
     }
     .rh-tv-container { will-change: auto; max-width: 300px; }
-    .rh-content { margin-top: clamp(15px, 2.5vh, 25px); }
-    /* Mobile H1 — DS lower bound 3rem respected */
-    .rh-headline { font-size: clamp(2.2rem, 8vw, 3rem); }
+    .rh-content { margin-top: clamp(12px, 2vh, 20px); }
+    .rh-headline { font-size: clamp(2rem, 7vw, 2.8rem); }
     .rh-panel {
-      width: clamp(140px, 35vw, 180px);
-      height: clamp(180px, 45vw, 240px);
+      width: clamp(100px, 30vw, 140px);
+      height: clamp(130px, 38vw, 180px);
     }
+    .rh-panel-label { font-size: clamp(11px, 3vw, 14px); }
+    .rh-panel-tag { font-size: clamp(6px, 1.8vw, 8px); }
     .rh-tv-stand { width: 60%; height: 5px; margin-top: 10px; }
     .rh-tv-stand::before { width: 40px; height: 28px; bottom: -28px; }
     .rh-tv-stand::after  { width: 60px; height: 8px;  bottom: -36px; }
@@ -1092,28 +1020,42 @@ const CSS = `
 
   @media (max-width: 480px) {
     .rh-hero {
-      min-height: 70vh;
+      min-height: 65vh;
       padding-top: clamp(90px, 12vh, 130px);
       overflow: hidden;
     }
-    .rh-bg-wrapper, .rh-glass-mask { height: 40%; }
-    .rh-content { margin-top: clamp(12px, 2vh, 20px); }
-    /* Small mobile H1 — tight clamp, still legible */
-    .rh-headline { font-size: clamp(1.9rem, 7.5vw, 2.6rem); }
-    /* Small mobile subtitle — stays at DS normal-para (1rem) minimum */
-    .rh-subtitle  { font-size: clamp(0.95rem, 2.5vw, 1rem); }
+    /* v21: Small mobile background — height 60% (was 50%), padding-bottom: 16px */
+    .rh-bg-wrapper {
+      height: 60%;
+      padding-bottom: 16px;
+    }
+    .rh-glass-mask { height: 60%; }
+    .rh-bgvid,
+    .rh-bgslide {
+      object-fit: cover;
+      object-position: center top;
+      transform: scale(2.15);
+      transform-origin: center top;
+    }
+    .rh-content { margin-top: clamp(8px, 1.5vh, 15px); }
+    .rh-headline { font-size: clamp(1.8rem, 6.5vw, 2.4rem); }
+    .rh-subtitle  { font-size: clamp(0.85rem, 2.5vw, 0.95rem); }
     .rh-cta-primary,
     .rh-cta-secondary {
-      font-size: 0.85rem;
-      padding: clamp(8px, 1.5vw, 10px) clamp(16px, 3vw, 24px);
+      font-size: 0.8rem;
+      padding: clamp(6px, 1.2vw, 8px) clamp(14px, 2.5vw, 20px);
     }
-    .rh-trust-badge { font-size: 0.7rem; padding: 4px 10px 4px 8px; }
+    .rh-trust-badge { font-size: 0.65rem; padding: 4px 10px 4px 8px; }
     .rh-panel {
-      width: clamp(120px, 40vw, 160px);
-      height: clamp(160px, 50vw, 200px);
+      width: clamp(80px, 35vw, 120px);
+      height: clamp(110px, 44vw, 160px);
     }
-    .rh-panel-label { font-size: clamp(12px, 3.5vw, 14px); }
-    .rh-panel-tag   { font-size: clamp(6px, 2vw, 7px); }
+    .rh-panel-label { font-size: clamp(10px, 3vw, 12px); }
+    .rh-panel-tag { font-size: clamp(5px, 1.5vw, 6.5px); }
+    .rh-panel:nth-child(1) { --panel-rotate: -1.5deg; }
+    .rh-panel:nth-child(2) { --panel-rotate: 2deg; }
+    .rh-panel:nth-child(3) { --panel-rotate: -1deg; }
+    .rh-panel:nth-child(4) { --panel-rotate: 1.5deg; }
     .rh-tv-container { max-width: 240px; }
     .rh-tv-stand { width: 50%; }
     .rh-tv-stand::before { width: 35px; height: 25px; bottom: -25px; }
@@ -1127,23 +1069,19 @@ const CSS = `
 
   @media (min-width: 1441px) {
     .rh-hero {
-      min-height: 75vh;
+      min-height: 78vh;
       padding-top: clamp(100px, 12vh, 140px);
     }
-    .rh-bg-wrapper, .rh-glass-mask { height: 50%; }
-    .rh-content { margin-top: clamp(35px, 5vh, 55px); }
-    /* Large screen H1 — DS max is 4.75rem, no override needed */
+    .rh-bg-wrapper { height: 50%; }
+    .rh-glass-mask { height: 50%; }
+    .rh-content { margin-top: clamp(30px, 4vh, 50px); }
     .rh-panel {
-      width: clamp(260px, 18vw, 340px);
-      height: clamp(340px, 30vw, 440px);
+      width: clamp(170px, 16vw, 240px);
+      height: clamp(220px, 28vw, 320px);
     }
     .rh-tv-container { max-width: 480px; }
   }
 
-  /* ─────────────────────────────────────────────────────────────────────────
-     REDUCED MOTION — complete coverage (CSS layer)
-     JS layer handled in GSAP matchMedia block below
-  ───────────────────────────────────────────────────────────────────────── */
   @media (prefers-reduced-motion: reduce) {
     .rh-headline,
     .rh-sup-text,
@@ -1245,13 +1183,12 @@ export default function RasoafHero() {
   const [tvVideoError,  setTvVideoError]  = useState(false);
   const [marqueePaused, setMarqueePaused] = useState(false);
 
-  // SSR-safe mobile detection
   const isMobileRef = useRef(false);
   useEffect(() => {
     isMobileRef.current = window.innerWidth <= 768;
   }, []);
 
-  // ── Lenis smooth scroll (desktop only) ──────────────────────────────────
+  // ── Lenis smooth scroll ──────────────────────────────────────────────────
   useEffect(() => {
     if (isMobileRef.current) return;
 
@@ -1390,7 +1327,7 @@ export default function RasoafHero() {
     return () => mm.revert();
   }, []);
 
-  // ── Magnet hover effect (desktop only) ──────────────────────────────────
+  // ── Magnet hover effect ──────────────────────────────────────────────────
   const bindMagnet = useCallback((el) => {
     if (!el || isMobileRef.current) return;
     if (magnetMapRef.current.has(el)) return;
@@ -1426,16 +1363,13 @@ export default function RasoafHero() {
     const mm = gsap.matchMedia();
 
     mm.add("(prefers-reduced-motion: no-preference)", () => {
-      // useEffect + gsap.context() — @gsap/react NOT used (not installed)
       const ctx = gsap.context(() => {
         const mobile = isMobileRef.current;
         const tl     = gsap.timeline({ defaults: { ease: "power3.out" } });
 
-        // Wrapper + eyebrow
         tl.to(headlineWrapperRef.current, { opacity: 1, duration: 0.6 },      0.10);
         tl.to(supTextRef.current,         { opacity: 1, y: 0, duration: 0.7 }, 0.15);
 
-        // Character-by-character H1 reveal
         const headlineEl = headlineRef.current;
         if (headlineEl) {
           headlineEl.style.opacity = "1";
@@ -1458,7 +1392,6 @@ export default function RasoafHero() {
           });
         }
 
-        // Subtitle + CTA + badges (staggered fade-up)
         tl.to(subtitleRef.current, { opacity: 1, y: 0, duration: 0.85 }, 0.65);
         tl.to(ctaRowRef.current,   { opacity: 1, y: 0, duration: 0.80 }, 0.80);
         tl.to(trustRef.current,    { opacity: 1, y: 0, duration: 0.80 }, 0.95);
@@ -1485,7 +1418,6 @@ export default function RasoafHero() {
           );
         }
 
-        // Desktop marquee — GSAP xPercent infinite loop
         if (marqueeTrackRef.current && !mobile) {
           marqueeTween.current = gsap.to(marqueeTrackRef.current, {
             xPercent: -50,
@@ -1495,7 +1427,6 @@ export default function RasoafHero() {
           });
         }
 
-        // Panel ambient float + clip-path morph (desktop)
         const panels = panelRefs.current.filter(Boolean);
         if (!mobile) {
           panels.forEach((panel, i) => {
@@ -1531,7 +1462,6 @@ export default function RasoafHero() {
           });
         }
 
-        // TV float (desktop)
         if (tvContainerRef.current && !mobile) {
           gsap.to(tvContainerRef.current, {
             y: -8, duration: 4.5,
@@ -1539,7 +1469,6 @@ export default function RasoafHero() {
           });
         }
 
-        // TV section scroll reveal
         if (tvSectionRef.current) {
           gsap.fromTo(
             tvSectionRef.current,
@@ -1555,7 +1484,6 @@ export default function RasoafHero() {
           );
         }
 
-        // Badge float (desktop)
         if (badges?.length && !mobile) {
           gsap.to(badges, {
             y: -3, stagger: 0.22,
@@ -1563,7 +1491,6 @@ export default function RasoafHero() {
           });
         }
 
-        // Shimmer sweep (desktop)
         const shimmerEl = shimmerRef.current;
         if (shimmerEl && !mobile) {
           const runShimmer = () => {
@@ -1586,7 +1513,6 @@ export default function RasoafHero() {
       return () => ctx.revert();
     });
 
-    // Reduced motion (JS layer) — snap all animated elements to final state
     mm.add("(prefers-reduced-motion: reduce)", () => {
       const staticRefs = [
         headlineWrapperRef, supTextRef, headlineRef,
@@ -1620,7 +1546,6 @@ export default function RasoafHero() {
     return () => mm.revert();
   }, []);
 
-  // ── Smooth scroll helper ─────────────────────────────────────────────────
   const scrollTo = useCallback((id) => {
     const el = document.getElementById(id);
     if (!el) return;
@@ -1674,11 +1599,6 @@ export default function RasoafHero() {
           {/* ── Hero Content ── */}
           <div className="rh-content">
             <div className="rh-headline-wrapper" ref={headlineWrapperRef}>
-
-              {/*
-               * Eyebrow — DS: Inter 700 · uppercase · 0.8rem · 0.18em
-               * Unchanged from v16 ✅
-               */}
               <span
                 className="rh-sup-text"
                 ref={supTextRef}
@@ -1687,12 +1607,6 @@ export default function RasoafHero() {
                 Your Gateway to The World
               </span>
 
-              {/*
-               * H1 — DS spec v17:
-               * font-size: clamp(3rem, 6vw, 4.75rem)  ← corrected
-               * line-height: 1.15                      ← corrected
-               * Manrope 800, letter-spacing -0.02em
-               */}
               <h1
                 className="rh-headline"
                 ref={headlineRef}
@@ -1707,18 +1621,12 @@ export default function RasoafHero() {
               </h1>
             </div>
 
-            {/*
-             * Subtitle — DS large-paragraph v17:
-             * clamp(1rem, 1.4vw, 1.125rem), Inter 400, lh 1.7
-             * ← corrected from v16's clamp(0.95rem, 1.2vw, 1.125rem)
-             */}
             <p className="rh-subtitle" ref={subtitleRef}>
               Experience Hajj, Umrah, and international travel with trusted
               guidance, personalised support, and seamless planning from
               departure to return.
             </p>
 
-            {/* CTAs */}
             <div className="rh-cta-row" ref={ctaRowRef}>
               <button
                 type="button"
@@ -1740,7 +1648,6 @@ export default function RasoafHero() {
               </button>
             </div>
 
-            {/* Trust Badges */}
             <div
               className="rh-trust-row"
               ref={trustRef}
@@ -1822,8 +1729,6 @@ export default function RasoafHero() {
           <div className="rh-tv-section" ref={tvSectionRef}>
             <div className="rh-tv-container" ref={tvContainerRef}>
               <div className="rh-tv-screen">
-
-                {/* TV error state — v17: DS-compliant, no rogue blues */}
                 {tvVideoError ? (
                   <div
                     className="rh-tv-error"
@@ -1850,10 +1755,8 @@ export default function RasoafHero() {
                   </video>
                 )}
 
-                {/* Cinematic screen-glass overlay */}
                 <div className="rh-tv-glass" aria-hidden="true" />
 
-                {/* TV controls */}
                 {!tvVideoError && (
                   <div className="rh-tv-controls">
                     <button
@@ -1875,11 +1778,9 @@ export default function RasoafHero() {
                   </div>
                 )}
 
-                {/* TV eyebrow badge — DS: Inter 700, uppercase */}
                 <div className="rh-tv-badge" aria-hidden="true">✈️ WANDERLUST</div>
               </div>
 
-              {/* Stand hardware */}
               <div className="rh-tv-stand"     aria-hidden="true" />
               <div className="rh-tv-leg-left"  aria-hidden="true" />
               <div className="rh-tv-leg-right" aria-hidden="true" />

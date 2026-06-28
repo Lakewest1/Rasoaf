@@ -9,14 +9,17 @@
 // Layout: Section header + 4 feature cards in responsive grid
 // Animation: Fade-up on scroll, hover lift with gold glow
 // Responsive: 4 → 2 → 1 columns (desktop → tablet → mobile)
+// Mobile: Carousel slider with auto-play and navigation
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, useCallback } from "react";
 import {
   Users,
   Shield,
   Headset,
   Compass,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 // ── Feature Data ──────────────────────────────────────────────────────────────
@@ -82,7 +85,7 @@ function useInView(threshold = 0.12) {
 }
 
 // ── Feature Card ──────────────────────────────────────────────────────────────
-function FeatureCard({ feature, index, inView }) {
+function FeatureCard({ feature, index, inView, isCarousel = false }) {
   const [hovered, setHovered] = useState(false);
   const delay = 0.08 * index;
   const Icon = feature.icon;
@@ -91,19 +94,21 @@ function FeatureCard({ feature, index, inView }) {
     <div
       className="feature-card-wrapper"
       style={{
-        opacity: inView ? 1 : 0,
-        transform: inView ? "translateY(0)" : "translateY(30px)",
-        transition: `
+        opacity: isCarousel ? 1 : (inView ? 1 : 0),
+        transform: isCarousel ? "none" : (inView ? "translateY(0)" : "translateY(30px)"),
+        transition: isCarousel ? "none" : `
           opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s,
           transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s
         `,
         height: "100%",
+        width: "100%",
+        flexShrink: 0,
       }}
     >
       <div
         className="feature-card"
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
+        onMouseEnter={() => !isCarousel && setHovered(true)}
+        onMouseLeave={() => !isCarousel && setHovered(false)}
         style={{
           background: "#ffffff",
           borderRadius: "20px",
@@ -113,11 +118,11 @@ function FeatureCard({ feature, index, inView }) {
           flexDirection: "column",
           alignItems: "center",
           textAlign: "center",
-          border: `1px solid ${hovered ? "rgba(212,160,23,0.30)" : "rgba(0,0,0,0.05)"}`,
-          boxShadow: hovered
+          border: `1px solid ${hovered && !isCarousel ? "rgba(212,160,23,0.30)" : "rgba(0,0,0,0.05)"}`,
+          boxShadow: hovered && !isCarousel
             ? "0 12px 40px rgba(0,0,0,0.08), 0 4px 16px rgba(212,160,23,0.10)"
             : "0 2px 12px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02)",
-          transform: hovered ? "translateY(-6px)" : "translateY(0)",
+          transform: hovered && !isCarousel ? "translateY(-6px)" : "translateY(0)",
           transition: "all 0.35s cubic-bezier(0.25, 1, 0.5, 1)",
           position: "relative",
           overflow: "hidden",
@@ -133,8 +138,8 @@ function FeatureCard({ feature, index, inView }) {
             right: "15%",
             height: "3px",
             background: `linear-gradient(90deg, transparent, #D4A017, transparent)`,
-            transform: hovered ? "scaleX(1)" : "scaleX(0.3)",
-            opacity: hovered ? 1 : 0.3,
+            transform: hovered && !isCarousel ? "scaleX(1)" : "scaleX(0.3)",
+            opacity: hovered && !isCarousel ? 1 : 0.3,
             transition: "transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease",
             borderRadius: "0 0 3px 3px",
           }}
@@ -149,7 +154,7 @@ function FeatureCard({ feature, index, inView }) {
             height: "150%",
             top: "-25%",
             left: "-25%",
-            background: `radial-gradient(circle at 50% 40%, rgba(212,160,23,${hovered ? 0.05 : 0.02}), transparent 70%)`,
+            background: `radial-gradient(circle at 50% 40%, rgba(212,160,23,${hovered && !isCarousel ? 0.05 : 0.02}), transparent 70%)`,
             transition: "opacity 0.5s ease",
             pointerEvents: "none",
           }}
@@ -165,21 +170,21 @@ function FeatureCard({ feature, index, inView }) {
             width: "clamp(60px, 7vw, 80px)",
             height: "clamp(60px, 7vw, 80px)",
             borderRadius: "50%",
-            background: hovered
+            background: hovered && !isCarousel
               ? "linear-gradient(135deg, rgba(212,160,23,0.15), rgba(212,160,23,0.05))"
               : "rgba(212,160,23,0.06)",
-            border: `1px solid ${hovered ? "rgba(212,160,23,0.25)" : "rgba(212,160,23,0.08)"}`,
+            border: `1px solid ${hovered && !isCarousel ? "rgba(212,160,23,0.25)" : "rgba(212,160,23,0.08)"}`,
             color: "#D4A017",
             marginBottom: "clamp(16px, 2vw, 24px)",
             transition: "all 0.35s cubic-bezier(0.25, 1, 0.5, 1)",
-            transform: hovered ? "scale(1.08) rotate(-2deg)" : "scale(1) rotate(0deg)",
+            transform: hovered && !isCarousel ? "scale(1.08) rotate(-2deg)" : "scale(1) rotate(0deg)",
             flexShrink: 0,
           }}
         >
           <Icon size={clamp(24, 28, 34)} strokeWidth={1.8} />
         </div>
 
-        {/* ── Title: Manrope ── */}
+        {/* Title: Manrope */}
         <h3
           style={{
             fontFamily: "'Manrope', sans-serif",
@@ -195,7 +200,7 @@ function FeatureCard({ feature, index, inView }) {
           {feature.title}
         </h3>
 
-        {/* ── Description: Inter ── */}
+        {/* Description: Inter */}
         <p
           style={{
             fontFamily: "'Inter', sans-serif",
@@ -219,15 +224,15 @@ function FeatureCard({ feature, index, inView }) {
             height: "6px",
             borderRadius: "50%",
             background: "#D4A017",
-            opacity: hovered ? 1 : 0.15,
-            transform: hovered ? "scale(1)" : "scale(0.6)",
+            opacity: hovered && !isCarousel ? 1 : 0.15,
+            transform: hovered && !isCarousel ? "scale(1)" : "scale(0.6)",
             transition: "all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)",
           }}
           aria-hidden="true"
         />
 
         {/* Gold shimmer - on hover */}
-        {hovered && (
+        {hovered && !isCarousel && (
           <div
             style={{
               position: "absolute",
@@ -247,6 +252,226 @@ function FeatureCard({ feature, index, inView }) {
   );
 }
 
+// ── Carousel for Mobile ──────────────────────────────────────────────────────
+function FeatureCarousel({ features, inView }) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const autoPlayRef = useRef(null);
+  const totalSlides = features.length;
+
+  const goToSlide = useCallback((index) => {
+    if (isTransitioning) return;
+    
+    setIsTransitioning(true);
+    let newIndex = index;
+    
+    if (index < 0) newIndex = totalSlides - 1;
+    if (index >= totalSlides) newIndex = 0;
+    
+    setCurrentIndex(newIndex);
+    
+    setTimeout(() => {
+      setIsTransitioning(false);
+    }, 500);
+  }, [isTransitioning, totalSlides]);
+
+  const goToNext = useCallback(() => {
+    const nextIndex = currentIndex + 1;
+    if (nextIndex >= totalSlides) {
+      goToSlide(0);
+    } else {
+      goToSlide(nextIndex);
+    }
+  }, [currentIndex, goToSlide, totalSlides]);
+
+  const goToPrev = useCallback(() => {
+    const prevIndex = currentIndex - 1;
+    if (prevIndex < 0) {
+      goToSlide(totalSlides - 1);
+    } else {
+      goToSlide(prevIndex);
+    }
+  }, [currentIndex, goToSlide, totalSlides]);
+
+  // Auto-play - slides every 4 seconds
+  useEffect(() => {
+    if (isPaused || !inView) return;
+
+    autoPlayRef.current = setInterval(() => {
+      goToNext();
+    }, 4000);
+
+    return () => {
+      if (autoPlayRef.current) {
+        clearInterval(autoPlayRef.current);
+      }
+    };
+  }, [isPaused, inView, goToNext]);
+
+  // Pause on hover/touch
+  const handleMouseEnter = () => setIsPaused(true);
+  const handleMouseLeave = () => setIsPaused(false);
+  const handleTouchStart = () => setIsPaused(true);
+  const handleTouchEnd = () => setIsPaused(false);
+
+  // Calculate translateX
+  const translateX = -(currentIndex * (100 / totalSlides));
+
+  return (
+    <div
+      className="feature-carousel"
+      style={{
+        position: "relative",
+        overflow: "hidden",
+        width: "100%",
+        padding: "0 4px",
+      }}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
+      {/* Slides Container */}
+      <div
+        style={{
+          display: "flex",
+          transition: isTransitioning ? "transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)" : "none",
+          transform: `translateX(${translateX}%)`,
+          width: `${totalSlides * 100}%`,
+          willChange: "transform",
+        }}
+      >
+        {features.map((feature, index) => (
+          <div
+            key={feature.id}
+            style={{
+              width: `${100 / totalSlides}%`,
+              padding: "0 8px",
+              flexShrink: 0,
+              boxSizing: "border-box",
+            }}
+          >
+            <FeatureCard
+              feature={feature}
+              index={index}
+              inView={inView}
+              isCarousel={true}
+            />
+          </div>
+        ))}
+      </div>
+
+      {/* Navigation Buttons */}
+      <button
+        onClick={goToPrev}
+        className="feature-carousel-nav feature-carousel-nav--prev"
+        aria-label="Previous feature"
+        style={{
+          position: "absolute",
+          left: "4px",
+          top: "50%",
+          transform: "translateY(-50%)",
+          width: "36px",
+          height: "36px",
+          borderRadius: "50%",
+          background: "#ffffff",
+          border: "1px solid rgba(212,160,23,0.15)",
+          boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          cursor: "pointer",
+          color: "#D4A017",
+          transition: "all 0.3s ease",
+          zIndex: 5,
+          padding: 0,
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = "#D4A017";
+          e.currentTarget.style.color = "#ffffff";
+          e.currentTarget.style.transform = "translateY(-50%) scale(1.05)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = "#ffffff";
+          e.currentTarget.style.color = "#D4A017";
+          e.currentTarget.style.transform = "translateY(-50%) scale(1)";
+        }}
+      >
+        <ChevronLeft size={18} strokeWidth={2.5} />
+      </button>
+
+      <button
+        onClick={goToNext}
+        className="feature-carousel-nav feature-carousel-nav--next"
+        aria-label="Next feature"
+        style={{
+          position: "absolute",
+          right: "4px",
+          top: "50%",
+          transform: "translateY(-50%)",
+          width: "36px",
+          height: "36px",
+          borderRadius: "50%",
+          background: "#ffffff",
+          border: "1px solid rgba(212,160,23,0.15)",
+          boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          cursor: "pointer",
+          color: "#D4A017",
+          transition: "all 0.3s ease",
+          zIndex: 5,
+          padding: 0,
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = "#D4A017";
+          e.currentTarget.style.color = "#ffffff";
+          e.currentTarget.style.transform = "translateY(-50%) scale(1.05)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = "#ffffff";
+          e.currentTarget.style.color = "#D4A017";
+          e.currentTarget.style.transform = "translateY(-50%) scale(1)";
+        }}
+      >
+        <ChevronRight size={18} strokeWidth={2.5} />
+      </button>
+
+      {/* Dots Indicator */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          gap: "8px",
+          marginTop: "16px",
+          paddingBottom: "4px",
+          flexWrap: "wrap",
+        }}
+      >
+        {features.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => goToSlide(index)}
+            style={{
+              width: index === currentIndex ? "24px" : "8px",
+              height: "8px",
+              borderRadius: "4px",
+              border: "none",
+              background: index === currentIndex ? "#D4A017" : "rgba(212,160,23,0.2)",
+              transition: "all 0.3s ease",
+              cursor: "pointer",
+              padding: 0,
+            }}
+            aria-label={`Go to slide ${index + 1}`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ── Helper: clamp for inline styles ─────────────────────────────────────────
 function clamp(min, pref, max) {
   return `clamp(${min}px, ${pref}, ${max}px)`;
@@ -258,6 +483,7 @@ function clamp(min, pref, max) {
 export default function WhyChooseUs() {
   const [sectionRef, inView] = useInView(0.12);
   const [headerInView, setHeaderInView] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     if (inView) {
@@ -265,6 +491,15 @@ export default function WhyChooseUs() {
       return () => clearTimeout(timer);
     }
   }, [inView]);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   return (
     <>
@@ -328,7 +563,6 @@ export default function WhyChooseUs() {
           border-radius: 999px;
         }
 
-        /* ── Eyebrow: Inter, uppercase, 0.18em ── */
         .why-choose-header .eyebrow-text {
           font-family: 'Inter', sans-serif;
           font-size: clamp(0.7rem, 0.8vw, 0.8rem);
@@ -338,7 +572,6 @@ export default function WhyChooseUs() {
           color: #D4A017;
         }
 
-        /* ── Heading: Manrope, 700-800 weight, -0.02em ── */
         .why-choose-header h2 {
           font-family: 'Manrope', sans-serif;
           font-weight: 800;
@@ -368,7 +601,6 @@ export default function WhyChooseUs() {
           border-radius: 3px;
         }
 
-        /* ── Supporting Text: Inter, 400 weight, 1.7 line-height ── */
         .why-choose-header p {
           font-family: 'Inter', sans-serif;
           font-size: clamp(0.95rem, 1.1vw, 1.05rem);
@@ -399,6 +631,21 @@ export default function WhyChooseUs() {
           height: 100%;
         }
 
+        /* ── Carousel ────────────────────────────────────────────────────── */
+        .feature-carousel {
+          position: relative;
+          overflow: hidden;
+          width: 100%;
+          display: none;
+        }
+
+        .feature-carousel-nav {
+          transition: all 0.3s ease;
+        }
+        .feature-carousel-nav:active {
+          transform: translateY(-50%) scale(0.95) !important;
+        }
+
         /* ── Responsive ──────────────────────────────────────────────────── */
         @media (max-width: 1100px) {
           .features-grid {
@@ -407,13 +654,16 @@ export default function WhyChooseUs() {
           }
         }
 
+        /* Mobile: Carousel */
         @media (max-width: 768px) {
           .why-choose-section {
             padding: clamp(40px, 6vh, 56px) clamp(14px, 3vw, 20px);
           }
           .features-grid {
-            grid-template-columns: 1fr;
-            gap: 16px;
+            display: none;
+          }
+          .feature-carousel {
+            display: block !important;
           }
           .why-choose-header h2 {
             font-size: 1.4rem;
@@ -423,12 +673,23 @@ export default function WhyChooseUs() {
           }
         }
 
+        @media (min-width: 769px) {
+          .feature-carousel {
+            display: none !important;
+          }
+        }
+
         @media (max-width: 480px) {
           .why-choose-section {
             padding: 32px 12px 44px;
           }
-          .features-grid {
-            gap: 14px;
+          .feature-carousel-nav {
+            width: 32px !important;
+            height: 32px !important;
+          }
+          .feature-carousel-nav svg {
+            width: 16px !important;
+            height: 16px !important;
           }
         }
 
@@ -451,6 +712,9 @@ export default function WhyChooseUs() {
           }
           .goldPulse {
             animation: none !important;
+          }
+          .feature-carousel > div:first-child {
+            transition: none !important;
           }
         }
 
@@ -495,7 +759,7 @@ export default function WhyChooseUs() {
             </div>
           </div>
 
-          {/* Features Grid */}
+          {/* ── Desktop/Tablet Grid ── */}
           <div className="features-grid">
             {FEATURES.map((feature, index) => (
               <FeatureCard
@@ -503,9 +767,13 @@ export default function WhyChooseUs() {
                 feature={feature}
                 index={index}
                 inView={inView}
+                isCarousel={false}
               />
             ))}
           </div>
+
+          {/* ── Mobile Carousel ── */}
+          <FeatureCarousel features={FEATURES} inView={inView} />
         </div>
       </section>
     </>

@@ -1,12 +1,22 @@
 // src/components/home/PopularPackages.jsx
 // ─────────────────────────────────────────────────────────────────────────────
 // RASOAF TRAVELS AND TOURS LIMITED — Popular Packages Section
-// v3 — Rasoaf Design System applied
+// v5 — Mobile Carousel with RTL sliding, white background, yellow cards
 //   • Manrope for headings · Inter for body · Yellow/Black brand
-//   • Fixed: cards always visible; observer adds lift-in animation on scroll
+//   • Desktop: 4-column grid
+//   • Mobile: Carousel with RTL sliding (right to left)
+//   • Card background: Yellow (#FFF8E6)
+//   • Section background: White
+//   • Auto-play delay: 5 seconds per slide
+//   • Trust items in LTR marquee
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ArrowRight,
+} from "lucide-react";
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
 const T = {
@@ -117,536 +127,9 @@ const TRUST_ITEMS = [
   { icon: "⭐", text: "10,000+ Satisfied Pilgrims" },
 ];
 
-// ── CSS ───────────────────────────────────────────────────────────────────────
-// Design System: Manrope (headings) · Inter (body) · Yellow/Black brand
-const CSS = `
-  /* ── Rasoaf Design System Typography ── */
-  @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;450;500;600;700;800&display=swap');
-
-  .pp-section {
-    width: 100%;
-    background: #FFF8E6;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    color: #111111;
-  }
-
-  /* ── Banner ── */
-  .pp-banner {
-    position: relative;
-    width: 100%;
-    height: clamp(300px, 42vw, 440px);
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .pp-banner__img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center 40%;
-  }
-  .pp-banner__overlay {
-    position: absolute;
-    inset: 0;
-    background:
-      linear-gradient(180deg, rgba(17,11,4,0.55) 0%, rgba(17,11,4,0.28) 40%, rgba(17,11,4,0.72) 100%),
-      radial-gradient(ellipse 80% 60% at 50% 0%, rgba(212,160,23,0.22) 0%, transparent 65%);
-    z-index: 1;
-  }
-  .pp-banner__content {
-    position: relative;
-    z-index: 2;
-    text-align: center;
-    padding: clamp(24px, 5vw, 48px) clamp(20px, 6vw, 80px);
-    max-width: 760px;
-    width: 100%;
-  }
-
-  .pp-banner__eyebrow,
-  .pp-banner__heading,
-  .pp-banner__subtext,
-  .pp-banner__actions {
-    opacity: 1;
-    transform: none;
-  }
-  .pp-section.pp-anim-ready .pp-banner__eyebrow,
-  .pp-section.pp-anim-ready .pp-banner__heading,
-  .pp-section.pp-anim-ready .pp-banner__subtext,
-  .pp-section.pp-anim-ready .pp-banner__actions {
-    opacity: 0;
-    transform: translateY(18px);
-    transition: opacity 0.7s ease, transform 0.7s ease;
-  }
-  .pp-section.pp-anim-ready .pp-banner__eyebrow.pp-visible  { opacity: 1; transform: none; transition-delay: 0.05s; }
-  .pp-section.pp-anim-ready .pp-banner__heading.pp-visible  { opacity: 1; transform: none; transition-delay: 0.18s; }
-  .pp-section.pp-anim-ready .pp-banner__subtext.pp-visible  { opacity: 1; transform: none; transition-delay: 0.32s; }
-  .pp-section.pp-anim-ready .pp-banner__actions.pp-visible  { opacity: 1; transform: none; transition-delay: 0.46s; }
-
-  /* ── Eyebrow: Inter, uppercase, 0.18em ── */
-  .pp-banner__eyebrow {
-    font-family: 'Inter', sans-serif;
-    font-size: clamp(0.7rem, 0.8vw, 0.8rem);
-    font-weight: 700;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: #F7C948;
-    margin-bottom: clamp(8px, 1.2vw, 14px);
-    display: block;
-  }
-
-  /* ── Heading: Manrope, 700-800 weight, -0.02em ── */
-  .pp-banner__heading {
-    font-family: 'Manrope', sans-serif;
-    font-weight: 800;
-    font-size: clamp(1.9rem, 5vw, 3.4rem);
-    line-height: 1.1;
-    letter-spacing: -0.02em;
-    color: #FFFFFF;
-    margin: 0 0 clamp(12px, 2vw, 20px);
-  }
-  .pp-banner__heading em {
-    font-style: italic;
-    font-weight: 700;
-    color: #F7C948;
-  }
-
-  /* ── Subtext: Inter, 400 weight, 1.7 line-height ── */
-  .pp-banner__subtext {
-    font-family: 'Inter', sans-serif;
-    font-size: clamp(0.88rem, 1.2vw, 1.05rem);
-    font-weight: 400;
-    line-height: 1.7;
-    color: rgba(255,255,255,0.80);
-    max-width: 560px;
-    margin: 0 auto clamp(20px, 3.5vw, 32px);
-  }
-  .pp-banner__actions {
-    display: flex;
-    gap: clamp(10px, 2vw, 16px);
-    align-items: center;
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-
-  /* ── Buttons: Inter, 600 weight, 0.01em ── */
-  .pp-btn--primary {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    background: linear-gradient(135deg, #F7C948 0%, #D4A017 100%);
-    color: #111111;
-    font-family: 'Inter', sans-serif;
-    font-size: clamp(0.85rem, 1vw, 0.95rem);
-    font-weight: 600;
-    letter-spacing: 0.01em;
-    padding: clamp(10px, 1.5vw, 13px) clamp(22px, 3vw, 32px);
-    border-radius: 100px;
-    border: none;
-    cursor: pointer;
-    text-decoration: none;
-    transition: background 0.25s ease, transform 0.22s ease, box-shadow 0.25s ease;
-    box-shadow: 0 2px 12px rgba(212,160,23,0.35);
-    white-space: nowrap;
-  }
-  .pp-btn--primary:hover { background: #F7C948; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(212,160,23,0.45); }
-  .pp-btn--primary:focus-visible { outline: 2px solid #F7C948; outline-offset: 3px; }
-
-  .pp-btn--ghost {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    background: transparent;
-    color: #FFFFFF;
-    font-family: 'Inter', sans-serif;
-    font-size: clamp(0.85rem, 1vw, 0.95rem);
-    font-weight: 600;
-    letter-spacing: 0.01em;
-    padding: clamp(10px, 1.5vw, 13px) clamp(22px, 3vw, 32px);
-    border-radius: 100px;
-    border: 1.5px solid rgba(255,255,255,0.55);
-    cursor: pointer;
-    text-decoration: none;
-    transition: border-color 0.25s ease, background 0.25s ease, color 0.25s ease;
-    white-space: nowrap;
-  }
-  .pp-btn--ghost:hover { border-color: #F7C948; background: rgba(247,201,72,0.10); color: #F7C948; }
-  .pp-btn--ghost:focus-visible { outline: 2px solid #F7C948; outline-offset: 3px; }
-
-  /* ── Grid section ── */
-  .pp-grid-section {
-    padding: clamp(52px, 9vw, 96px) clamp(20px, 5vw, 48px);
-    max-width: 1280px;
-    margin: 0 auto;
-  }
-  .pp-grid-header {
-    text-align: center;
-    margin-bottom: clamp(36px, 6vw, 60px);
-  }
-
-  /* ── Section Eyebrow: Inter, uppercase, 0.18em ── */
-  .pp-section-eyebrow {
-    font-family: 'Inter', sans-serif;
-    font-size: clamp(0.7rem, 0.8vw, 0.8rem);
-    font-weight: 700;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: #D4A017;
-    display: block;
-    margin-bottom: 12px;
-  }
-
-  /* ── Section Heading: Manrope, 700-800 weight, -0.02em ── */
-  .pp-section-heading {
-    font-family: 'Manrope', sans-serif;
-    font-weight: 800;
-    font-size: clamp(1.7rem, 3.5vw, 2.6rem);
-    line-height: 1.1;
-    letter-spacing: -0.02em;
-    color: #111111;
-    margin: 0 0 14px;
-  }
-  .pp-section-heading em { font-style: italic; font-weight: 700; color: #D4A017; }
-
-  /* ── Section Description: Inter, 400 weight, 1.7 line-height ── */
-  .pp-section-desc {
-    font-family: 'Inter', sans-serif;
-    font-size: clamp(0.88rem, 1.1vw, 1rem);
-    font-weight: 400;
-    line-height: 1.7;
-    color: #5F5F5F;
-    max-width: 520px;
-    margin: 0 auto;
-  }
-
-  /* Grid — 4 → 2 → 1 col */
-  .pp-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: clamp(14px, 2.2vw, 24px);
-    align-items: stretch;
-  }
-  @media (max-width: 1100px) { .pp-grid { grid-template-columns: repeat(2, 1fr); } }
-  @media (max-width: 600px)  { .pp-grid { grid-template-columns: 1fr; } }
-  @media (max-width: 600px)  { .pp-grid-section { padding-left: 16px; padding-right: 16px; } }
-
-  /* ── Card ── */
-  .pp-card {
-    position: relative;
-    background: #FFFFFF;
-    border-radius: 20px;
-    border: 1px solid rgba(212,160,23,0.14);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 6px 18px rgba(0,0,0,0.05);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    height: 100%;
-    opacity: 1;
-    transform: none;
-    transition:
-      transform 0.38s cubic-bezier(0.25, 1, 0.5, 1),
-      box-shadow 0.38s ease,
-      border-color 0.38s ease;
-  }
-  .pp-card.pp-lift-in {
-    animation: ppCardIn 0.6s cubic-bezier(0.25, 1, 0.5, 1) both;
-  }
-  @keyframes ppCardIn {
-    from { opacity: 0.4; transform: translateY(20px); }
-    to   { opacity: 1;   transform: translateY(0); }
-  }
-  .pp-card:hover {
-    transform: translateY(-6px);
-    box-shadow:
-      0 4px 12px rgba(0,0,0,0.06),
-      0 20px 48px rgba(0,0,0,0.08),
-      0 0 0 1.5px #D4A017;
-    border-color: #D4A017;
-  }
-
-  /* Slanted ribbon badge */
-  .pp-card__badge {
-    position: absolute;
-    top: 20px;
-    right: -30px;
-    width: 128px;
-    background: #D4A017;
-    color: #111111;
-    font-family: 'Inter', sans-serif;
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    text-align: center;
-    padding: 5px 0;
-    transform: rotate(38deg);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.14);
-    pointer-events: none;
-    z-index: 2;
-  }
-  .pp-card__badge--dark { background: #2d3748; color: #F7C948; }
-
-  .pp-card--featured { border-color: rgba(212,160,23,0.35); }
-  .pp-card--featured::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, transparent, #D4A017, transparent);
-    z-index: 1;
-  }
-
-  .pp-card__icon-wrap {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 60px;
-    height: 60px;
-    background: linear-gradient(135deg, #FFFBEF, #FFF8E6);
-    border-radius: 16px;
-    border: 1px solid rgba(212,160,23,0.22);
-    font-size: 28px;
-    margin: clamp(20px, 3vw, 28px) clamp(20px, 3vw, 28px) 0;
-    flex-shrink: 0;
-    transition: transform 0.3s ease;
-  }
-  .pp-card:hover .pp-card__icon-wrap { transform: scale(1.07) rotate(-3deg); }
-
-  .pp-card__body {
-    padding: clamp(14px, 2.2vw, 20px) clamp(20px, 3vw, 28px) clamp(20px, 3vw, 28px);
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-  }
-
-  .pp-card__duration {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    font-family: 'Inter', sans-serif;
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: #D4A017;
-    background: rgba(212,160,23,0.10);
-    border: 1px solid rgba(212,160,23,0.20);
-    border-radius: 100px;
-    padding: 3px 10px;
-    margin-bottom: 10px;
-    width: fit-content;
-  }
-
-  /* ── Card Title: Manrope ── */
-  .pp-card__title {
-    font-family: 'Manrope', sans-serif;
-    font-weight: 700;
-    font-size: clamp(1.1rem, 1.6vw, 1.3rem);
-    line-height: 1.2;
-    letter-spacing: -0.01em;
-    color: #111111;
-    margin: 0 0 4px;
-  }
-
-  /* ── Card Tagline: Inter ── */
-  .pp-card__tagline {
-    font-family: 'Inter', sans-serif;
-    font-size: clamp(11px, 0.9vw, 12.5px);
-    font-weight: 400;
-    font-style: italic;
-    color: #D4A017;
-    margin: 0 0 10px;
-    line-height: 1.4;
-  }
-
-  /* ── Card Description: Inter ── */
-  .pp-card__desc {
-    font-family: 'Inter', sans-serif;
-    font-size: clamp(0.82rem, 0.95vw, 0.88rem);
-    font-weight: 400;
-    line-height: 1.7;
-    color: #5F5F5F;
-    margin: 0 0 clamp(14px, 2vw, 18px);
-  }
-  .pp-card__divider {
-    width: 100%;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(212,160,23,0.22), transparent);
-    margin-bottom: clamp(12px, 1.8vw, 16px);
-    flex-shrink: 0;
-  }
-
-  .pp-card__inclusions {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 clamp(18px, 3vw, 22px);
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
-  }
-  .pp-card__inclusion {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-family: 'Inter', sans-serif;
-    font-size: clamp(11px, 0.85vw, 12.5px);
-    font-weight: 450;
-    color: #2d3748;
-    line-height: 1.4;
-  }
-  .pp-card__check {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 18px;
-    height: 18px;
-    background: linear-gradient(135deg, rgba(212,160,23,0.15), rgba(212,160,23,0.08));
-    border-radius: 50%;
-    border: 1px solid rgba(212,160,23,0.28);
-    flex-shrink: 0;
-  }
-  .pp-card__check svg {
-    width: 9px;
-    height: 9px;
-    stroke: #D4A017;
-    fill: none;
-    stroke-width: 2.5;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-
-  .pp-card__footer { margin-top: auto; }
-
-  /* ── CTA: Inter, 600 weight, 0.01em ── */
-  .pp-card__cta--filled {
-    display: block;
-    width: 100%;
-    padding: clamp(10px, 1.5vw, 12px) 0;
-    background: linear-gradient(135deg, #F7C948 0%, #D4A017 100%);
-    color: #111111;
-    font-family: 'Inter', sans-serif;
-    font-size: clamp(0.85rem, 0.95vw, 0.95rem);
-    font-weight: 600;
-    letter-spacing: 0.01em;
-    text-align: center;
-    border: none;
-    border-radius: 12px;
-    cursor: pointer;
-    text-decoration: none;
-    transition: background 0.25s ease, transform 0.22s ease, box-shadow 0.25s ease;
-    box-shadow: 0 2px 10px rgba(212,160,23,0.28);
-  }
-  .pp-card__cta--filled:hover { background: #F7C948; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(212,160,23,0.38); }
-  .pp-card__cta--filled:focus-visible { outline: 2px solid #D4A017; outline-offset: 3px; }
-
-  .pp-card__cta--outline {
-    display: block;
-    width: 100%;
-    padding: clamp(10px, 1.5vw, 12px) 0;
-    background: transparent;
-    color: #2d3748;
-    font-family: 'Inter', sans-serif;
-    font-size: clamp(0.85rem, 0.95vw, 0.95rem);
-    font-weight: 600;
-    letter-spacing: 0.01em;
-    text-align: center;
-    border: 1.5px solid rgba(212,160,23,0.22);
-    border-radius: 12px;
-    cursor: pointer;
-    text-decoration: none;
-    transition: border-color 0.25s ease, background 0.25s ease;
-  }
-  .pp-card__cta--outline:hover { border-color: #D4A017; background: rgba(212,160,23,0.07); }
-  .pp-card__cta--outline:focus-visible { outline: 2px solid #D4A017; outline-offset: 3px; }
-
-  /* ── Trust strip ── */
-  .pp-trust-strip {
-    border-top: 1px solid rgba(212,160,23,0.22);
-    padding: clamp(28px, 4vw, 44px) clamp(20px, 5vw, 48px);
-    max-width: 1280px;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: clamp(20px, 4vw, 56px);
-    flex-wrap: wrap;
-  }
-  .pp-trust-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-family: 'Inter', sans-serif;
-    font-size: clamp(0.8rem, 0.95vw, 0.9rem);
-    font-weight: 450;
-    color: #2d3748;
-    white-space: nowrap;
-  }
-  .pp-trust-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 34px;
-    height: 34px;
-    background: linear-gradient(135deg, #FFF8E6, #FFFBEF);
-    border-radius: 50%;
-    border: 1px solid rgba(212,160,23,0.22);
-    font-size: 16px;
-    flex-shrink: 0;
-  }
-
-  /* ── Reduced motion ── */
-  @media (prefers-reduced-motion: reduce) {
-    .pp-section.pp-anim-ready .pp-banner__eyebrow,
-    .pp-section.pp-anim-ready .pp-banner__heading,
-    .pp-section.pp-anim-ready .pp-banner__subtext,
-    .pp-section.pp-anim-ready .pp-banner__actions {
-      opacity: 1 !important;
-      transform: none !important;
-      transition: none !important;
-    }
-    .pp-card.pp-lift-in { animation: none !important; }
-    .pp-card:hover { transform: none !important; }
-    .pp-card:hover .pp-card__icon-wrap { transform: none !important; }
-    .pp-btn--primary:hover,
-    .pp-btn--ghost:hover,
-    .pp-card__cta--filled:hover { transform: none !important; }
-  }
-`;
-
-// ── CheckIcon ─────────────────────────────────────────────────────────────────
-function CheckIcon() {
-  return (
-    <svg viewBox="0 0 12 12" aria-hidden="true">
-      <polyline points="2,6.5 4.8,9 10,3" />
-    </svg>
-  );
-}
-
-// ── ClockIcon ──────────────────────────────────────────────────────────────────
-function ClockIcon() {
-  return (
-    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-    </svg>
-  );
-}
-
-// ── ArrowIcon ─────────────────────────────────────────────────────────────────
-function ArrowIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M5 12h14M12 5l7 7-7 7"/>
-    </svg>
-  );
-}
-
-// ── PackageCard ───────────────────────────────────────────────────────────────
-function PackageCard({ pkg }) {
+// ── Package Card ──────────────────────────────────────────────────────────────
+function PackageCard({ pkg, isCarousel = false }) {
+  const [hovered, setHovered] = useState(false);
   const ctaClass =
     pkg.ctaStyle === "filled" ? "pp-card__cta--filled" : "pp-card__cta--outline";
 
@@ -662,7 +145,25 @@ function PackageCard({ pkg }) {
     <article
       className={`pp-card${pkg.featured ? " pp-card--featured" : ""}`}
       aria-label={`${pkg.title} — ${pkg.duration} package`}
+      onMouseEnter={() => !isCarousel && setHovered(true)}
+      onMouseLeave={() => !isCarousel && setHovered(false)}
+      style={{
+        background: "#FFF8E6",
+        borderRadius: "20px",
+        border: `1px solid ${hovered && !isCarousel ? "rgba(212,160,23,0.30)" : "rgba(212,160,23,0.14)"}`,
+        boxShadow: hovered && !isCarousel
+          ? "0 12px 40px rgba(0,0,0,0.08), 0 4px 16px rgba(212,160,23,0.10)"
+          : "0 2px 12px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02)",
+        transform: hovered && !isCarousel ? "translateY(-6px)" : "translateY(0)",
+        transition: "all 0.35s cubic-bezier(0.25, 1, 0.5, 1)",
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+        height: "100%",
+        position: "relative",
+      }}
     >
+      {/* Slanted ribbon badge */}
       <div className={`pp-card__badge${pkg.badgeDark ? " pp-card__badge--dark" : ""}`}>
         {pkg.badge}
       </div>
@@ -709,12 +210,350 @@ function PackageCard({ pkg }) {
   );
 }
 
-// ── Main component ────────────────────────────────────────────────────────────
+// ── Carousel for Mobile ──────────────────────────────────────────────────────
+function PackageCarousel({ packages, inView }) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const autoPlayRef = useRef(null);
+  const totalSlides = packages.length;
+
+  const goToSlide = useCallback((index) => {
+    if (isTransitioning) return;
+    
+    setIsTransitioning(true);
+    let newIndex = index;
+    
+    if (index < 0) newIndex = totalSlides - 1;
+    if (index >= totalSlides) newIndex = 0;
+    
+    setCurrentIndex(newIndex);
+    
+    setTimeout(() => {
+      setIsTransitioning(false);
+    }, 500);
+  }, [isTransitioning, totalSlides]);
+
+  const goToNext = useCallback(() => {
+    const nextIndex = currentIndex + 1;
+    if (nextIndex >= totalSlides) {
+      goToSlide(0);
+    } else {
+      goToSlide(nextIndex);
+    }
+  }, [currentIndex, goToSlide, totalSlides]);
+
+  const goToPrev = useCallback(() => {
+    const prevIndex = currentIndex - 1;
+    if (prevIndex < 0) {
+      goToSlide(totalSlides - 1);
+    } else {
+      goToSlide(prevIndex);
+    }
+  }, [currentIndex, goToSlide, totalSlides]);
+
+  // Auto-play - slides right to left every 5 seconds
+  useEffect(() => {
+    if (isPaused || !inView) return;
+
+    autoPlayRef.current = setInterval(() => {
+      goToNext();
+    }, 5000);
+
+    return () => {
+      if (autoPlayRef.current) {
+        clearInterval(autoPlayRef.current);
+      }
+    };
+  }, [isPaused, inView, goToNext]);
+
+  // Pause on hover/touch
+  const handleMouseEnter = () => setIsPaused(true);
+  const handleMouseLeave = () => setIsPaused(false);
+  const handleTouchStart = () => setIsPaused(true);
+  const handleTouchEnd = () => setIsPaused(false);
+
+  // Calculate translateX for RTL sliding (right to left)
+  const translateX = -(currentIndex * (100 / totalSlides));
+
+  return (
+    <div
+      className="pp-carousel"
+      style={{
+        position: "relative",
+        overflow: "hidden",
+        width: "100%",
+        padding: "0 4px",
+      }}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
+      {/* Slides Container - RTL sliding */}
+      <div
+        style={{
+          display: "flex",
+          transition: isTransitioning ? "transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)" : "none",
+          transform: `translateX(${translateX}%)`,
+          width: `${totalSlides * 100}%`,
+          willChange: "transform",
+          direction: "ltr",
+        }}
+      >
+        {packages.map((pkg, index) => (
+          <div
+            key={pkg.id}
+            style={{
+              width: `${100 / totalSlides}%`,
+              padding: "0 8px",
+              flexShrink: 0,
+              boxSizing: "border-box",
+            }}
+          >
+            <PackageCard pkg={pkg} isCarousel={true} />
+          </div>
+        ))}
+      </div>
+
+      {/* Navigation Buttons */}
+      <button
+        onClick={goToPrev}
+        className="pp-carousel-nav pp-carousel-nav--prev"
+        aria-label="Previous package"
+        style={{
+          position: "absolute",
+          left: "4px",
+          top: "50%",
+          transform: "translateY(-50%)",
+          width: "40px",
+          height: "40px",
+          borderRadius: "50%",
+          background: "#ffffff",
+          border: "1px solid rgba(212,160,23,0.15)",
+          boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          cursor: "pointer",
+          color: "#D4A017",
+          transition: "all 0.3s ease",
+          zIndex: 5,
+          padding: 0,
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = "#D4A017";
+          e.currentTarget.style.color = "#ffffff";
+          e.currentTarget.style.transform = "translateY(-50%) scale(1.05)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = "#ffffff";
+          e.currentTarget.style.color = "#D4A017";
+          e.currentTarget.style.transform = "translateY(-50%) scale(1)";
+        }}
+      >
+        <ChevronLeft size={20} strokeWidth={2.5} />
+      </button>
+
+      <button
+        onClick={goToNext}
+        className="pp-carousel-nav pp-carousel-nav--next"
+        aria-label="Next package"
+        style={{
+          position: "absolute",
+          right: "4px",
+          top: "50%",
+          transform: "translateY(-50%)",
+          width: "40px",
+          height: "40px",
+          borderRadius: "50%",
+          background: "#ffffff",
+          border: "1px solid rgba(212,160,23,0.15)",
+          boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          cursor: "pointer",
+          color: "#D4A017",
+          transition: "all 0.3s ease",
+          zIndex: 5,
+          padding: 0,
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = "#D4A017";
+          e.currentTarget.style.color = "#ffffff";
+          e.currentTarget.style.transform = "translateY(-50%) scale(1.05)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = "#ffffff";
+          e.currentTarget.style.color = "#D4A017";
+          e.currentTarget.style.transform = "translateY(-50%) scale(1)";
+        }}
+      >
+        <ChevronRight size={20} strokeWidth={2.5} />
+      </button>
+
+      {/* Dots Indicator */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          gap: "8px",
+          marginTop: "16px",
+          paddingBottom: "4px",
+          flexWrap: "wrap",
+        }}
+      >
+        {packages.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => goToSlide(index)}
+            style={{
+              width: index === currentIndex ? "28px" : "8px",
+              height: "8px",
+              borderRadius: "4px",
+              border: "none",
+              background: index === currentIndex ? "#D4A017" : "rgba(212,160,23,0.2)",
+              transition: "all 0.3s ease",
+              cursor: "pointer",
+              padding: 0,
+            }}
+            aria-label={`Go to slide ${index + 1}`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Trust Marquee ────────────────────────────────────────────────────────────
+function TrustMarquee() {
+  // Duplicate items for seamless loop
+  const doubledItems = [...TRUST_ITEMS, ...TRUST_ITEMS];
+
+  return (
+    <div
+      className="pp-trust-marquee"
+      style={{
+        overflow: "hidden",
+        position: "relative",
+        width: "100%",
+        padding: "16px 0",
+        background: "linear-gradient(135deg, #FFF8E6, #FFFBEF)",
+        borderTop: "1px solid rgba(212,160,23,0.1)",
+        borderBottom: "1px solid rgba(212,160,23,0.1)",
+        maskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)",
+        WebkitMaskImage: "linear-gradient(to right, transparent, black 10%, black 90%, transparent)",
+      }}
+    >
+      <div
+        className="pp-trust-track"
+        style={{
+          display: "flex",
+          gap: "clamp(32px, 5vw, 60px)",
+          width: "max-content",
+          animation: "trustMarquee 25s linear infinite",
+          alignItems: "center",
+          padding: "0 20px",
+        }}
+      >
+        {doubledItems.map((item, index) => (
+          <div
+            key={`${item.text}-${index}`}
+            className="pp-trust-marquee-item"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              fontFamily: "'Inter', sans-serif",
+              fontSize: "clamp(0.85rem, 1vw, 1rem)",
+              fontWeight: 500,
+              color: "#2d3748",
+              whiteSpace: "nowrap",
+            }}
+          >
+            <span
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "36px",
+                height: "36px",
+                background: "linear-gradient(135deg, #FFF8E6, #FFFBEF)",
+                borderRadius: "50%",
+                border: "1px solid rgba(212,160,23,0.2)",
+                fontSize: "18px",
+                flexShrink: 0,
+              }}
+            >
+              {item.icon}
+            </span>
+            <span>{item.text}</span>
+          </div>
+        ))}
+      </div>
+
+      <style>{`
+        @keyframes trustMarquee {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        .pp-trust-track:hover {
+          animation-play-state: paused;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .pp-trust-track {
+            animation: none !important;
+          }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+// ── Helper Icons ──────────────────────────────────────────────────────────────
+function CheckIcon() {
+  return (
+    <svg viewBox="0 0 12 12" aria-hidden="true">
+      <polyline points="2,6.5 4.8,9 10,3" />
+    </svg>
+  );
+}
+
+function ClockIcon() {
+  return (
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+    </svg>
+  );
+}
+
+function ArrowIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M5 12h14M12 5l7 7-7 7"/>
+    </svg>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PopularPackages — Main Component
+// ─────────────────────────────────────────────────────────────────────────────
 export default function PopularPackages() {
   const sectionRef       = useRef(null);
   const bannerContentRef = useRef(null);
-  const cardWrapRefs     = useRef([]);
-  const observedSet      = useRef(new Set());
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -737,33 +576,6 @@ export default function PopularPackages() {
     return () => clearTimeout(timer);
   }, []);
 
-  const setCardRef = useCallback((node, i) => {
-    if (!node || observedSet.current.has(i)) return;
-    cardWrapRefs.current[i] = node;
-
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduced) return;
-
-    const card = node.querySelector(".pp-card");
-    if (!card) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            observedSet.current.add(i);
-            card.style.animationDelay = `${i * 80}ms`;
-            card.classList.add("pp-lift-in");
-            observer.disconnect();
-          }
-        });
-      },
-      { threshold: 0.08 }
-    );
-
-    observer.observe(node);
-  }, []);
-
   const scrollToPackages = () => {
     document
       .querySelector(".pp-grid")
@@ -780,7 +592,544 @@ export default function PopularPackages() {
 
   return (
     <>
-      <style>{CSS}</style>
+      <style>{`
+        /* ── Rasoaf Design System Typography ── */
+        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;450;500;600;700;800&display=swap');
+
+        /* ── Section ── */
+        .pp-section {
+          width: 100%;
+          background: #ffffff;
+          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+          color: #111111;
+        }
+
+        /* ── Banner ── */
+        .pp-banner {
+          position: relative;
+          width: 100%;
+          height: clamp(300px, 42vw, 440px);
+          overflow: hidden;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .pp-banner__img {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          object-position: center 40%;
+        }
+        .pp-banner__overlay {
+          position: absolute;
+          inset: 0;
+          background:
+            linear-gradient(180deg, rgba(17,11,4,0.55) 0%, rgba(17,11,4,0.28) 40%, rgba(17,11,4,0.72) 100%),
+            radial-gradient(ellipse 80% 60% at 50% 0%, rgba(212,160,23,0.22) 0%, transparent 65%);
+          z-index: 1;
+        }
+        .pp-banner__content {
+          position: relative;
+          z-index: 2;
+          text-align: center;
+          padding: clamp(24px, 5vw, 48px) clamp(20px, 6vw, 80px);
+          max-width: 760px;
+          width: 100%;
+        }
+
+        .pp-banner__eyebrow,
+        .pp-banner__heading,
+        .pp-banner__subtext,
+        .pp-banner__actions {
+          opacity: 1;
+          transform: none;
+        }
+        .pp-section.pp-anim-ready .pp-banner__eyebrow,
+        .pp-section.pp-anim-ready .pp-banner__heading,
+        .pp-section.pp-anim-ready .pp-banner__subtext,
+        .pp-section.pp-anim-ready .pp-banner__actions {
+          opacity: 0;
+          transform: translateY(18px);
+          transition: opacity 0.7s ease, transform 0.7s ease;
+        }
+        .pp-section.pp-anim-ready .pp-banner__eyebrow.pp-visible  { opacity: 1; transform: none; transition-delay: 0.05s; }
+        .pp-section.pp-anim-ready .pp-banner__heading.pp-visible  { opacity: 1; transform: none; transition-delay: 0.18s; }
+        .pp-section.pp-anim-ready .pp-banner__subtext.pp-visible  { opacity: 1; transform: none; transition-delay: 0.32s; }
+        .pp-section.pp-anim-ready .pp-banner__actions.pp-visible  { opacity: 1; transform: none; transition-delay: 0.46s; }
+
+        .pp-banner__eyebrow {
+          font-family: 'Inter', sans-serif;
+          font-size: clamp(0.7rem, 0.8vw, 0.8rem);
+          font-weight: 700;
+          letter-spacing: 0.18em;
+          text-transform: uppercase;
+          color: #F7C948;
+          margin-bottom: clamp(8px, 1.2vw, 14px);
+          display: block;
+        }
+
+        .pp-banner__heading {
+          font-family: 'Manrope', sans-serif;
+          font-weight: 800;
+          font-size: clamp(1.9rem, 5vw, 3.4rem);
+          line-height: 1.1;
+          letter-spacing: -0.02em;
+          color: #FFFFFF;
+          margin: 0 0 clamp(12px, 2vw, 20px);
+        }
+        .pp-banner__heading em {
+          font-style: italic;
+          font-weight: 700;
+          color: #F7C948;
+        }
+
+        .pp-banner__subtext {
+          font-family: 'Inter', sans-serif;
+          font-size: clamp(0.88rem, 1.2vw, 1.05rem);
+          font-weight: 400;
+          line-height: 1.7;
+          color: rgba(255,255,255,0.80);
+          max-width: 560px;
+          margin: 0 auto clamp(20px, 3.5vw, 32px);
+        }
+
+        .pp-banner__actions {
+          display: flex;
+          gap: clamp(10px, 2vw, 16px);
+          align-items: center;
+          justify-content: center;
+          flex-wrap: wrap;
+        }
+
+        .pp-btn--primary {
+          display: inline-flex;
+          align-items: center;
+          gap: 7px;
+          background: linear-gradient(135deg, #F7C948 0%, #D4A017 100%);
+          color: #111111;
+          font-family: 'Inter', sans-serif;
+          font-size: clamp(0.85rem, 1vw, 0.95rem);
+          font-weight: 600;
+          letter-spacing: 0.01em;
+          padding: clamp(10px, 1.5vw, 13px) clamp(22px, 3vw, 32px);
+          border-radius: 100px;
+          border: none;
+          cursor: pointer;
+          text-decoration: none;
+          transition: background 0.25s ease, transform 0.22s ease, box-shadow 0.25s ease;
+          box-shadow: 0 2px 12px rgba(212,160,23,0.35);
+          white-space: nowrap;
+        }
+        .pp-btn--primary:hover { background: #F7C948; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(212,160,23,0.45); }
+        .pp-btn--primary:focus-visible { outline: 2px solid #F7C948; outline-offset: 3px; }
+
+        .pp-btn--ghost {
+          display: inline-flex;
+          align-items: center;
+          gap: 7px;
+          background: transparent;
+          color: #FFFFFF;
+          font-family: 'Inter', sans-serif;
+          font-size: clamp(0.85rem, 1vw, 0.95rem);
+          font-weight: 600;
+          letter-spacing: 0.01em;
+          padding: clamp(10px, 1.5vw, 13px) clamp(22px, 3vw, 32px);
+          border-radius: 100px;
+          border: 1.5px solid rgba(255,255,255,0.55);
+          cursor: pointer;
+          text-decoration: none;
+          transition: border-color 0.25s ease, background 0.25s ease, color 0.25s ease;
+          white-space: nowrap;
+        }
+        .pp-btn--ghost:hover { border-color: #F7C948; background: rgba(247,201,72,0.10); color: #F7C948; }
+        .pp-btn--ghost:focus-visible { outline: 2px solid #F7C948; outline-offset: 3px; }
+
+        /* ── Grid section ── */
+        .pp-grid-section {
+          padding: clamp(52px, 9vw, 96px) clamp(20px, 5vw, 48px);
+          max-width: 1280px;
+          margin: 0 auto;
+        }
+        .pp-grid-header {
+          text-align: center;
+          margin-bottom: clamp(36px, 6vw, 60px);
+        }
+
+        .pp-section-eyebrow {
+          font-family: 'Inter', sans-serif;
+          font-size: clamp(0.7rem, 0.8vw, 0.8rem);
+          font-weight: 700;
+          letter-spacing: 0.18em;
+          text-transform: uppercase;
+          color: #D4A017;
+          display: block;
+          margin-bottom: 12px;
+        }
+
+        .pp-section-heading {
+          font-family: 'Manrope', sans-serif;
+          font-weight: 800;
+          font-size: clamp(1.7rem, 3.5vw, 2.6rem);
+          line-height: 1.1;
+          letter-spacing: -0.02em;
+          color: #111111;
+          margin: 0 0 14px;
+        }
+        .pp-section-heading em { font-style: italic; font-weight: 700; color: #D4A017; }
+
+        .pp-section-desc {
+          font-family: 'Inter', sans-serif;
+          font-size: clamp(0.88rem, 1.1vw, 1rem);
+          font-weight: 400;
+          line-height: 1.7;
+          color: #5F5F5F;
+          max-width: 520px;
+          margin: 0 auto;
+        }
+
+        /* ── Grid ── */
+        .pp-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: clamp(14px, 2.2vw, 24px);
+          align-items: stretch;
+        }
+
+        /* ── Card ── */
+        .pp-card {
+          background: #FFF8E6;
+          border-radius: 20px;
+          border: 1px solid rgba(212,160,23,0.14);
+          box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 6px 18px rgba(0,0,0,0.05);
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+          height: 100%;
+          transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .pp-card__badge {
+          position: absolute;
+          top: 20px;
+          right: -30px;
+          width: 128px;
+          background: #D4A017;
+          color: #111111;
+          font-family: 'Inter', sans-serif;
+          font-size: 9px;
+          font-weight: 700;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+          text-align: center;
+          padding: 5px 0;
+          transform: rotate(38deg);
+          box-shadow: 0 2px 8px rgba(0,0,0,0.14);
+          pointer-events: none;
+          z-index: 2;
+        }
+        .pp-card__badge--dark { background: #2d3748; color: #F7C948; }
+
+        .pp-card--featured { border-color: rgba(212,160,23,0.35); }
+        .pp-card--featured::before {
+          content: '';
+          position: absolute;
+          top: 0; left: 0; right: 0;
+          height: 3px;
+          background: linear-gradient(90deg, transparent, #D4A017, transparent);
+          z-index: 1;
+        }
+
+        .pp-card__icon-wrap {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 60px;
+          height: 60px;
+          background: linear-gradient(135deg, #FFFBEF, #FFF8E6);
+          border-radius: 16px;
+          border: 1px solid rgba(212,160,23,0.22);
+          font-size: 28px;
+          margin: clamp(20px, 3vw, 28px) clamp(20px, 3vw, 28px) 0;
+          flex-shrink: 0;
+          transition: transform 0.3s ease;
+        }
+        .pp-card:hover .pp-card__icon-wrap { transform: scale(1.07) rotate(-3deg); }
+
+        .pp-card__body {
+          padding: clamp(14px, 2.2vw, 20px) clamp(20px, 3vw, 28px) clamp(20px, 3vw, 28px);
+          display: flex;
+          flex-direction: column;
+          flex: 1;
+        }
+
+        .pp-card__duration {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          font-family: 'Inter', sans-serif;
+          font-size: 10px;
+          font-weight: 600;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          color: #D4A017;
+          background: rgba(212,160,23,0.10);
+          border: 1px solid rgba(212,160,23,0.20);
+          border-radius: 100px;
+          padding: 3px 10px;
+          margin-bottom: 10px;
+          width: fit-content;
+        }
+
+        .pp-card__title {
+          font-family: 'Manrope', sans-serif;
+          font-weight: 700;
+          font-size: clamp(1.1rem, 1.6vw, 1.3rem);
+          line-height: 1.2;
+          letter-spacing: -0.01em;
+          color: #111111;
+          margin: 0 0 4px;
+        }
+
+        .pp-card__tagline {
+          font-family: 'Inter', sans-serif;
+          font-size: clamp(11px, 0.9vw, 12.5px);
+          font-weight: 400;
+          font-style: italic;
+          color: #D4A017;
+          margin: 0 0 10px;
+          line-height: 1.4;
+        }
+
+        .pp-card__desc {
+          font-family: 'Inter', sans-serif;
+          font-size: clamp(0.82rem, 0.95vw, 0.88rem);
+          font-weight: 400;
+          line-height: 1.7;
+          color: #5F5F5F;
+          margin: 0 0 clamp(14px, 2vw, 18px);
+        }
+        .pp-card__divider {
+          width: 100%;
+          height: 1px;
+          background: linear-gradient(90deg, transparent, rgba(212,160,23,0.22), transparent);
+          margin-bottom: clamp(12px, 1.8vw, 16px);
+          flex-shrink: 0;
+        }
+
+        .pp-card__inclusions {
+          list-style: none;
+          padding: 0;
+          margin: 0 0 clamp(18px, 3vw, 22px);
+          display: flex;
+          flex-direction: column;
+          gap: 7px;
+        }
+        .pp-card__inclusion {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-family: 'Inter', sans-serif;
+          font-size: clamp(11px, 0.85vw, 12.5px);
+          font-weight: 450;
+          color: #2d3748;
+          line-height: 1.4;
+        }
+        .pp-card__check {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 18px;
+          height: 18px;
+          background: linear-gradient(135deg, rgba(212,160,23,0.15), rgba(212,160,23,0.08));
+          border-radius: 50%;
+          border: 1px solid rgba(212,160,23,0.28);
+          flex-shrink: 0;
+        }
+        .pp-card__check svg {
+          width: 9px;
+          height: 9px;
+          stroke: #D4A017;
+          fill: none;
+          stroke-width: 2.5;
+          stroke-linecap: round;
+          stroke-linejoin: round;
+        }
+
+        .pp-card__footer { margin-top: auto; }
+
+        .pp-card__cta--filled {
+          display: block;
+          width: 100%;
+          padding: clamp(10px, 1.5vw, 12px) 0;
+          background: linear-gradient(135deg, #F7C948 0%, #D4A017 100%);
+          color: #111111;
+          font-family: 'Inter', sans-serif;
+          font-size: clamp(0.85rem, 0.95vw, 0.95rem);
+          font-weight: 600;
+          letter-spacing: 0.01em;
+          text-align: center;
+          border: none;
+          border-radius: 12px;
+          cursor: pointer;
+          text-decoration: none;
+          transition: background 0.25s ease, transform 0.22s ease, box-shadow 0.25s ease;
+          box-shadow: 0 2px 10px rgba(212,160,23,0.28);
+        }
+        .pp-card__cta--filled:hover { background: #F7C948; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(212,160,23,0.38); }
+        .pp-card__cta--filled:focus-visible { outline: 2px solid #D4A017; outline-offset: 3px; }
+
+        .pp-card__cta--outline {
+          display: block;
+          width: 100%;
+          padding: clamp(10px, 1.5vw, 12px) 0;
+          background: transparent;
+          color: #2d3748;
+          font-family: 'Inter', sans-serif;
+          font-size: clamp(0.85rem, 0.95vw, 0.95rem);
+          font-weight: 600;
+          letter-spacing: 0.01em;
+          text-align: center;
+          border: 1.5px solid rgba(212,160,23,0.22);
+          border-radius: 12px;
+          cursor: pointer;
+          text-decoration: none;
+          transition: border-color 0.25s ease, background 0.25s ease;
+        }
+        .pp-card__cta--outline:hover { border-color: #D4A017; background: rgba(212,160,23,0.07); }
+        .pp-card__cta--outline:focus-visible { outline: 2px solid #D4A017; outline-offset: 3px; }
+
+        /* ── Trust Marquee ── */
+        .pp-trust-marquee {
+          overflow: hidden;
+          position: relative;
+          width: 100%;
+          padding: 16px 0;
+          background: linear-gradient(135deg, #FFF8E6, #FFFBEF);
+          border-top: 1px solid rgba(212,160,23,0.1);
+          border-bottom: 1px solid rgba(212,160,23,0.1);
+          mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+          -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+        }
+
+        .pp-trust-track {
+          display: flex;
+          gap: clamp(32px, 5vw, 60px);
+          width: max-content;
+          animation: trustMarquee 25s linear infinite;
+          align-items: center;
+          padding: 0 20px;
+        }
+
+        .pp-trust-track:hover {
+          animation-play-state: paused;
+        }
+
+        .pp-trust-marquee-item {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          font-family: 'Inter', sans-serif;
+          font-size: clamp(0.85rem, 1vw, 1rem);
+          font-weight: 500;
+          color: #2d3748;
+          white-space: nowrap;
+        }
+
+        .pp-trust-marquee-item .trust-icon {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 36px;
+          height: 36px;
+          background: linear-gradient(135deg, #FFF8E6, #FFFBEF);
+          border-radius: 50%;
+          border: 1px solid rgba(212,160,23,0.2);
+          font-size: 18px;
+          flex-shrink: 0;
+        }
+
+        @keyframes trustMarquee {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+
+        /* ── Banner image padding-top on smaller screens ── */
+        @media (max-width: 1024px) and (min-width: 769px) {
+          .pp-banner__img { object-position: center 30%; }
+        }
+        @media (max-width: 768px) {
+          .pp-banner__img { object-position: center 20%; transform: scale(1.05); transform-origin: center top; }
+        }
+        @media (max-width: 480px) {
+          .pp-banner__img { object-position: center 10%; transform: scale(1.08); transform-origin: center top; }
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 1100px) { .pp-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 600px) { .pp-grid { display: none; } }
+        @media (max-width: 600px) { .pp-grid-section { padding-left: 16px; padding-right: 16px; } }
+
+        /* ── Carousel ── */
+        .pp-carousel {
+          position: relative;
+          overflow: hidden;
+          width: 100%;
+          display: none;
+        }
+
+        .pp-carousel-nav {
+          transition: all 0.3s ease;
+        }
+        .pp-carousel-nav:active {
+          transform: translateY(-50%) scale(0.95) !important;
+        }
+
+        @media (max-width: 600px) {
+          .pp-carousel {
+            display: block !important;
+          }
+        }
+        @media (min-width: 601px) {
+          .pp-carousel {
+            display: none !important;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .pp-carousel-nav {
+            width: 34px !important;
+            height: 34px !important;
+          }
+          .pp-carousel-nav svg {
+            width: 16px !important;
+            height: 16px !important;
+          }
+        }
+
+        /* ── Reduced motion ── */
+        @media (prefers-reduced-motion: reduce) {
+          .pp-section.pp-anim-ready .pp-banner__eyebrow,
+          .pp-section.pp-anim-ready .pp-banner__heading,
+          .pp-section.pp-anim-ready .pp-banner__subtext,
+          .pp-section.pp-anim-ready .pp-banner__actions {
+            opacity: 1 !important;
+            transform: none !important;
+            transition: none !important;
+          }
+          .pp-card { transition: none !important; }
+          .pp-card:hover { transform: none !important; }
+          .pp-card:hover .pp-card__icon-wrap { transform: none !important; }
+          .pp-btn--primary:hover,
+          .pp-btn--ghost:hover,
+          .pp-card__cta--filled:hover { transform: none !important; }
+          .pp-banner__img { transform: none !important; }
+          .pp-carousel > div:first-child { transition: none !important; }
+          .pp-trust-track { animation: none !important; }
+        }
+      `}</style>
 
       <section
         className="pp-section"
@@ -848,37 +1197,21 @@ export default function PopularPackages() {
             </p>
           </header>
 
-          <div
-            className="pp-grid"
-            role="list"
-            aria-label="Available travel packages"
-          >
-            {PACKAGES.map((pkg, i) => (
-              <div
-                key={pkg.id}
-                role="listitem"
-                ref={(node) => setCardRef(node, i)}
-              >
-                <PackageCard pkg={pkg} />
+          {/* ── Desktop/Tablet Grid ── */}
+          <div className="pp-grid" role="list" aria-label="Available travel packages">
+            {PACKAGES.map((pkg) => (
+              <div key={pkg.id} role="listitem">
+                <PackageCard pkg={pkg} isCarousel={false} />
               </div>
             ))}
           </div>
+
+          {/* ── Mobile Carousel ── */}
+          <PackageCarousel packages={PACKAGES} inView={true} />
         </div>
 
-        <div
-          className="pp-trust-strip"
-          role="list"
-          aria-label="Agency trust indicators"
-        >
-          {TRUST_ITEMS.map((item) => (
-            <div key={item.text} className="pp-trust-item" role="listitem">
-              <span className="pp-trust-icon" aria-hidden="true">
-                {item.icon}
-              </span>
-              {item.text}
-            </div>
-          ))}
-        </div>
+        {/* ── Trust Marquee ── */}
+        <TrustMarquee />
       </section>
     </>
   );

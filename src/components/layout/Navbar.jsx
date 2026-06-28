@@ -4,6 +4,7 @@
 // 3D Book Now button · GSAP entrance · mouse-tilt · dropdown menus
 //
 // Design System: Manrope (headings) · Inter (body) · Yellow/Black brand
+// Mobile Optimized: Heavy animations removed on smaller screens
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useState, useEffect, useRef } from "react";
@@ -50,7 +51,7 @@ const SUB_MENUS = {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CSS — Updated with Rasoaf Design System
+// CSS — Updated with Rasoaf Design System + Mobile Optimizations
 // ─────────────────────────────────────────────────────────────────────────────
 const CSS = `
   /* ── Rasoaf Design System Typography ── */
@@ -441,7 +442,7 @@ const CSS = `
     position: fixed;
     top: 0; right: 0; bottom: 0;
     width: min(88vw, 360px);
-    z-index: 1000;
+    z-index: 10000; /* Increased z-index to stay above navbar */
     display: flex;
     flex-direction: column;
     overflow-y: auto;
@@ -451,6 +452,7 @@ const CSS = `
     border-left: 1px solid rgba(215,169,23,0.18);
     box-shadow: -12px 0 60px rgba(0,0,0,0.5);
     pointer-events: auto;
+    padding-top: 20px; /* Extra padding at top for close button visibility */
   }
   .rasoaf-drawer::-webkit-scrollbar { width: 3px; }
   .rasoaf-drawer::-webkit-scrollbar-thumb {
@@ -594,7 +596,37 @@ const CSS = `
   @media (max-width: 767px) {
     .rasoaf-dsk { display: none !important; }
     .rasoaf-mob { display: flex !important; }
+    /* Disable heavy animations on mobile */
+    .rasoaf-book {
+      animation: none !important;
+    }
+    .rasoaf-book .book-shine {
+      animation: none !important;
+    }
+    .rasoaf-book:hover:not(:active) {
+      transform: none !important;
+      box-shadow: none !important;
+    }
+    .rasoaf-dropdown-3d {
+      transform: none !important;
+      transition: none !important;
+    }
+    .rasoaf-dropdown-3d.open {
+      transform: none !important;
+    }
+    .rasoaf-navbar-inner {
+      transform-style: flat !important;
+      perspective: none !important;
+    }
+    .rasoaf-link {
+      transform-style: flat !important;
+    }
+    /* Disable glow animation on mobile */
+    .rasoaf-navbar-inner.glow-active::after {
+      display: none !important;
+    }
   }
+
   @media (min-width: 768px) {
     .rasoaf-mob { display: none !important; }
   }
@@ -663,6 +695,8 @@ export default function Navbar() {
 
   // ── GSAP entrance + logo animations ──────────────────────────────────────
   useEffect(() => {
+    // Skip GSAP animations on mobile for performance
+    if (isMobile) return;
     if (!navbarRef.current) return;
 
     const tl = gsap.timeline({ defaults: { ease: "power4.out" } });
@@ -713,10 +747,11 @@ export default function Navbar() {
     }
 
     return () => { tl.kill(); };
-  }, []);
+  }, [isMobile]);
 
   // ── GSAP 3D mouse-tilt (desktop only) ────────────────────────────────────
   useEffect(() => {
+    // Skip on mobile
     if (isMobile) return;
     const nb = navbarRef.current;
     if (!nb) return;
@@ -1091,13 +1126,20 @@ export default function Navbar() {
               initial="hidden" animate="visible" exit="exit"
               className="rasoaf-drawer"
             >
-              {/* Drawer header */}
+              {/* Drawer header - Increased padding-top for better close button visibility */}
               <motion.div
                 variants={itemV}
                 style={{
-                  display: "flex", alignItems: "center", justifyContent: "space-between",
-                  padding: "24px 20px 20px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "28px 20px 20px",
                   borderBottom: "1px solid rgba(215,169,23,0.1)",
+                  position: "sticky",
+                  top: 0,
+                  background: "rgba(6,6,14,0.98)",
+                  zIndex: 5,
+                  backdropFilter: "blur(12px)",
                 }}
               >
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -1120,16 +1162,29 @@ export default function Navbar() {
                   onClick={() => setMenuOpen(false)}
                   aria-label="Close menu"
                   style={{
-                    width: 36, height: 36, borderRadius: "50%",
-                    background: "rgba(215,169,23,0.10)",
-                    border: "1px solid rgba(215,169,23,0.28)",
-                    cursor: "pointer", color: "#D4A017",
-                    fontSize: 16, display: "flex",
-                    alignItems: "center", justifyContent: "center",
+                    width: 40,
+                    height: 40,
+                    borderRadius: "50%",
+                    background: "rgba(215,169,23,0.12)",
+                    border: "1px solid rgba(215,169,23,0.3)",
+                    cursor: "pointer",
+                    color: "#D4A017",
+                    fontSize: 18,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                     transition: "background 0.2s ease",
+                    flexShrink: 0,
+                    boxShadow: "0 2px 12px rgba(0,0,0,0.3)",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "rgba(215,169,23,0.2)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "rgba(215,169,23,0.12)";
                   }}
                 >
-                  ✕
+                  <X size={20} strokeWidth={2} />
                 </button>
               </motion.div>
 
