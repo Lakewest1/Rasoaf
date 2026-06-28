@@ -1,5 +1,14 @@
+// src/components/home/Contact.jsx
+// ─────────────────────────────────────────────────────────────────────────────
+// RASOAF Travels and Tours — Contact Section
+//
+// A premium contact section with contact information and a contact form.
+// Features: Responsive grid, mobile-optimized, formspree integration
+// Design System: Manrope (headings) · Inter (body) · Yellow/Black brand
+// ─────────────────────────────────────────────────────────────────────────────
+
 import { useRef, useEffect, useState } from "react";
-import { motion, useInView, useAnimation, useScroll, useTransform, AnimatePresence } from "framer-motion";
+import { motion, useInView, useAnimation } from "framer-motion";
 import {
   MapPin,
   Phone,
@@ -11,27 +20,29 @@ import {
   MessageCircle,
   Building2,
   Clock,
-  Sparkles,
   User,
   AtSign,
   FileText,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Globe,
 } from "lucide-react";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Fully Responsive Contact Section — Modern Contact Information + Contact Form
-// Features: Responsive grid, mobile-optimized, formspree integration
-// FIXED: High-contrast input fields (WCAG 1.4.11 compliant)
-// ─────────────────────────────────────────────────────────────────────────────
+// ── Design Tokens ─────────────────────────────────────────────────────────────
+const GOLD = "#D4A017";
+const GOLD_LIGHT = "#F7C948";
+const NAVY = "#111111";
+const NAVY_LIGHT = "#1a1a1a";
+const WHITE = "#ffffff";
 
+// ── Hook: IntersectionObserver for scroll animation ──────────────────────
 function useReveal(threshold = 0.3) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, amount: threshold });
   return [ref, isInView];
 }
 
-// Detect screen size for responsive design
+// ── Hook: Detect screen size for responsive design ───────────────────────
 const useScreenSize = () => {
   const [screenSize, setScreenSize] = useState({
     isMobile: false,
@@ -57,37 +68,53 @@ const useScreenSize = () => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Unified Contact Information Component (Responsive)
+// Contact Information Component (Responsive)
 // ─────────────────────────────────────────────────────────────────────────────
-function UnifiedContactInfo({ isInView }) {
+function ContactInfo({ isInView }) {
   const [isHovered, setIsHovered] = useState(false);
-  const [isCopied, setIsCopied] = useState(false);
   const [copiedItem, setCopiedItem] = useState(null);
   const { isMobile } = useScreenSize();
 
   const contactItems = [
-    { 
-      icon: MapPin, 
-      label: "Office Address", 
-      value: "1a John William Street, Preston, PR1 4XE",
-      action: "Get Directions",
-      link: "https://maps.google.com/?q=1a+John+William+Street+Preston+PR1+4XE",
+    {
+      icon: MapPin,
+      label: "Office Address",
+      value: "RASOAF Travels and Tours Limited",
+      secondary: "Nigeria",
+      action: "View on Map",
+      link: "https://maps.google.com/?q=RASOAF+Travels+and+Tours+Limited+Nigeria",
       isLink: true,
     },
-    { 
-      icon: Phone, 
-      label: "Phone", 
-      value: "01772 493994",
-      secondary: "07466 999218",
+    {
+      icon: Phone,
+      label: "Phone",
+      value: "+234 (0) 123 456 7890",
+      secondary: "+234 (0) 987 654 3210",
       action: "Call Now",
-      link: "tel:01772493994",
+      link: "tel:+2341234567890",
       isLink: true,
     },
-    { 
-      icon: Mail, 
-      label: "Email", 
-      value: "admin_1@evshealthcare.co.uk",
+    {
+      icon: Mail,
+      label: "Email",
+      value: "rasoaf24@gmail.com",
       action: "Copy Email",
+      isLink: false,
+    },
+    {
+      icon: Globe,
+      label: "Website",
+      value: "www.rasoaf.com",
+      action: "Visit Website",
+      link: "https://www.rasoaf.com",
+      isLink: true,
+    },
+    {
+      icon: Clock,
+      label: "Business Hours",
+      value: "Monday - Friday: 9:00 AM - 6:00 PM",
+      secondary: "Saturday: 10:00 AM - 4:00 PM",
+      action: null,
       isLink: false,
     },
   ];
@@ -96,31 +123,28 @@ function UnifiedContactInfo({ isInView }) {
     try {
       await navigator.clipboard.writeText(text);
       setCopiedItem(item);
-      setIsCopied(true);
       setTimeout(() => {
-        setIsCopied(false);
         setCopiedItem(null);
       }, 2000);
     } catch (err) {
-      console.error('Failed to copy:', err);
+      console.error("Failed to copy:", err);
     }
   };
 
   const cardVariants = {
     hidden: { opacity: 0, y: 30, scale: 0.96 },
-    visible: { 
-      opacity: 1, 
-      y: 0, 
+    visible: {
+      opacity: 1,
+      y: 0,
       scale: 1,
-      transition: { 
-        duration: 0.5, 
+      transition: {
+        duration: 0.5,
         delay: 0.2,
-        ease: [0.16, 1, 0.3, 1]
-      }
-    }
+        ease: [0.16, 1, 0.3, 1],
+      },
+    },
   };
 
-  // Responsive styles
   const cardPadding = isMobile ? "20px" : "24px";
   const headerIconSize = isMobile ? 40 : 44;
   const headerFontSize = isMobile ? 15 : 16;
@@ -134,20 +158,19 @@ function UnifiedContactInfo({ isInView }) {
       animate={isInView ? "visible" : "hidden"}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      style={{
-        position: "relative",
-      }}
     >
       <div
         style={{
           position: "relative",
-          background: "rgba(15,29,61,0.95)",
-          backdropFilter: "blur(10px)",
-          borderRadius: "24px",
+          background: WHITE,
+          borderRadius: "20px",
           padding: cardPadding,
           height: "100%",
-          border: `1px solid ${isHovered ? "rgba(196,151,42,0.35)" : "rgba(196,151,42,0.15)"}`,
-          transition: "border-color 0.2s ease",
+          border: `1px solid ${isHovered ? `rgba(212,160,23,0.35)` : "rgba(0,0,0,0.08)"}`,
+          boxShadow: isHovered
+            ? "0 12px 40px rgba(0,0,0,0.08), 0 4px 16px rgba(212,160,23,0.08)"
+            : "0 2px 12px rgba(0,0,0,0.04)",
+          transition: "all 0.3s cubic-bezier(0.25, 1, 0.5, 1)",
         }}
       >
         {/* Header */}
@@ -158,7 +181,7 @@ function UnifiedContactInfo({ isInView }) {
             gap: 12,
             marginBottom: 20,
             paddingBottom: 12,
-            borderBottom: "1px solid rgba(196,151,42,0.15)",
+            borderBottom: "1px solid rgba(212,160,23,0.15)",
           }}
         >
           <div
@@ -166,11 +189,11 @@ function UnifiedContactInfo({ isInView }) {
               width: headerIconSize,
               height: headerIconSize,
               borderRadius: "14px",
-              background: "linear-gradient(135deg, rgba(196,151,42,0.15), rgba(196,151,42,0.05))",
+              background: `linear-gradient(135deg, rgba(212,160,23,0.15), rgba(212,160,23,0.05))`,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              color: "#C4972A",
+              color: GOLD,
             }}
           >
             <MessageCircle size={isMobile ? 20 : 22} strokeWidth={1.6} />
@@ -178,11 +201,12 @@ function UnifiedContactInfo({ isInView }) {
           <div>
             <h3
               style={{
-                fontFamily: "'Inter', sans-serif",
+                fontFamily: "'Manrope', sans-serif",
                 fontSize: headerFontSize,
                 fontWeight: 700,
-                color: "#fff",
+                color: NAVY,
                 marginBottom: 2,
+                letterSpacing: "-0.01em",
               }}
             >
               Contact Information
@@ -191,7 +215,7 @@ function UnifiedContactInfo({ isInView }) {
               style={{
                 fontFamily: "'Inter', sans-serif",
                 fontSize: isMobile ? 10 : 11,
-                color: "rgba(255,255,255,0.5)",
+                color: "#5F5F5F",
               }}
             >
               Reach us through any channel
@@ -217,12 +241,12 @@ function UnifiedContactInfo({ isInView }) {
                     width: iconBoxSize,
                     height: iconBoxSize,
                     borderRadius: "12px",
-                    background: "rgba(196,151,42,0.1)",
+                    background: "rgba(212,160,23,0.08)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     flexShrink: 0,
-                    color: "#C4972A",
+                    color: GOLD,
                   }}
                 >
                   <IconComponent size={isMobile ? 16 : 18} strokeWidth={1.6} />
@@ -235,7 +259,7 @@ function UnifiedContactInfo({ isInView }) {
                       fontWeight: 600,
                       letterSpacing: "1px",
                       textTransform: "uppercase",
-                      color: "rgba(255,255,255,0.45)",
+                      color: "#888888",
                       marginBottom: 2,
                     }}
                   >
@@ -246,7 +270,7 @@ function UnifiedContactInfo({ isInView }) {
                       fontFamily: "'Inter', sans-serif",
                       fontSize: isMobile ? 12 : 13,
                       fontWeight: 500,
-                      color: "#fff",
+                      color: NAVY,
                       lineHeight: 1.4,
                       marginBottom: item.secondary ? 2 : 6,
                       wordBreak: "break-word",
@@ -259,17 +283,17 @@ function UnifiedContactInfo({ isInView }) {
                       style={{
                         fontFamily: "'Inter', sans-serif",
                         fontSize: isMobile ? 11 : 12,
-                        color: "rgba(255,255,255,0.6)",
+                        color: "#5F5F5F",
                         marginBottom: 6,
                       }}
                     >
                       {item.secondary}
                     </div>
                   )}
-                  {item.isLink ? (
+                  {item.isLink && item.action ? (
                     <a
                       href={item.link}
-                      target={item.label === "Office Address" ? "_blank" : "_self"}
+                      target={item.label === "Office Address" || item.label === "Website" ? "_blank" : "_self"}
                       rel="noopener noreferrer"
                       style={{
                         display: "inline-flex",
@@ -278,24 +302,24 @@ function UnifiedContactInfo({ isInView }) {
                         fontFamily: "'Inter', sans-serif",
                         fontSize: isMobile ? 9 : 10,
                         fontWeight: 500,
-                        color: "#C4972A",
+                        color: GOLD,
                         textDecoration: "none",
-                        background: "rgba(196,151,42,0.12)",
+                        background: "rgba(212,160,23,0.08)",
                         padding: "4px 10px",
                         borderRadius: "20px",
                         transition: "all 0.2s ease",
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.background = "rgba(196,151,42,0.22)";
+                        e.currentTarget.style.background = "rgba(212,160,23,0.18)";
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.background = "rgba(196,151,42,0.12)";
+                        e.currentTarget.style.background = "rgba(212,160,23,0.08)";
                       }}
                     >
                       <span>{item.action}</span>
                       <ArrowRight size={8} />
                     </a>
-                  ) : (
+                  ) : item.action === null ? null : (
                     <button
                       onClick={() => handleCopy(item.value, item.label)}
                       style={{
@@ -305,9 +329,9 @@ function UnifiedContactInfo({ isInView }) {
                         fontFamily: "'Inter', sans-serif",
                         fontSize: isMobile ? 9 : 10,
                         fontWeight: 500,
-                        color: "#C4972A",
+                        color: GOLD,
                         textDecoration: "none",
-                        background: "rgba(196,151,42,0.12)",
+                        background: "rgba(212,160,23,0.08)",
                         padding: "4px 10px",
                         borderRadius: "20px",
                         border: "none",
@@ -339,7 +363,7 @@ function UnifiedContactInfo({ isInView }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Contact Form Component (Responsive) - FIXED: High contrast inputs
+// Contact Form Component (Responsive)
 // ─────────────────────────────────────────────────────────────────────────────
 function ContactForm() {
   const [formData, setFormData] = useState({
@@ -395,19 +419,18 @@ function ContactForm() {
 
   const formVariants = {
     hidden: { opacity: 0, y: 30, scale: 0.96 },
-    visible: { 
-      opacity: 1, 
-      y: 0, 
+    visible: {
+      opacity: 1,
+      y: 0,
       scale: 1,
-      transition: { 
-        duration: 0.5, 
+      transition: {
+        duration: 0.5,
         delay: 0.3,
-        ease: [0.16, 1, 0.3, 1]
-      }
-    }
+        ease: [0.16, 1, 0.3, 1],
+      },
+    },
   };
 
-  // Responsive styles
   const cardPadding = isMobile ? "20px" : "24px";
   const headerIconSize = isMobile ? 40 : 44;
   const headerFontSize = isMobile ? 15 : 16;
@@ -421,20 +444,19 @@ function ContactForm() {
       animate="visible"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      style={{
-        position: "relative",
-      }}
     >
       <div
         style={{
           position: "relative",
-          background: "rgba(15,29,61,0.95)",
-          backdropFilter: "blur(10px)",
-          borderRadius: "24px",
+          background: WHITE,
+          borderRadius: "20px",
           padding: cardPadding,
           height: "100%",
-          border: `1px solid ${isHovered ? "rgba(196,151,42,0.35)" : "rgba(196,151,42,0.15)"}`,
-          transition: "border-color 0.2s ease",
+          border: `1px solid ${isHovered ? `rgba(212,160,23,0.35)` : "rgba(0,0,0,0.08)"}`,
+          boxShadow: isHovered
+            ? "0 12px 40px rgba(0,0,0,0.08), 0 4px 16px rgba(212,160,23,0.08)"
+            : "0 2px 12px rgba(0,0,0,0.04)",
+          transition: "all 0.3s cubic-bezier(0.25, 1, 0.5, 1)",
         }}
       >
         {/* Header */}
@@ -445,7 +467,7 @@ function ContactForm() {
             gap: 12,
             marginBottom: 20,
             paddingBottom: 12,
-            borderBottom: "1px solid rgba(196,151,42,0.15)",
+            borderBottom: "1px solid rgba(212,160,23,0.15)",
           }}
         >
           <div
@@ -453,11 +475,11 @@ function ContactForm() {
               width: headerIconSize,
               height: headerIconSize,
               borderRadius: "14px",
-              background: "linear-gradient(135deg, rgba(196,151,42,0.15), rgba(196,151,42,0.05))",
+              background: `linear-gradient(135deg, rgba(212,160,23,0.15), rgba(212,160,23,0.05))`,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              color: "#C4972A",
+              color: GOLD,
             }}
           >
             <Send size={isMobile ? 20 : 22} strokeWidth={1.6} />
@@ -465,11 +487,12 @@ function ContactForm() {
           <div>
             <h3
               style={{
-                fontFamily: "'Inter', sans-serif",
+                fontFamily: "'Manrope', sans-serif",
                 fontSize: headerFontSize,
                 fontWeight: 700,
-                color: "#fff",
+                color: NAVY,
                 marginBottom: 2,
+                letterSpacing: "-0.01em",
               }}
             >
               Send us a Message
@@ -478,7 +501,7 @@ function ContactForm() {
               style={{
                 fontFamily: "'Inter', sans-serif",
                 fontSize: isMobile ? 10 : 11,
-                color: "rgba(255,255,255,0.5)",
+                color: "#5F5F5F",
               }}
             >
               We'll respond within 24 hours
@@ -498,7 +521,7 @@ function ContactForm() {
                 width: isMobile ? 56 : 64,
                 height: isMobile ? 56 : 64,
                 borderRadius: "50%",
-                background: "rgba(16,185,129,0.15)",
+                background: "rgba(16,185,129,0.1)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -510,10 +533,10 @@ function ContactForm() {
             </div>
             <h4
               style={{
-                fontFamily: "'Inter', sans-serif",
+                fontFamily: "'Manrope', sans-serif",
                 fontSize: isMobile ? 16 : 18,
                 fontWeight: 700,
-                color: "#fff",
+                color: NAVY,
                 marginBottom: 8,
               }}
             >
@@ -523,10 +546,10 @@ function ContactForm() {
               style={{
                 fontFamily: "'Inter', sans-serif",
                 fontSize: isMobile ? 12 : 13,
-                color: "rgba(255,255,255,0.6)",
+                color: "#5F5F5F",
               }}
             >
-              Thank you. We'll contact you shortly.
+              Thank you for reaching out. We'll contact you shortly.
             </p>
           </div>
         ) : (
@@ -538,14 +561,14 @@ function ContactForm() {
                   fontFamily: "'Inter', sans-serif",
                   fontSize: isMobile ? 11 : 12,
                   fontWeight: 500,
-                  color: "rgba(255,255,255,0.7)",
+                  color: NAVY,
                   marginBottom: 6,
                   display: "flex",
                   alignItems: "center",
                   gap: 6,
                 }}
               >
-                <User size={12} style={{ color: "#C4972A" }} />
+                <User size={12} style={{ color: GOLD }} />
                 Full Name *
               </label>
               <input
@@ -555,27 +578,27 @@ function ContactForm() {
                 value={formData.name}
                 onChange={handleChange}
                 required
-                placeholder="John Smith"
+                placeholder="Enter your full name"
                 style={{
                   width: "100%",
                   padding: inputPadding,
                   borderRadius: "12px",
-                  border: "1px solid rgba(255,255,255,0.35)",
-                  background: "rgba(255,255,255,0.12)",
+                  border: "1px solid rgba(0,0,0,0.12)",
+                  background: "#fafafa",
                   fontFamily: "'Inter', sans-serif",
                   fontSize: isMobile ? 13 : 14,
-                  color: "#ffffff",
+                  color: NAVY,
                   outline: "none",
                   transition: "all 0.2s ease",
                 }}
                 onFocus={(e) => {
-                  e.target.style.borderColor = "#C4972A";
-                  e.target.style.background = "rgba(255,255,255,0.18)";
-                  e.target.style.boxShadow = "0 0 0 3px rgba(196,151,42,0.2)";
+                  e.target.style.borderColor = GOLD;
+                  e.target.style.background = WHITE;
+                  e.target.style.boxShadow = "0 0 0 3px rgba(212,160,23,0.15)";
                 }}
                 onBlur={(e) => {
-                  e.target.style.borderColor = "rgba(255,255,255,0.35)";
-                  e.target.style.background = "rgba(255,255,255,0.12)";
+                  e.target.style.borderColor = "rgba(0,0,0,0.12)";
+                  e.target.style.background = "#fafafa";
                   e.target.style.boxShadow = "none";
                 }}
               />
@@ -588,14 +611,14 @@ function ContactForm() {
                   fontFamily: "'Inter', sans-serif",
                   fontSize: isMobile ? 11 : 12,
                   fontWeight: 500,
-                  color: "rgba(255,255,255,0.7)",
+                  color: NAVY,
                   marginBottom: 6,
                   display: "flex",
                   alignItems: "center",
                   gap: 6,
                 }}
               >
-                <AtSign size={12} style={{ color: "#C4972A" }} />
+                <AtSign size={12} style={{ color: GOLD }} />
                 Email Address *
               </label>
               <input
@@ -605,27 +628,27 @@ function ContactForm() {
                 value={formData.email}
                 onChange={handleChange}
                 required
-                placeholder="john@example.com"
+                placeholder="your@email.com"
                 style={{
                   width: "100%",
                   padding: inputPadding,
                   borderRadius: "12px",
-                  border: "1px solid rgba(255,255,255,0.35)",
-                  background: "rgba(255,255,255,0.12)",
+                  border: "1px solid rgba(0,0,0,0.12)",
+                  background: "#fafafa",
                   fontFamily: "'Inter', sans-serif",
                   fontSize: isMobile ? 13 : 14,
-                  color: "#ffffff",
+                  color: NAVY,
                   outline: "none",
                   transition: "all 0.2s ease",
                 }}
                 onFocus={(e) => {
-                  e.target.style.borderColor = "#C4972A";
-                  e.target.style.background = "rgba(255,255,255,0.18)";
-                  e.target.style.boxShadow = "0 0 0 3px rgba(196,151,42,0.2)";
+                  e.target.style.borderColor = GOLD;
+                  e.target.style.background = WHITE;
+                  e.target.style.boxShadow = "0 0 0 3px rgba(212,160,23,0.15)";
                 }}
                 onBlur={(e) => {
-                  e.target.style.borderColor = "rgba(255,255,255,0.35)";
-                  e.target.style.background = "rgba(255,255,255,0.12)";
+                  e.target.style.borderColor = "rgba(0,0,0,0.12)";
+                  e.target.style.background = "#fafafa";
                   e.target.style.boxShadow = "none";
                 }}
               />
@@ -638,14 +661,14 @@ function ContactForm() {
                   fontFamily: "'Inter', sans-serif",
                   fontSize: isMobile ? 11 : 12,
                   fontWeight: 500,
-                  color: "rgba(255,255,255,0.7)",
+                  color: NAVY,
                   marginBottom: 6,
                   display: "flex",
                   alignItems: "center",
                   gap: 6,
                 }}
               >
-                <Phone size={12} style={{ color: "#C4972A" }} />
+                <Phone size={12} style={{ color: GOLD }} />
                 Phone (Optional)
               </label>
               <input
@@ -654,27 +677,27 @@ function ContactForm() {
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
-                placeholder="01234 567890"
+                placeholder="+234 123 456 7890"
                 style={{
                   width: "100%",
                   padding: inputPadding,
                   borderRadius: "12px",
-                  border: "1px solid rgba(255,255,255,0.35)",
-                  background: "rgba(255,255,255,0.12)",
+                  border: "1px solid rgba(0,0,0,0.12)",
+                  background: "#fafafa",
                   fontFamily: "'Inter', sans-serif",
                   fontSize: isMobile ? 13 : 14,
-                  color: "#ffffff",
+                  color: NAVY,
                   outline: "none",
                   transition: "all 0.2s ease",
                 }}
                 onFocus={(e) => {
-                  e.target.style.borderColor = "#C4972A";
-                  e.target.style.background = "rgba(255,255,255,0.18)";
-                  e.target.style.boxShadow = "0 0 0 3px rgba(196,151,42,0.2)";
+                  e.target.style.borderColor = GOLD;
+                  e.target.style.background = WHITE;
+                  e.target.style.boxShadow = "0 0 0 3px rgba(212,160,23,0.15)";
                 }}
                 onBlur={(e) => {
-                  e.target.style.borderColor = "rgba(255,255,255,0.35)";
-                  e.target.style.background = "rgba(255,255,255,0.12)";
+                  e.target.style.borderColor = "rgba(0,0,0,0.12)";
+                  e.target.style.background = "#fafafa";
                   e.target.style.boxShadow = "none";
                 }}
               />
@@ -687,14 +710,14 @@ function ContactForm() {
                   fontFamily: "'Inter', sans-serif",
                   fontSize: isMobile ? 11 : 12,
                   fontWeight: 500,
-                  color: "rgba(255,255,255,0.7)",
+                  color: NAVY,
                   marginBottom: 6,
                   display: "flex",
                   alignItems: "center",
                   gap: 6,
                 }}
               >
-                <FileText size={12} style={{ color: "#C4972A" }} />
+                <FileText size={12} style={{ color: GOLD }} />
                 Message *
               </label>
               <textarea
@@ -704,28 +727,28 @@ function ContactForm() {
                 value={formData.message}
                 onChange={handleChange}
                 required
-                placeholder="Tell us how we can help..."
+                placeholder="Tell us about your travel plans..."
                 style={{
                   width: "100%",
                   padding: inputPadding,
                   borderRadius: "12px",
-                  border: "1px solid rgba(255,255,255,0.35)",
-                  background: "rgba(255,255,255,0.12)",
+                  border: "1px solid rgba(0,0,0,0.12)",
+                  background: "#fafafa",
                   fontFamily: "'Inter', sans-serif",
                   fontSize: isMobile ? 13 : 14,
-                  color: "#ffffff",
+                  color: NAVY,
                   outline: "none",
                   resize: "vertical",
                   transition: "all 0.2s ease",
                 }}
                 onFocus={(e) => {
-                  e.target.style.borderColor = "#C4972A";
-                  e.target.style.background = "rgba(255,255,255,0.18)";
-                  e.target.style.boxShadow = "0 0 0 3px rgba(196,151,42,0.2)";
+                  e.target.style.borderColor = GOLD;
+                  e.target.style.background = WHITE;
+                  e.target.style.boxShadow = "0 0 0 3px rgba(212,160,23,0.15)";
                 }}
                 onBlur={(e) => {
-                  e.target.style.borderColor = "rgba(255,255,255,0.35)";
-                  e.target.style.background = "rgba(255,255,255,0.12)";
+                  e.target.style.borderColor = "rgba(0,0,0,0.12)";
+                  e.target.style.background = "#fafafa";
                   e.target.style.boxShadow = "none";
                 }}
               />
@@ -734,8 +757,8 @@ function ContactForm() {
             {error && (
               <div
                 style={{
-                  background: "rgba(239,68,68,0.1)",
-                  border: "1px solid rgba(239,68,68,0.3)",
+                  background: "rgba(239,68,68,0.06)",
+                  border: "1px solid rgba(239,68,68,0.2)",
                   borderRadius: "12px",
                   padding: "10px 14px",
                   marginBottom: 16,
@@ -764,20 +787,31 @@ function ContactForm() {
               style={{
                 width: "100%",
                 padding: isMobile ? "12px 16px" : "14px 20px",
-                borderRadius: "40px",
+                borderRadius: "50px",
                 border: "none",
-                background: "linear-gradient(135deg, #C4972A, #8B6914)",
+                background: `linear-gradient(135deg, ${GOLD_LIGHT} 0%, ${GOLD} 100%)`,
                 fontFamily: "'Inter', sans-serif",
                 fontSize: isMobile ? 13 : 14,
                 fontWeight: 600,
-                color: "#0f1d3d",
+                color: NAVY,
                 cursor: isSubmitting ? "not-allowed" : "pointer",
                 opacity: isSubmitting ? 0.7 : 1,
-                transition: "all 0.2s ease",
+                transition: "all 0.3s ease",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 gap: 8,
+                boxShadow: "0 4px 16px rgba(212,160,23,0.25)",
+              }}
+              onMouseEnter={(e) => {
+                if (!isSubmitting) {
+                  e.currentTarget.style.transform = "translateY(-2px)";
+                  e.currentTarget.style.boxShadow = "0 8px 28px rgba(212,160,23,0.35)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "translateY(0)";
+                e.currentTarget.style.boxShadow = "0 4px 16px rgba(212,160,23,0.25)";
               }}
             >
               {isSubmitting ? (
@@ -799,7 +833,7 @@ function ContactForm() {
 // ─────────────────────────────────────────────────────────────────────────────
 // Main Contact Component (Fully Responsive)
 // ─────────────────────────────────────────────────────────────────────────────
-export default function ContactStrip() {
+export default function RasoafContact() {
   const [ref, inView] = useReveal(0.2);
   const headerControls = useAnimation();
   const { isMobile, isTablet } = useScreenSize();
@@ -819,11 +853,10 @@ export default function ContactStrip() {
     },
   };
 
-  // Responsive grid layout
   const getGridColumns = () => {
     if (isMobile) return "1fr";
     if (isTablet) return "repeat(2, 1fr)";
-    return "repeat(2, 1fr)";
+    return "2fr 3fr";
   };
 
   const getHeadingSize = () => {
@@ -837,26 +870,27 @@ export default function ContactStrip() {
       ref={ref}
       style={{
         position: "relative",
-        padding: isMobile ? "clamp(40px, 8vh, 60px) clamp(16px, 4vw, 80px)" : "clamp(60px, 12vh, 100px) clamp(16px, 5vw, 80px)",
-        background: "linear-gradient(135deg, #0f1d3d 0%, #1a2a50 100%)",
+        padding: isMobile
+          ? "clamp(40px, 8vh, 60px) clamp(16px, 4vw, 80px)"
+          : "clamp(60px, 12vh, 100px) clamp(16px, 5vw, 80px)",
+        background: WHITE,
         overflow: "hidden",
       }}
     >
-      {/* Animated Background Pattern */}
+      {/* Subtle Background Pattern */}
       <div
         style={{
           position: "absolute",
           inset: 0,
           backgroundImage: `
-            radial-gradient(circle at 20% 30%, rgba(196,151,42,0.05) 0%, transparent 50%),
-            repeating-linear-gradient(45deg, rgba(196,151,42,0.02) 0px, rgba(196,151,42,0.02) 1px, transparent 1px, transparent 30px)
+            radial-gradient(circle at 20% 30%, rgba(212,160,23,0.03) 0%, transparent 50%),
+            radial-gradient(circle at 80% 70%, rgba(212,160,23,0.02) 0%, transparent 50%)
           `,
-          backgroundSize: "100% 100%, 40px 40px",
           pointerEvents: "none",
         }}
       />
 
-      {/* Floating Decorative Orbs - Hidden on mobile for performance */}
+      {/* Floating Decorative Orbs - Hidden on mobile */}
       {!isMobile && (
         <>
           <div
@@ -867,7 +901,7 @@ export default function ContactStrip() {
               width: 250,
               height: 250,
               borderRadius: "50%",
-              background: "radial-gradient(circle, rgba(196,151,42,0.03), transparent 70%)",
+              background: "radial-gradient(circle, rgba(212,160,23,0.03), transparent 70%)",
               pointerEvents: "none",
             }}
           />
@@ -879,14 +913,14 @@ export default function ContactStrip() {
               width: 300,
               height: 300,
               borderRadius: "50%",
-              background: "radial-gradient(circle, rgba(196,151,42,0.02), transparent 70%)",
+              background: "radial-gradient(circle, rgba(212,160,23,0.02), transparent 70%)",
               pointerEvents: "none",
             }}
           />
         </>
       )}
 
-      {/* Top Animated Border */}
+      {/* Top Gold Border */}
       <motion.div
         initial={{ scaleX: 0 }}
         animate={inView ? { scaleX: 1 } : {}}
@@ -896,36 +930,19 @@ export default function ContactStrip() {
           top: 0,
           left: 0,
           right: 0,
-          height: 1,
-          background: "linear-gradient(90deg, transparent, #C4972A, #f0c060, #C4972A, transparent)",
+          height: 2,
+          background: `linear-gradient(90deg, transparent, ${GOLD}, ${GOLD_LIGHT}, ${GOLD}, transparent)`,
           transformOrigin: "left",
         }}
       />
 
-      {/* Bottom Animated Border */}
-      <motion.div
-        initial={{ scaleX: 0 }}
-        animate={inView ? { scaleX: 1 } : {}}
-        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
-        style={{
-          position: "absolute",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: 1,
-          background: "linear-gradient(90deg, transparent, #C4972A, #f0c060, #C4972A, transparent)",
-          transformOrigin: "right",
-        }}
-      />
-
-      <div style={{ maxWidth: 1000, margin: "0 auto", position: "relative", zIndex: 2 }}>
-        
+      <div style={{ maxWidth: 1100, margin: "0 auto", position: "relative", zIndex: 2 }}>
         {/* Section Header */}
         <motion.div
           variants={headerVariants}
           initial="hidden"
           animate={headerControls}
-          style={{ textAlign: "center", marginBottom: isMobile ? 32 : 40 }}
+          style={{ textAlign: "center", marginBottom: isMobile ? 32 : 48 }}
         >
           <div
             style={{
@@ -941,7 +958,7 @@ export default function ContactStrip() {
               transition={{ duration: 0.6, delay: 0.2 }}
               style={{
                 height: 2,
-                background: "#C4972A",
+                background: GOLD,
                 borderRadius: 999,
               }}
             />
@@ -952,7 +969,7 @@ export default function ContactStrip() {
                 fontWeight: 700,
                 letterSpacing: "4px",
                 textTransform: "uppercase",
-                color: "#C4972A",
+                color: GOLD,
               }}
             >
               Get In Touch
@@ -963,7 +980,7 @@ export default function ContactStrip() {
               transition={{ duration: 0.6, delay: 0.4 }}
               style={{
                 height: 2,
-                background: "#C4972A",
+                background: GOLD,
                 borderRadius: 999,
               }}
             />
@@ -974,25 +991,23 @@ export default function ContactStrip() {
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.3 }}
             style={{
-              fontFamily: "'Inter', sans-serif",
+              fontFamily: "'Manrope', sans-serif",
               fontSize: getHeadingSize(),
               fontWeight: 800,
-              color: "#fff",
+              color: NAVY,
               letterSpacing: "-0.02em",
               marginBottom: isMobile ? 8 : 10,
               padding: isMobile ? "0 16px" : 0,
             }}
           >
-            Connect With{" "}
+            Plan Your Journey With{" "}
             <span
               style={{
-                background: "linear-gradient(135deg, #C4972A, #f0c060)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
+                color: GOLD,
+                position: "relative",
               }}
             >
-              EVS Healthcare
+              RASOAF Travels
             </span>
           </motion.h2>
 
@@ -1002,15 +1017,15 @@ export default function ContactStrip() {
             transition={{ duration: 0.6, delay: 0.4 }}
             style={{
               fontFamily: "'Inter', sans-serif",
-              fontSize: isMobile ? 12 : 13,
-              color: "rgba(255,255,255,0.7)",
+              fontSize: isMobile ? 13 : 14,
+              color: "#5F5F5F",
               maxWidth: 500,
               margin: "0 auto",
-              lineHeight: 1.6,
+              lineHeight: 1.7,
               padding: isMobile ? "0 12px" : 0,
             }}
           >
-            Reach out to our team for any inquiries, support, or career opportunities
+            Reach out for Hajj & Umrah packages, visa assistance, or any travel inquiries
           </motion.p>
         </motion.div>
 
@@ -1022,34 +1037,34 @@ export default function ContactStrip() {
             gap: isMobile ? 20 : 24,
           }}
         >
-          <UnifiedContactInfo isInView={inView} />
+          <ContactInfo isInView={inView} />
           <ContactForm />
         </div>
 
-        {/* Bottom Decorative Line */}
+        {/* Bottom Decorative Divider */}
         <motion.div
           initial={{ opacity: 0, scaleX: 0 }}
           animate={inView ? { opacity: 1, scaleX: 1 } : {}}
           transition={{ duration: 0.8, delay: 0.6 }}
           style={{
-            marginTop: isMobile ? 32 : 40,
+            marginTop: isMobile ? 36 : 48,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             gap: 12,
           }}
         >
-          <div style={{ width: 60, height: 1, background: "rgba(196,151,42,0.25)", borderRadius: 999 }} />
+          <div style={{ width: 60, height: 1, background: "rgba(212,160,23,0.2)", borderRadius: 999 }} />
           <div
             style={{
               width: 6,
               height: 6,
               borderRadius: "50%",
-              background: "#C4972A",
+              background: GOLD,
               opacity: 0.5,
             }}
           />
-          <div style={{ width: 60, height: 1, background: "rgba(196,151,42,0.25)", borderRadius: 999 }} />
+          <div style={{ width: 60, height: 1, background: "rgba(212,160,23,0.2)", borderRadius: 999 }} />
         </motion.div>
       </div>
     </section>

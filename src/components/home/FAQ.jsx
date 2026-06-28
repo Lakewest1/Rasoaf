@@ -136,12 +136,12 @@ function FAQItem({ item, isOpen, onToggle, index, inView }) {
           opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s,
           transform 0.5s cubic-bezier(0.16, 1, 0.3, 1) ${delay}s
         `,
-        background: isOpen ? "#ffffff" : "rgba(255,255,255,0.6)",
+        background: isOpen ? "#ffffff" : "rgba(255,255,255,0.7)",
         borderRadius: "16px",
-        border: `1px solid ${isOpen ? "rgba(212,160,23,0.2)" : "rgba(0,0,0,0.04)"}`,
+        border: `1px solid ${isOpen ? "rgba(212,160,23,0.2)" : "rgba(0,0,0,0.05)"}`,
         boxShadow: isOpen
           ? "0 4px 20px rgba(0,0,0,0.06), 0 2px 8px rgba(212,160,23,0.06)"
-          : "0 1px 4px rgba(0,0,0,0.02)",
+          : "0 1px 4px rgba(0,0,0,0.03)",
         transition: "all 0.3s cubic-bezier(0.25, 1, 0.5, 1)",
         overflow: "hidden",
         marginBottom: "clamp(10px, 1.2vw, 14px)",
@@ -309,22 +309,22 @@ function SearchBar({ onSearch, onClear, query }) {
           fontSize: "clamp(0.85rem, 0.95vw, 0.95rem)",
           fontWeight: 400,
           color: "#111111",
-          background: "rgba(255,255,255,0.8)",
+          background: "rgba(255,255,255,0.9)",
           backdropFilter: "blur(12px)",
           WebkitBackdropFilter: "blur(12px)",
-          border: "1px solid rgba(0,0,0,0.06)",
+          border: "1px solid rgba(0,0,0,0.08)",
           borderRadius: "50px",
           outline: "none",
           transition: "all 0.3s ease",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
         }}
         onFocus={(e) => {
           e.currentTarget.style.borderColor = "rgba(212,160,23,0.3)";
           e.currentTarget.style.boxShadow = "0 4px 16px rgba(212,160,23,0.06)";
         }}
         onBlur={(e) => {
-          e.currentTarget.style.borderColor = "rgba(0,0,0,0.06)";
-          e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.03)";
+          e.currentTarget.style.borderColor = "rgba(0,0,0,0.08)";
+          e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.04)";
         }}
         aria-label="Search frequently asked questions"
       />
@@ -373,9 +373,10 @@ function CTASection({ inView }) {
         transform: inView ? "translateY(0)" : "translateY(20px)",
         transition: "opacity 0.6s ease 0.6s, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.6s",
         padding: "clamp(32px, 4vh, 48px)",
-        background: "linear-gradient(135deg, #FFF8E6 0%, #FFFBEF 100%)",
+        background: "#ffffff",
         borderRadius: "20px",
-        border: "1px solid rgba(212,160,23,0.1)",
+        border: "1px solid rgba(0,0,0,0.06)",
+        boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
       }}
     >
       <div
@@ -487,22 +488,20 @@ function CTASection({ inView }) {
               fontSize: "clamp(0.85rem, 0.95vw, 0.95rem)",
               fontWeight: 500,
               color: "#111111",
-              background: "rgba(255,255,255,0.7)",
-              backdropFilter: "blur(8px)",
-              WebkitBackdropFilter: "blur(8px)",
+              background: "#ffffff",
               padding: "clamp(10px, 1vw, 12px) clamp(20px, 2vw, 28px)",
               borderRadius: "50px",
               textDecoration: "none",
-              border: "1px solid rgba(0,0,0,0.06)",
+              border: "1px solid rgba(0,0,0,0.08)",
               transition: "all 0.3s ease",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = "rgba(212,160,23,0.2)";
-              e.currentTarget.style.background = "rgba(255,255,255,0.9)";
+              e.currentTarget.style.borderColor = "rgba(212,160,23,0.25)";
+              e.currentTarget.style.background = "rgba(255,255,255,0.95)";
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = "rgba(0,0,0,0.06)";
-              e.currentTarget.style.background = "rgba(255,255,255,0.7)";
+              e.currentTarget.style.borderColor = "rgba(0,0,0,0.08)";
+              e.currentTarget.style.background = "#ffffff";
             }}
           >
             <Phone size={16} />
@@ -519,22 +518,20 @@ function CTASection({ inView }) {
               fontSize: "clamp(0.85rem, 0.95vw, 0.95rem)",
               fontWeight: 500,
               color: "#111111",
-              background: "rgba(255,255,255,0.7)",
-              backdropFilter: "blur(8px)",
-              WebkitBackdropFilter: "blur(8px)",
+              background: "#ffffff",
               padding: "clamp(10px, 1vw, 12px) clamp(20px, 2vw, 28px)",
               borderRadius: "50px",
               textDecoration: "none",
-              border: "1px solid rgba(0,0,0,0.06)",
+              border: "1px solid rgba(0,0,0,0.08)",
               transition: "all 0.3s ease",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = "rgba(212,160,23,0.2)";
-              e.currentTarget.style.background = "rgba(255,255,255,0.9)";
+              e.currentTarget.style.borderColor = "rgba(212,160,23,0.25)";
+              e.currentTarget.style.background = "rgba(255,255,255,0.95)";
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = "rgba(0,0,0,0.06)";
-              e.currentTarget.style.background = "rgba(255,255,255,0.7)";
+              e.currentTarget.style.borderColor = "rgba(0,0,0,0.08)";
+              e.currentTarget.style.background = "#ffffff";
             }}
           >
             <Mail size={16} />
@@ -597,23 +594,9 @@ export default function FAQ() {
 
         .faq-section {
           padding: clamp(48px, 8vh, 80px) clamp(16px, 4vw, 48px);
-          background: linear-gradient(180deg, #FFF8E6 0%, #FFFBEF 50%, #FFFDF5 100%);
+          background: #ffffff;
           position: relative;
           overflow: hidden;
-        }
-
-        .faq-section::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background-image: 
-            radial-gradient(circle at 20% 40%, rgba(212,160,23,0.04) 0%, transparent 40%),
-            radial-gradient(circle at 80% 60%, rgba(212,160,23,0.04) 0%, transparent 40%);
-          pointer-events: none;
-          z-index: 0;
         }
 
         .faq-container {

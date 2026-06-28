@@ -1,8 +1,8 @@
 /* ============================================================
-   EVS Healthcare Solutions — App.css
+   EVS Healthcare Solutions — App.css (v2.0)
    Page-level layout, section backgrounds, nav, hero, footer,
    and cross-section harmony. Works alongside index.css tokens.
-   WCAG AA compliant gold text colors
+   WCAG AA compliant — all gold text meets 4.5:1 contrast ratio
    ============================================================ */
 
 /* ── 1. ROOT APP SHELL ────────────────────────────────────── */
@@ -11,13 +11,52 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  /* Ensure content is pushable by dynamic mobile toolbars */
+  min-height: 100dvh;
 }
 
 main {
   flex: 1;
+  /* Prevent horizontal overflow from padding/margin bugs */
+  overflow-x: hidden;
 }
 
-/* ── 2. PAGE TRANSITIONS ──────────────────────────────────── */
+/* ── 2. SKIP LINK (accessibility — must be first focusable element) ── */
+.skip-link {
+  position: fixed;
+  top: -100%;
+  left: var(--space-4);
+  z-index: 10000;
+  background: var(--clr-gold);
+  color: var(--clr-navy);
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  font-size: var(--text-sm);
+  text-decoration: none;
+  transition: top var(--dur-fast) var(--ease-out);
+  outline-offset: 3px;
+}
+.skip-link:focus {
+  top: var(--space-4);
+  outline: 2px solid var(--clr-navy);
+}
+
+/* ── 3. SCROLL PROGRESS BAR ────────────────────────────────── */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0%;
+  height: 2px;
+  background: linear-gradient(90deg, var(--clr-gold), var(--clr-gold-pale));
+  z-index: calc(var(--z-nav) + 1);
+  transition: width 0.1s linear;
+  /* Performance: only re-paint on width change */
+  will-change: width;
+}
+
+/* ── 4. PAGE TRANSITIONS ──────────────────────────────────── */
 .page-enter {
   opacity: 0;
   transform: translateY(12px);
@@ -39,7 +78,18 @@ main {
               transform 250ms var(--ease-in-out);
 }
 
-/* ── 3. NAVIGATION ────────────────────────────────────────── */
+/* Respect user motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .page-enter,
+  .page-enter-active,
+  .page-exit,
+  .page-exit-active {
+    transition: opacity 150ms ease !important;
+    transform: none !important;
+  }
+}
+
+/* ── 5. NAVIGATION ────────────────────────────────────────── */
 .nav {
   position: fixed;
   top: 0;
@@ -49,6 +99,7 @@ main {
   height: 72px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: 0 clamp(1rem, 5vw, 4rem);
   transition: background var(--dur-slow) var(--ease-out),
               box-shadow  var(--dur-slow) var(--ease-out),
@@ -66,7 +117,7 @@ main {
   background: rgba(15, 29, 61, 0.97);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  box-shadow: 0 1px 0 rgba(196,151,42,0.15), var(--shadow-md);
+  box-shadow: 0 1px 0 rgba(196, 151, 42, 0.15), var(--shadow-md);
   height: 64px;
 }
 
@@ -77,40 +128,65 @@ main {
   color: var(--clr-white);
   letter-spacing: -0.02em;
   flex-shrink: 0;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
 }
-.nav__logo span { color: var(--gold-text-dark); }
+.nav__logo span {
+  color: var(--gold-text-dark);
+}
 
 .nav__links {
   display: flex;
   align-items: center;
   gap: clamp(1rem, 2.5vw, 2rem);
-  margin: 0 auto;
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
 .nav__link {
   font-family: var(--font-ui);
   font-size: var(--text-sm);
   font-weight: 500;
-  color: rgba(255,255,255,0.80);
+  color: rgba(255, 255, 255, 0.80);
   text-decoration: none;
   position: relative;
-  padding-bottom: 2px;
+  padding: var(--space-1) 0;
   transition: color var(--dur-fast) var(--ease-out);
   touch-action: manipulation;
+  /* Ensure minimum touch target size (WCAG 2.5.5) */
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
 }
 .nav__link::after {
   content: '';
   position: absolute;
-  bottom: -2px; left: 0;
-  width: 0; height: 1.5px;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 1.5px;
   background: var(--clr-gold);
   border-radius: var(--radius-full);
   transition: width var(--dur-base) var(--ease-out);
 }
-.nav__link:hover             { color: var(--clr-white); }
+.nav__link:hover {
+  color: var(--clr-white);
+}
 .nav__link:hover::after,
-.nav__link--active::after    { width: 100%; }
-.nav__link--active           { color: var(--gold-text-dark); }
+.nav__link--active::after {
+  width: 100%;
+}
+.nav__link--active {
+  color: var(--gold-text-dark);
+}
+.nav__link:focus-visible {
+  outline: 2px solid var(--clr-gold);
+  outline-offset: 4px;
+  border-radius: 2px;
+}
 
 .nav__cta {
   flex-shrink: 0;
@@ -127,6 +203,11 @@ main {
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
+  background: none;
+  border: none;
+  /* Ensure minimum touch target size */
+  min-width: 44px;
+  min-height: 44px;
 }
 .nav__hamburger span {
   display: block;
@@ -137,21 +218,43 @@ main {
   transition: transform var(--dur-base) var(--ease-out),
               opacity   var(--dur-base) var(--ease-out);
 }
+/* Hamburger animation when menu is open */
+.nav__hamburger--open span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+.nav__hamburger--open span:nth-child(2) {
+  opacity: 0;
+}
+.nav__hamburger--open span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+.nav__hamburger:focus-visible {
+  outline: 2px solid var(--clr-gold);
+  outline-offset: 4px;
+}
 
+/* Mobile responsive breakpoints */
 @media (max-width: 767px) {
-  .nav__links   { display: none; }
-  .nav__hamburger { display: flex; margin-left: auto; }
-  .nav__cta     { display: none; }
+  .nav__links {
+    display: none;
+  }
+  .nav__hamburger {
+    display: flex;
+  }
+  .nav__cta {
+    display: none;
+  }
 }
 
 /* Mobile menu drawer */
 .nav__drawer {
   position: fixed;
-  top: 0; right: 0;
+  top: 0;
+  right: 0;
   width: min(320px, 85vw);
-  height: 100vh;
+  min-height: 100dvh;
   background: var(--clr-navy-deep);
-  border-left: 1px solid rgba(196,151,42,0.15);
+  border-left: 1px solid rgba(196, 151, 42, 0.15);
   display: flex;
   flex-direction: column;
   padding: 6rem var(--space-8) var(--space-8);
@@ -160,12 +263,17 @@ main {
   transform: translateX(100%);
   transition: transform var(--dur-slow) var(--ease-out);
   overflow-y: auto;
+  /* Improve scroll performance */
+  will-change: transform;
+  overscroll-behavior: contain;
 }
-.nav__drawer--open   { transform: translateX(0); }
+.nav__drawer--open {
+  transform: translateX(0);
+}
 .nav__drawer-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.50);
+  background: rgba(0, 0, 0, 0.50);
   z-index: var(--z-overlay);
   opacity: 0;
   pointer-events: none;
@@ -176,10 +284,24 @@ main {
   pointer-events: auto;
 }
 
-/* ── 4. HERO SECTION ──────────────────────────────────────── */
+/* Lock body scroll when drawer is open */
+body:has(.nav__drawer--open) {
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav,
+  .nav__drawer,
+  .nav__drawer-overlay {
+    transition-duration: 0s !important;
+  }
+}
+
+/* ── 6. HERO SECTION ──────────────────────────────────────── */
 .hero {
   position: relative;
-  min-height: 100svh; /* Better mobile viewport behavior */
+  min-height: 100svh;
+  min-height: 100dvh; /* Better for mobile browsers */
   display: flex;
   align-items: center;
   overflow: hidden;
@@ -191,9 +313,9 @@ main {
   inset: 0;
   background: linear-gradient(
     135deg,
-    rgba(10,22,40,0.88) 0%,
-    rgba(15,29,61,0.72) 50%,
-    rgba(10,22,40,0.80) 100%
+    rgba(10, 22, 40, 0.88) 0%,
+    rgba(15, 29, 61, 0.72) 50%,
+    rgba(10, 22, 40, 0.80) 100%
   );
   z-index: 1;
 }
@@ -204,6 +326,7 @@ main {
   max-width: var(--container-max);
   margin: 0 auto;
   padding: clamp(6rem, 15vh, 10rem) var(--section-pad-x) clamp(4rem, 10vh, 6rem);
+  width: 100%;
 }
 
 .hero__eyebrow {
@@ -213,7 +336,7 @@ main {
   font-family: var(--font-ui);
   font-size: var(--text-xs);
   font-weight: 800;
-  letter-spacing: 4px;
+  letter-spacing: 0.25em; /* Replaced 4px with relative unit */
   text-transform: uppercase;
   color: var(--gold-text-dark);
   margin-bottom: var(--space-5);
@@ -240,7 +363,20 @@ main {
   flex-wrap: wrap;
 }
 
-/* ── 5. SECTION BACKGROUNDS ───────────────────────────────── */
+/* Ensure buttons in hero have proper spacing on mobile */
+@media (max-width: 480px) {
+  .hero__cta-group {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+  .hero__cta-group .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ── 7. SECTION BACKGROUNDS ───────────────────────────────── */
 
 /* White — default */
 .section-white {
@@ -249,33 +385,54 @@ main {
 
 /* Off-white — subtle warmth */
 .section-cream {
-  background: linear-gradient(135deg, var(--clr-white) 0%, var(--clr-off-white) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--clr-white) 0%,
+    var(--clr-off-white) 100%
+  );
 }
 
 /* Navy — dark sections */
 .section-navy {
-  background: linear-gradient(135deg, var(--clr-navy-deep) 0%, var(--clr-navy) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--clr-navy-deep) 0%,
+    var(--clr-navy) 100%
+  );
   color: var(--text-dark-bg);
 }
 .section-navy h2,
-.section-navy h3 { color: var(--clr-white); }
-.section-navy p   { color: var(--text-dark-bg); }
+.section-navy h3 {
+  color: var(--clr-white);
+}
+.section-navy p {
+  color: var(--text-dark-bg);
+}
 
 /* Navy with subtle grid texture */
 .section-navy-grid {
-  background:
-    linear-gradient(135deg, var(--clr-navy-deep) 0%, var(--clr-navy) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--clr-navy-deep) 0%,
+    var(--clr-navy) 100%
+  );
+  position: relative;
 }
 .section-navy-grid::before {
   content: '';
   position: absolute;
   inset: 0;
-  background-image:
-    repeating-linear-gradient(45deg, rgba(196,151,42,0.03) 0, rgba(196,151,42,0.03) 1px, transparent 1px, transparent 30px);
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(196, 151, 42, 0.03) 0,
+    rgba(196, 151, 42, 0.03) 1px,
+    transparent 1px,
+    transparent 30px
+  );
   pointer-events: none;
 }
 
-/* ── 6. SECTION HEADER PATTERN ────────────────────────────── */
+/* ── 8. SECTION HEADER PATTERN ────────────────────────────── */
 .section-header {
   text-align: center;
   margin-bottom: clamp(2.5rem, 6vh, 4rem);
@@ -288,7 +445,7 @@ main {
   font-family: var(--font-ui);
   font-size: var(--text-xs);
   font-weight: 800;
-  letter-spacing: 4px;
+  letter-spacing: 0.25em;
   text-transform: uppercase;
   color: var(--gold-text);
   margin-bottom: var(--space-4);
@@ -303,7 +460,8 @@ main {
   border-radius: var(--radius-full);
   flex-shrink: 0;
 }
-/* Dark background eyebrow */
+
+/* Dark background eyebrow overrides */
 .section-navy .section-eyebrow {
   color: var(--gold-text-dark);
 }
@@ -327,35 +485,58 @@ main {
   color: var(--text-muted-dark);
 }
 
-/* ── 7. REVEAL ANIMATIONS ─────────────────────────────────── */
+/* ── 9. REVEAL ANIMATIONS (FIXED) ─────────────────────────── */
 .reveal-up {
   opacity: 0;
   transform: translateY(24px);
   transition: opacity 0.55s var(--ease-out),
               transform 0.55s var(--ease-out);
 }
+
 .reveal-fade {
   opacity: 0;
   transition: opacity 0.55s var(--ease-out);
 }
-.reveal-up.in-view,
-.reveal-fade.in-view {
+
+/* Fixed: Only apply transform to .reveal-up elements */
+.reveal-up.in-view {
   opacity: 1;
   transform: translateY(0);
 }
 
-/* Stagger children */
+/* Fixed: .reveal-fade only needs opacity, no transform */
+.reveal-fade.in-view {
+  opacity: 1;
+}
+
+/* Stagger children — utility for animated lists/grids */
 .stagger > *:nth-child(1) { transition-delay: 0.05s; }
 .stagger > *:nth-child(2) { transition-delay: 0.10s; }
 .stagger > *:nth-child(3) { transition-delay: 0.15s; }
 .stagger > *:nth-child(4) { transition-delay: 0.20s; }
 .stagger > *:nth-child(5) { transition-delay: 0.25s; }
 .stagger > *:nth-child(6) { transition-delay: 0.30s; }
+.stagger > *:nth-child(7) { transition-delay: 0.35s; }
+.stagger > *:nth-child(8) { transition-delay: 0.40s; }
 
-/* ── 8. STAT CARDS ────────────────────────────────────────── */
+/* Respect user motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .reveal-up,
+  .reveal-fade,
+  .reveal-up.in-view,
+  .reveal-fade.in-view {
+    transition: opacity 150ms ease !important;
+    transform: none !important;
+  }
+  .stagger > * {
+    transition-delay: 0s !important;
+  }
+}
+
+/* ── 10. STAT CARDS ───────────────────────────────────────── */
 .stat-card {
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(196,151,42,0.15);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(196, 151, 42, 0.15);
   border-radius: var(--radius-xl);
   padding: var(--space-8) var(--space-6);
   text-align: center;
@@ -365,8 +546,8 @@ main {
               box-shadow   var(--dur-base) var(--ease-out);
 }
 .stat-card:hover {
-  background: rgba(196,151,42,0.06);
-  border-color: rgba(196,151,42,0.35);
+  background: rgba(196, 151, 42, 0.06);
+  border-color: rgba(196, 151, 42, 0.35);
   transform: translateY(-4px);
   box-shadow: var(--shadow-gold);
 }
@@ -380,11 +561,18 @@ main {
 }
 .stat-card__label {
   font-size: var(--text-sm);
-  color: rgba(255,255,255,0.65);
+  color: rgba(255, 255, 255, 0.65);
   font-weight: 500;
 }
 
-/* ── 9. FEATURE / WHY-CHOOSE CARDS ───────────────────────── */
+/* Reduced motion: disable hover lift */
+@media (prefers-reduced-motion: reduce) {
+  .stat-card:hover {
+    transform: none;
+  }
+}
+
+/* ── 11. FEATURE / WHY-CHOOSE CARDS ───────────────────────── */
 .feature-card {
   background: var(--clr-white);
   border: 1px solid var(--clr-border-light);
@@ -397,14 +585,18 @@ main {
 .feature-card:hover {
   transform: translateY(-6px);
   box-shadow: var(--shadow-lg);
-  border-color: rgba(196,151,42,0.25);
+  border-color: rgba(196, 151, 42, 0.25);
 }
 
 .feature-card__icon {
   width: 52px;
   height: 52px;
   border-radius: var(--radius-lg);
-  background: linear-gradient(135deg, rgba(196,151,42,0.10), rgba(196,151,42,0.06));
+  background: linear-gradient(
+    135deg,
+    rgba(196, 151, 42, 0.10),
+    rgba(196, 151, 42, 0.06)
+  );
   display: flex;
   align-items: center;
   justify-content: center;
@@ -412,7 +604,11 @@ main {
   transition: background var(--dur-base) var(--ease-out);
 }
 .feature-card:hover .feature-card__icon {
-  background: linear-gradient(135deg, rgba(196,151,42,0.18), rgba(196,151,42,0.10));
+  background: linear-gradient(
+    135deg,
+    rgba(196, 151, 42, 0.18),
+    rgba(196, 151, 42, 0.10)
+  );
 }
 
 .feature-card__title {
@@ -428,26 +624,54 @@ main {
   max-width: 100%;
 }
 
-/* ── 10. GOLD ACCENT BORDER TOP ───────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .feature-card:hover {
+    transform: none;
+  }
+}
+
+/* ── 12. GOLD ACCENT BORDERS ──────────────────────────────── */
 .border-top-gold {
   position: relative;
 }
 .border-top-gold::before {
   content: '';
   position: absolute;
-  top: 0; left: 0; right: 0;
+  top: 0;
+  left: 0;
+  right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, var(--clr-gold), var(--clr-gold-pale), var(--clr-gold), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--clr-gold),
+    var(--clr-gold-pale),
+    var(--clr-gold),
+    transparent
+  );
+}
+
+.border-bottom-gold {
+  position: relative;
 }
 .border-bottom-gold::after {
   content: '';
   position: absolute;
-  bottom: 0; left: 0; right: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, var(--clr-gold), var(--clr-gold-pale), var(--clr-gold), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--clr-gold),
+    var(--clr-gold-pale),
+    var(--clr-gold),
+    transparent
+  );
 }
 
-/* ── 11. TOAST / NOTIFICATION BADGE ──────────────────────── */
+/* ── 13. BADGES ──────────────────────────────────────────── */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -457,32 +681,42 @@ main {
   font-family: var(--font-ui);
   font-size: var(--text-xs);
   font-weight: 600;
-}
-.badge-gold {
-  background: rgba(196,151,42,0.10);
-  color: var(--gold-text);
-  border: 1px solid rgba(196,151,42,0.25);
-}
-.badge-navy {
-  background: rgba(15,29,61,0.08);
-  color: var(--clr-navy);
-  border: 1px solid rgba(15,29,61,0.15);
-}
-.badge-nhs {
-  background: rgba(0,94,184,0.08);
-  color: var(--clr-nhs);
-  border: 1px solid rgba(0,94,184,0.20);
-}
-/* Dark background badges */
-.section-navy .badge-gold {
-  background: rgba(196,151,42,0.15);
-  color: var(--gold-text-dark);
-  border-color: rgba(196,151,42,0.35);
+  line-height: 1.4;
+  white-space: nowrap;
 }
 
-/* ── 12. FOOTER ───────────────────────────────────────────── */
+.badge-gold {
+  background: rgba(196, 151, 42, 0.10);
+  color: var(--gold-text);
+  border: 1px solid rgba(196, 151, 42, 0.25);
+}
+
+.badge-navy {
+  background: rgba(15, 29, 61, 0.08);
+  color: var(--clr-navy);
+  border: 1px solid rgba(15, 29, 61, 0.15);
+}
+
+.badge-nhs {
+  background: rgba(0, 94, 184, 0.08);
+  color: var(--clr-nhs);
+  border: 1px solid rgba(0, 94, 184, 0.20);
+}
+
+/* Dark background badge overrides */
+.section-navy .badge-gold {
+  background: rgba(196, 151, 42, 0.15);
+  color: var(--gold-text-dark);
+  border-color: rgba(196, 151, 42, 0.35);
+}
+
+/* ── 14. FOOTER ───────────────────────────────────────────── */
 .footer {
-  background: linear-gradient(135deg, var(--clr-navy-deep) 0%, var(--clr-navy) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--clr-navy-deep) 0%,
+    var(--clr-navy) 100%
+  );
   color: var(--text-muted-dark);
   padding: clamp(3rem, 8vh, 5rem) clamp(1rem, 5vw, 5rem) clamp(1.5rem, 4vh, 2.5rem);
   position: relative;
@@ -491,10 +725,20 @@ main {
 .footer::before {
   content: '';
   position: absolute;
-  top: 0; left: 0; right: 0;
+  top: 0;
+  left: 0;
+  right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, var(--clr-gold), var(--clr-gold-pale), var(--clr-gold), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--clr-gold),
+    var(--clr-gold-pale),
+    var(--clr-gold),
+    transparent
+  );
 }
+
 .footer__grid {
   display: grid;
   grid-template-columns: 2fr repeat(3, 1fr);
@@ -502,14 +746,19 @@ main {
   max-width: var(--container-max);
   margin: 0 auto var(--space-12);
 }
+
 .footer__logo {
   font-family: var(--font-display);
   font-size: var(--text-xl);
   font-weight: 800;
   color: var(--clr-white);
   margin-bottom: var(--space-4);
+  display: inline-block;
 }
-.footer__logo span { color: var(--gold-text-dark); }
+.footer__logo span {
+  color: var(--gold-text-dark);
+}
+
 .footer__tagline {
   font-size: var(--text-sm);
   line-height: 1.7;
@@ -517,20 +766,26 @@ main {
   max-width: 28ch;
   color: var(--text-muted-dark);
 }
+
 .footer__heading {
   font-family: var(--font-ui);
   font-size: var(--text-xs);
   font-weight: 700;
-  letter-spacing: 3px;
+  letter-spacing: 0.1875em; /* Replaced 3px with relative unit */
   text-transform: uppercase;
   color: var(--gold-text-dark);
   margin-bottom: var(--space-5);
 }
+
 .footer__links {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
+
 .footer__link {
   font-size: var(--text-sm);
   color: var(--text-muted-dark);
@@ -544,17 +799,24 @@ main {
   color: var(--gold-text-dark);
   transform: translateX(3px);
 }
+.footer__link:focus-visible {
+  outline: 2px solid var(--clr-gold);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
 .footer__bottom {
   max-width: var(--container-max);
   margin: 0 auto;
   padding-top: var(--space-6);
-  border-top: 1px solid rgba(255,255,255,0.08);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
   flex-wrap: wrap;
 }
+
 .footer__copy {
   font-size: var(--text-xs);
   color: var(--text-muted-dark);
@@ -576,48 +838,87 @@ main {
   .footer__grid {
     grid-template-columns: 1fr;
   }
+  .footer__bottom {
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+  }
 }
 
-/* ── 13. SCROLL PROGRESS BAR ──────────────────────────────── */
-.scroll-progress {
-  position: fixed;
-  top: 0; left: 0;
-  width: 0%;
-  height: 2px;
-  background: linear-gradient(90deg, var(--clr-gold), var(--clr-gold-pale));
-  z-index: calc(var(--z-nav) + 1);
-  transition: width 0.1s linear;
+@media (prefers-reduced-motion: reduce) {
+  .footer__link:hover {
+    transform: none;
+  }
 }
-
-/* ── 14. SKIP LINK (accessibility) ───────────────────────── */
-.skip-link {
-  position: fixed;
-  top: -100%;
-  left: var(--space-4);
-  z-index: 9999;
-  background: var(--clr-gold);
-  color: var(--clr-navy);
-  padding: var(--space-3) var(--space-6);
-  border-radius: var(--radius-md);
-  font-weight: 700;
-  font-size: var(--text-sm);
-  text-decoration: none;
-  transition: top var(--dur-fast);
-}
-.skip-link:focus { top: var(--space-4); }
 
 /* ── 15. SECTION SPACING RHYTHM ──────────────────────────── */
 .sections-wrapper > section + section {
-  /* Sections handle their own padding; border creates breathing room */
+  /* Sections handle their own padding; no extra border needed */
   border-top: 0;
 }
 
-/* ── 16. MOBILE GLOBAL OVERRIDES ──────────────────────────── */
-@media (max-width: 767px) {
-  .hide-mobile { display: none !important; }
-  .show-mobile { display: block !important; }
-  h1 { letter-spacing: -0.015em; }
+/* Consistent vertical rhythm for all sections */
+section {
+  padding-top: clamp(4rem, 10vh, 6rem);
+  padding-bottom: clamp(4rem, 10vh, 6rem);
+  padding-left: var(--section-pad-x, clamp(1rem, 5vw, 4rem));
+  padding-right: var(--section-pad-x, clamp(1rem, 5vw, 4rem));
 }
+
+/* Remove padding from sections that need full-bleed */
+.section-full-bleed {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* ── 16. UTILITY CLASSES ─────────────────────────────────── */
+@media (max-width: 767px) {
+  .hide-mobile {
+    display: none !important;
+  }
+  .show-mobile {
+    display: block !important;
+  }
+}
+
 @media (min-width: 768px) {
-  .show-mobile { display: none !important; }
+  .show-mobile {
+    display: none !important;
+  }
+}
+
+/* ── 17. FOCUS-VISIBLE GLOBAL STYLES ──────────────────────── */
+/* Ensure all interactive elements have visible focus indicators */
+:focus-visible {
+  outline: 2px solid var(--clr-gold);
+  outline-offset: 2px;
+}
+
+/* Remove default focus for mouse users */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ── 18. PRINT STYLES ─────────────────────────────────────── */
+@media print {
+  .nav,
+  .nav__drawer,
+  .nav__drawer-overlay,
+  .scroll-progress,
+  .skip-link {
+    display: none !important;
+  }
+  
+  .hero {
+    min-height: auto;
+  }
+  
+  section {
+    page-break-inside: avoid;
+  }
+  
+  body {
+    color: #000;
+    background: #fff;
+  }
 }

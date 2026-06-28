@@ -118,7 +118,7 @@ function FeatureCard({ feature, index, inView, isCarousel = false }) {
           flexDirection: "column",
           alignItems: "center",
           textAlign: "center",
-          border: `1px solid ${hovered && !isCarousel ? "rgba(212,160,23,0.30)" : "rgba(0,0,0,0.05)"}`,
+          border: `1px solid ${hovered && !isCarousel ? "rgba(212,160,23,0.30)" : "rgba(0,0,0,0.06)"}`,
           boxShadow: hovered && !isCarousel
             ? "0 12px 40px rgba(0,0,0,0.08), 0 4px 16px rgba(212,160,23,0.10)"
             : "0 2px 12px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02)",
@@ -173,7 +173,7 @@ function FeatureCard({ feature, index, inView, isCarousel = false }) {
             background: hovered && !isCarousel
               ? "linear-gradient(135deg, rgba(212,160,23,0.15), rgba(212,160,23,0.05))"
               : "rgba(212,160,23,0.06)",
-            border: `1px solid ${hovered && !isCarousel ? "rgba(212,160,23,0.25)" : "rgba(212,160,23,0.08)"}`,
+            border: `1px solid ${hovered && !isCarousel ? "rgba(212,160,23,0.25)" : "rgba(212,160,23,0.10)"}`,
             color: "#D4A017",
             marginBottom: "clamp(16px, 2vw, 24px)",
             transition: "all 0.35s cubic-bezier(0.25, 1, 0.5, 1)",
@@ -515,12 +515,12 @@ export default function WhyChooseUs() {
 
         .why-choose-section {
           padding: clamp(56px, 10vh, 96px) clamp(16px, 4vw, 48px);
-          background: linear-gradient(180deg, #FFF8E6 0%, #FFFBEF 50%, #FFFDF5 100%);
+          background: #ffffff;
           position: relative;
           overflow: hidden;
         }
 
-        /* Subtle decorative elements */
+        /* Subtle decorative elements - adjusted for white background */
         .why-choose-section::before {
           content: '';
           position: absolute;
@@ -529,9 +529,9 @@ export default function WhyChooseUs() {
           right: 0;
           bottom: 0;
           background-image: 
-            radial-gradient(circle at 10% 30%, rgba(212,160,23,0.04) 0%, transparent 40%),
-            radial-gradient(circle at 90% 70%, rgba(212,160,23,0.04) 0%, transparent 40%),
-            radial-gradient(circle at 50% 90%, rgba(212,160,23,0.02) 0%, transparent 30%);
+            radial-gradient(circle at 10% 30%, rgba(212,160,23,0.03) 0%, transparent 40%),
+            radial-gradient(circle at 90% 70%, rgba(212,160,23,0.03) 0%, transparent 40%),
+            radial-gradient(circle at 50% 90%, rgba(212,160,23,0.015) 0%, transparent 30%);
           pointer-events: none;
           z-index: 0;
         }

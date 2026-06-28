@@ -32,7 +32,9 @@ export default function Home() {
         <Testimonials />
         <FAQ />
           <CTA />
+          <ContactStrip />
           <Partners />
+
         
       {/** 
       <TrustBadges/>
