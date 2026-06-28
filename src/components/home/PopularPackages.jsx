@@ -627,6 +627,24 @@ export default function PopularPackages() {
           align-items: center;
           justify-content: center;
         }
+
+        /* ── Moderate banner height on mobile ── */
+        @media (max-width: 768px) {
+          .pp-banner {
+            height: clamp(400px, 55vh, 480px);
+          }
+        }
+        @media (max-width: 480px) {
+          .pp-banner {
+            height: clamp(420px, 60vh, 500px);
+          }
+        }
+        @media (max-width: 380px) {
+          .pp-banner {
+            height: clamp(440px, 65vh, 520px);
+          }
+        }
+
         .pp-banner__img {
           position: absolute;
           inset: 0;
@@ -635,6 +653,23 @@ export default function PopularPackages() {
           object-fit: cover;
           object-position: center 40%;
         }
+
+        /* ── Adjust image position on smaller screens ── */
+        @media (max-width: 768px) {
+          .pp-banner__img {
+            object-position: center 20%;
+            transform: scale(1.05);
+            transform-origin: center top;
+          }
+        }
+        @media (max-width: 480px) {
+          .pp-banner__img {
+            object-position: center 15%;
+            transform: scale(1.08);
+            transform-origin: center top;
+          }
+        }
+
         .pp-banner__overlay {
           position: absolute;
           inset: 0;
@@ -686,12 +721,12 @@ export default function PopularPackages() {
         /* ── Add margin-top to "Travel With Confidence" on smaller screens ── */
         @media (max-width: 768px) {
           .pp-banner__eyebrow {
-            margin-top: clamp(32px, 8vh, 48px);
+            margin-top: clamp(16px, 3vh, 24px);
           }
         }
         @media (max-width: 480px) {
           .pp-banner__eyebrow {
-            margin-top: clamp(40px, 10vh, 60px);
+            margin-top: clamp(12px, 2vh, 20px);
           }
         }
 
@@ -728,6 +763,17 @@ export default function PopularPackages() {
           flex-wrap: wrap;
         }
 
+        /* ── Make buttons stack on mobile ── */
+        @media (max-width: 480px) {
+          .pp-banner__actions {
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto;
+          }
+        }
+
         .pp-btn--primary {
           display: inline-flex;
           align-items: center;
@@ -750,6 +796,18 @@ export default function PopularPackages() {
         .pp-btn--primary:hover { background: #F7C948; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(212,160,23,0.45); }
         .pp-btn--primary:focus-visible { outline: 2px solid #F7C948; outline-offset: 3px; }
 
+        /* ── Make buttons full width on mobile ── */
+        @media (max-width: 480px) {
+          .pp-btn--primary,
+          .pp-btn--ghost {
+            width: 100%;
+            justify-content: center;
+            padding: 12px 20px;
+            font-size: 0.85rem;
+            white-space: normal;
+          }
+        }
+
         .pp-btn--ghost {
           display: inline-flex;
           align-items: center;
@@ -770,6 +828,19 @@ export default function PopularPackages() {
         }
         .pp-btn--ghost:hover { border-color: #F7C948; background: rgba(247,201,72,0.10); color: #F7C948; }
         .pp-btn--ghost:focus-visible { outline: 2px solid #F7C948; outline-offset: 3px; }
+
+        /* ── Make ghost button more visible on mobile ── */
+        @media (max-width: 480px) {
+          .pp-btn--ghost {
+            border-color: rgba(255,255,255,0.7);
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+          }
+          .pp-btn--ghost:hover {
+            background: rgba(247,201,72,0.15);
+          }
+        }
 
         /* ── Grid section ── */
         .pp-grid-section {
@@ -1080,15 +1151,9 @@ export default function PopularPackages() {
           100% { transform: translateX(-50%); }
         }
 
-        /* ── Banner image padding-top on smaller screens ── */
+        /* ── Banner image position adjustments ── */
         @media (max-width: 1024px) and (min-width: 769px) {
           .pp-banner__img { object-position: center 30%; }
-        }
-        @media (max-width: 768px) {
-          .pp-banner__img { object-position: center 20%; transform: scale(1.05); transform-origin: center top; }
-        }
-        @media (max-width: 480px) {
-          .pp-banner__img { object-position: center 10%; transform: scale(1.08); transform-origin: center top; }
         }
 
         /* ── Responsive ── */

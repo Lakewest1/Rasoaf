@@ -189,7 +189,7 @@ const CSS = `
     align-items: center;
     justify-content: flex-start;
     overflow: visible;
-    background: var(--clr-dark-surface);
+    background: White;
     padding-top: clamp(80px, 10vh, 120px);
     padding-bottom: 0;
     isolation: isolate;
