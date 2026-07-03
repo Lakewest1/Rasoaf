@@ -8,6 +8,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useRef, useEffect, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import {
   Phone, Mail, MapPin, MessageCircle, ArrowRight,
   Shield, Globe, Plane, Hotel, Users, Compass, Star, ChevronRight,
@@ -33,6 +34,18 @@ const TwitterIcon = ({ size = 18, color = "currentColor" }) => (
     <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z" />
   </svg>
 );
+
+// ── Scroll To Top Hook ───────────────────────────────────────────────────
+function useScrollToTop() {
+  const { pathname } = useLocation();
+  
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "instant"
+    });
+  }, [pathname]);
+}
 
 // ── Data ─────────────────────────────────────────────────────────────────
 const QUICK_LINKS = [
@@ -121,11 +134,15 @@ function FooterLinks({ inView }) {
       <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "clamp(6px, 0.8vw, 8px)" }}>
         {QUICK_LINKS.map((link) => (
           <li key={link.name}>
-            <a href={link.href} onMouseEnter={() => setHoveredLink(link.name)} onMouseLeave={() => setHoveredLink(null)}
+            <Link 
+              to={link.href} 
+              onClick={() => window.scrollTo({ top: 0, behavior: 'instant' })}
+              onMouseEnter={() => setHoveredLink(link.name)} 
+              onMouseLeave={() => setHoveredLink(null)}
               style={{ fontFamily: "'Inter', sans-serif", fontSize: "clamp(12px, 0.85vw, 14px)", fontWeight: 400, color: hoveredLink === link.name ? "#D4A017" : "rgba(255,255,255,0.6)", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "6px", transition: "all 0.3s ease", transform: hoveredLink === link.name ? "translateX(4px)" : "translateX(0)", minHeight: "44px", padding: "4px 0" }}>
               <ChevronRight size={12} style={{ opacity: hoveredLink === link.name ? 1 : 0, transition: "all 0.3s ease", color: "#D4A017" }} />
               <span>{link.name}</span>
-            </a>
+            </Link>
           </li>
         ))}
       </ul>
@@ -145,11 +162,15 @@ function FooterServices({ inView }) {
           const isHovered = hoveredService === service.name;
           return (
             <li key={service.name}>
-              <a href={service.href} onMouseEnter={() => setHoveredService(service.name)} onMouseLeave={() => setHoveredService(null)}
+              <Link 
+                to={service.href} 
+                onClick={() => window.scrollTo({ top: 0, behavior: 'instant' })}
+                onMouseEnter={() => setHoveredService(service.name)} 
+                onMouseLeave={() => setHoveredService(null)}
                 style={{ fontFamily: "'Inter', sans-serif", fontSize: "clamp(12px, 0.85vw, 14px)", fontWeight: 400, color: isHovered ? "#D4A017" : "rgba(255,255,255,0.6)", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "8px", transition: "all 0.3s ease", transform: isHovered ? "translateX(4px)" : "translateX(0)", minHeight: "44px", padding: "4px 0" }}>
                 <Icon size={14} style={{ color: isHovered ? "#D4A017" : "rgba(255,255,255,0.2)", transition: "color 0.3s ease" }} />
                 <span>{service.name}</span>
-              </a>
+              </Link>
             </li>
           );
         })}
@@ -186,11 +207,14 @@ function FooterContact({ inView }) {
           style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "8px", fontFamily: "'Inter', sans-serif", fontSize: "clamp(13px, 0.9vw, 15px)", fontWeight: 600, color: "#fff", background: "#25D366", padding: "clamp(10px, 1vw, 12px) clamp(20px, 2vw, 28px)", borderRadius: "12px", textDecoration: "none", transition: "all 0.3s cubic-bezier(0.25,1,0.5,1)", boxShadow: hoveredCta ? "0 4px 24px rgba(37,211,102,0.45)" : "0 4px 16px rgba(37,211,102,0.25)", transform: hoveredCta ? "translateY(-2px) scale(1.02)" : "translateY(0) scale(1)", width: "100%", animation: hoveredCta ? "cta-pulse 2s ease-in-out infinite" : "none", minHeight: "44px" }}>
           <MessageCircle size={18} /><span>Chat on WhatsApp</span>
         </a>
-        <a href="/contact" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "8px", fontFamily: "'Inter', sans-serif", fontSize: "clamp(13px, 0.9vw, 15px)", fontWeight: 500, color: "rgba(255,255,255,0.8)", background: "rgba(255,255,255,0.06)", padding: "clamp(10px, 1vw, 12px) clamp(20px, 2vw, 28px)", borderRadius: "12px", textDecoration: "none", border: "1px solid rgba(255,255,255,0.06)", transition: "all 0.3s ease", width: "100%", minHeight: "44px" }}
+        <Link 
+          to="/contact" 
+          onClick={() => window.scrollTo({ top: 0, behavior: 'instant' })}
+          style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "8px", fontFamily: "'Inter', sans-serif", fontSize: "clamp(13px, 0.9vw, 15px)", fontWeight: 500, color: "rgba(255,255,255,0.8)", background: "rgba(255,255,255,0.06)", padding: "clamp(10px, 1vw, 12px) clamp(20px, 2vw, 28px)", borderRadius: "12px", textDecoration: "none", border: "1px solid rgba(255,255,255,0.06)", transition: "all 0.3s ease", width: "100%", minHeight: "44px" }}
           onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(212,160,23,0.1)"; e.currentTarget.style.borderColor = "rgba(212,160,23,0.2)"; e.currentTarget.style.color = "#D4A017"; }}
           onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)"; e.currentTarget.style.color = "rgba(255,255,255,0.8)"; }}>
           <span>Get Consultation</span><ArrowRight size={16} />
-        </a>
+        </Link>
       </div>
     </div>
   );
@@ -200,6 +224,9 @@ function FooterContact({ inView }) {
 export default function Footer() {
   const [sectionRef, inView] = useInView(0.05);
   const [currentYear] = useState(new Date().getFullYear());
+  
+  // Apply scroll to top on route change
+  useScrollToTop();
 
   return (
     <>
