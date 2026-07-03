@@ -6,7 +6,7 @@
 // Design System: Manrope (headings) · Inter (body) · Yellow/Black brand
 // Mobile Optimized: Heavy animations removed on smaller screens
 //
-// v4: Contact routes to /contact page + visa individual pages
+// v6: Book Now navigates to /services · Correct contact details
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useState, useEffect, useRef } from "react";
@@ -56,17 +56,12 @@ const SUB_MENUS = {
 // ── SUB_MENU_ANCHORS MAP ──────────────────────────────────────────────────
 
 const SUB_MENU_ANCHORS = {
-  // Services dropdown → individual service pages
   "Hajj Packages":      { route: "/services/hajj",              anchor: null },
   "Umrah Packages":     { route: "/services/umrah",             anchor: null },
   "Flight Booking":     { route: "/services/flight-booking",    anchor: null },
   "Hotel Reservation":  { route: "/services/hotel-reservation", anchor: null },
-
-  // Hajj & Umrah dropdown → individual service pages
   "Group Travel":       { route: "/services/hajj",  anchor: null },
   "VIP Packages":       { route: "/services/hajj",  anchor: null },
-
-  // Visa Services dropdown → INDIVIDUAL VISA PAGES
   "Student Visa":       { route: "/visa-services/student",  anchor: null },
   "Work Visa":          { route: "/visa-services/work",     anchor: null },
   "Tourist Visa":       { route: "/visa-services/tourist",  anchor: null },
@@ -75,11 +70,16 @@ const SUB_MENU_ANCHORS = {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CSS
+// CSS — Fully Responsive with Safe Areas & Touch Optimization
 // ─────────────────────────────────────────────────────────────────────────────
 const CSS = `
   @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600;700;800&display=swap');
+
+  :root {
+    --safe-area-top: env(safe-area-inset-top, 0px);
+    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  }
 
   .rasoaf-navbar-wrapper {
     position: fixed;
@@ -92,6 +92,7 @@ const CSS = `
     transform-style: preserve-3d;
     transition: background 0.4s ease, box-shadow 0.4s ease, border-radius 0.4s ease;
     will-change: transform;
+    padding-top: var(--safe-area-top);
   }
 
   .rasoaf-navbar-inner.glow-active::after {
@@ -106,13 +107,13 @@ const CSS = `
   .rasoaf-link {
     position: relative;
     font-family: 'Inter', sans-serif;
-    font-size: 0.95rem;
+    font-size: clamp(0.75rem, 1vw, 0.95rem);
     font-weight: 600;
     letter-spacing: 0.01em;
     background: none;
     border: none;
     cursor: pointer;
-    padding: 8px 12px;
+    padding: clamp(6px, 0.8vw, 8px) clamp(8px, 1vw, 12px);
     border-radius: 10px;
     white-space: nowrap;
     display: flex;
@@ -149,9 +150,6 @@ const CSS = `
 
   .navbar-mobile .rasoaf-link { color: rgba(255,255,255,0.85); }
 
-  @media (max-width: 1100px) { .rasoaf-link { font-size: 0.9rem; } }
-  @media (max-width: 960px) { .rasoaf-link { font-size: 0.85rem; } }
-
   .rasoaf-chev {
     display: flex; align-items: center;
     transition: transform 0.3s ease;
@@ -161,17 +159,17 @@ const CSS = `
 
   .rasoaf-dropdown-3d {
     position: absolute;
-    top: calc(100% + 14px);
+    top: calc(100% + clamp(8px, 1vw, 14px));
     left: 50%;
     transform: translateX(-50%) rotateX(-12deg) translateY(-8px);
     transform-origin: top center;
     transform-style: preserve-3d;
-    min-width: 220px;
+    min-width: clamp(180px, 18vw, 220px);
     background: rgba(255,255,255,0.99);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border-radius: 18px;
-    padding: 8px;
+    border-radius: clamp(14px, 1.5vw, 18px);
+    padding: clamp(6px, 0.6vw, 8px);
     box-shadow: 0 24px 64px rgba(0,0,0,0.18), 0 0 0 1px rgba(212,160,23,0.12);
     opacity: 0;
     visibility: hidden;
@@ -198,12 +196,12 @@ const CSS = `
   .rasoaf-dropdown-item-3d {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: clamp(8px, 1vw, 12px);
     width: 100%;
-    padding: 10px 14px;
-    border-radius: 12px;
+    padding: clamp(8px, 0.8vw, 10px) clamp(10px, 1.2vw, 14px);
+    border-radius: clamp(10px, 1vw, 12px);
     font-family: 'Inter', sans-serif;
-    font-size: 0.95rem;
+    font-size: clamp(0.8rem, 0.9vw, 0.95rem);
     font-weight: 500;
     color: rgba(17,17,17,0.72);
     background: none;
@@ -211,6 +209,7 @@ const CSS = `
     cursor: pointer;
     text-align: left;
     transition: all 0.25s ease;
+    min-height: 44px;
   }
   .rasoaf-dropdown-item-3d:hover {
     background: rgba(215,169,23,0.09);
@@ -218,8 +217,9 @@ const CSS = `
     transform: translateX(4px);
   }
   .rasoaf-dropdown-item-3d .di-icon-wrap {
-    width: 30px; height: 30px;
-    border-radius: 8px;
+    width: clamp(26px, 2.5vw, 30px); 
+    height: clamp(26px, 2.5vw, 30px);
+    border-radius: clamp(6px, 0.7vw, 8px);
     background: rgba(215,169,23,0.12);
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
@@ -229,7 +229,7 @@ const CSS = `
   .rasoaf-dropdown-item-3d .di-arrow {
     margin-left: auto;
     opacity: 0.25;
-    font-size: 14px;
+    font-size: clamp(12px, 1.1vw, 14px);
     transition: all 0.25s ease;
   }
   .rasoaf-dropdown-item-3d:hover .di-arrow {
@@ -240,12 +240,12 @@ const CSS = `
 
   .rasoaf-inquiry {
     font-family: 'Inter', sans-serif;
-    font-size: 0.95rem;
+    font-size: clamp(0.75rem, 0.9vw, 0.95rem);
     font-weight: 600;
     letter-spacing: 0.01em;
     background: transparent;
     border-radius: 100px;
-    padding: 9px 22px;
+    padding: clamp(7px, 0.8vw, 9px) clamp(16px, 2vw, 22px);
     cursor: pointer;
     white-space: nowrap;
     flex-shrink: 0;
@@ -253,6 +253,7 @@ const CSS = `
     -webkit-tap-highlight-color: transparent;
     position: relative;
     overflow: hidden;
+    min-height: 38px;
   }
   .navbar-transparent .rasoaf-inquiry { color: #fff; border: 1px solid rgba(255,255,255,0.3); }
   .navbar-transparent .rasoaf-inquiry:hover { border-color: #D4A017; color: #D4A017; background: rgba(215,169,23,0.08); transform: translateY(-2px); box-shadow: 0 4px 16px rgba(215,169,23,0.15); }
@@ -264,13 +265,13 @@ const CSS = `
   .rasoaf-book {
     position: relative;
     font-family: 'Inter', sans-serif;
-    font-size: 0.95rem;
+    font-size: clamp(0.75rem, 0.9vw, 0.95rem);
     font-weight: 600;
     letter-spacing: 0.01em;
     color: #111;
     border: none;
     border-radius: 100px;
-    padding: 10px 28px;
+    padding: clamp(8px, 0.9vw, 10px) clamp(20px, 2.5vw, 28px);
     cursor: pointer;
     white-space: nowrap;
     flex-shrink: 0;
@@ -281,6 +282,7 @@ const CSS = `
     box-shadow: 0 0 0 1px rgba(215,169,23,0.65), 0 4px 0 #A07000, 0 7px 0 #6A4500, 0 9px 0 rgba(0,0,0,0.40), 0 9px 22px rgba(215,169,23,0.30);
     transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.18s ease;
     animation: bookGlow 3s ease-in-out infinite;
+    min-height: 40px;
   }
   @keyframes bookGlow {
     0%, 100% { box-shadow: 0 0 0 1px rgba(215,169,23,0.65), 0 4px 0 #A07000, 0 7px 0 #6A4500, 0 9px 0 rgba(0,0,0,0.40), 0 9px 22px rgba(215,169,23,0.30); }
@@ -325,7 +327,8 @@ const CSS = `
   .rasoaf-mob {
     display: none;
     align-items: center; justify-content: center;
-    width: 44px; height: 44px;
+    width: clamp(40px, 5vw, 44px); 
+    height: clamp(40px, 5vw, 44px);
     background: rgba(215,169,23,0.10);
     border: 1px solid rgba(215,169,23,0.30);
     border-radius: 12px;
@@ -334,8 +337,10 @@ const CSS = `
     flex-shrink: 0;
     z-index: 1002;
     transition: background 0.3s ease;
+    -webkit-tap-highlight-color: transparent;
   }
   .rasoaf-mob:hover { background: rgba(215,169,23,0.20); }
+  .rasoaf-mob:active { background: rgba(215,169,23,0.30); transform: scale(0.95); }
 
   .rasoaf-overlay {
     position: fixed; inset: 0;
@@ -344,7 +349,9 @@ const CSS = `
     -webkit-backdrop-filter: blur(8px);
     z-index: 999;
     pointer-events: auto;
+    animation: fadeIn 0.3s ease;
   }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
   .rasoaf-drawer {
     position: fixed;
@@ -354,13 +361,16 @@ const CSS = `
     display: flex;
     flex-direction: column;
     overflow-y: auto;
+    overflow-x: hidden;
     background: linear-gradient(160deg, rgba(6,6,14,0.99), rgba(10,10,26,0.99));
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
     border-left: 1px solid rgba(215,169,23,0.18);
     box-shadow: -12px 0 60px rgba(0,0,0,0.5);
     pointer-events: auto;
-    padding-top: 20px;
+    padding-top: clamp(16px, 2vh, 20px);
+    padding-bottom: var(--safe-area-bottom);
+    -webkit-overflow-scrolling: touch;
   }
   .rasoaf-drawer::-webkit-scrollbar { width: 3px; }
   .rasoaf-drawer::-webkit-scrollbar-thumb { background: #D4A017; border-radius: 999px; }
@@ -371,17 +381,17 @@ const CSS = `
     justify-content: space-between;
     width: 100%;
     font-family: 'Inter', sans-serif;
-    font-size: 1rem;
+    font-size: clamp(0.9rem, 1.8vw, 1rem);
     font-weight: 500;
     letter-spacing: 0.01em;
     color: rgba(255,255,255,0.7);
     background: transparent;
     border: none;
     border-radius: 12px;
-    padding: 14px 16px;
+    padding: clamp(12px, 2vh, 14px) clamp(12px, 2vw, 16px);
     cursor: pointer;
     text-align: left;
-    min-height: 52px;
+    min-height: 48px;
     transition: all 0.25s ease;
     -webkit-tap-highlight-color: transparent;
   }
@@ -393,8 +403,9 @@ const CSS = `
     border-left: 2px solid #D4A017;
     border-radius: 0 12px 12px 0;
   }
+  .rasoaf-dlk:active { background: rgba(215,169,23,0.18); }
   .rasoaf-dlk-arrow {
-    font-size: 18px;
+    font-size: clamp(16px, 2vw, 18px);
     color: rgba(215,169,23,0.4);
     flex-shrink: 0;
     transition: all 0.25s ease;
@@ -403,19 +414,19 @@ const CSS = `
   .rasoaf-dlk[data-active="true"] .rasoaf-dlk-arrow { transform: translateX(6px); color: #D4A017; }
 
   .rasoaf-dlk-sub {
-    padding-left: 16px;
+    padding-left: clamp(12px, 2vw, 16px);
     border-left: 1px solid rgba(215,169,23,0.1);
-    margin: 4px 0 8px 16px;
+    margin: 4px 0 8px clamp(12px, 2vw, 16px);
   }
   .rasoaf-dlk-sub-item {
     display: flex;
     align-items: center;
     gap: 10px;
     width: 100%;
-    padding: 10px 16px;
+    padding: clamp(8px, 1.5vh, 10px) clamp(12px, 2vw, 16px);
     border-radius: 10px;
     font-family: 'Inter', sans-serif;
-    font-size: 0.95rem;
+    font-size: clamp(0.85rem, 1.6vw, 0.95rem);
     font-weight: 400;
     color: rgba(255,255,255,0.5);
     background: none;
@@ -423,14 +434,17 @@ const CSS = `
     cursor: pointer;
     text-align: left;
     transition: all 0.25s ease;
+    min-height: 44px;
+    -webkit-tap-highlight-color: transparent;
   }
   .rasoaf-dlk-sub-item:hover { color: #D4A017; background: rgba(215,169,23,0.07); transform: translateX(4px); }
+  .rasoaf-dlk-sub-item:active { background: rgba(215,169,23,0.15); }
 
   .rasoaf-mobile-book {
     width: 100%;
-    padding: 15px 24px;
+    padding: clamp(12px, 2vh, 15px) clamp(18px, 3vw, 24px);
     font-family: 'Inter', sans-serif;
-    font-size: 0.95rem;
+    font-size: clamp(0.85rem, 1.6vw, 0.95rem);
     font-weight: 600;
     border: none;
     border-radius: 100px;
@@ -441,6 +455,8 @@ const CSS = `
     overflow: hidden;
     box-shadow: 0 4px 0 #A07000, 0 6px 0 #6A4500, 0 8px 0 rgba(0,0,0,0.35), 0 8px 18px rgba(215,169,23,0.30);
     transition: transform 0.15s ease, box-shadow 0.15s ease;
+    min-height: 48px;
+    -webkit-tap-highlight-color: transparent;
   }
   .rasoaf-mobile-book::before {
     content: '';
@@ -453,8 +469,8 @@ const CSS = `
 
   .rasoaf-mobile-inquiry {
     width: 100%;
-    padding: 14px 24px;
-    font-size: 0.95rem;
+    padding: clamp(12px, 2vh, 14px) clamp(18px, 3vw, 24px);
+    font-size: clamp(0.85rem, 1.6vw, 0.95rem);
     font-weight: 600;
     border-radius: 100px;
     background: rgba(255,255,255,0.04);
@@ -463,8 +479,46 @@ const CSS = `
     cursor: pointer;
     font-family: 'Inter', sans-serif;
     transition: all 0.25s ease;
+    min-height: 48px;
+    -webkit-tap-highlight-color: transparent;
   }
   .rasoaf-mobile-inquiry:hover { background: rgba(215,169,23,0.12); border-color: #D4A017; transform: translateY(-2px); }
+  .rasoaf-mobile-inquiry:active { background: rgba(215,169,23,0.20); }
+
+  .rasoaf-mobile-contact {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  .rasoaf-mobile-contact a {
+    font-family: 'Inter', sans-serif;
+    font-size: clamp(12px, 2vw, 14px);
+    font-weight: 500;
+    color: rgba(255,255,255,0.55);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    min-height: 44px;
+  }
+  .rasoaf-mobile-contact a:hover { color: #D4A017; background: rgba(215,169,23,0.08); }
+  .rasoaf-mobile-contact a:first-child { font-size: clamp(13px, 2.2vw, 14px); font-weight: 600; color: #D4A017; }
+
+  @media (max-width: 1100px) {
+    .rasoaf-link { font-size: clamp(0.7rem, 1.3vw, 0.85rem); padding: 6px 8px; }
+    .rasoaf-inquiry { padding: 6px 14px; font-size: 0.8rem; }
+    .rasoaf-book { padding: 7px 18px; font-size: 0.8rem; }
+  }
+
+  @media (max-width: 960px) and (min-width: 768px) {
+    .rasoaf-link { font-size: clamp(0.65rem, 1.2vw, 0.8rem); padding: 5px 6px; gap: 3px; }
+    .rasoaf-inquiry { font-size: 0.75rem; padding: 6px 12px; }
+    .rasoaf-book { font-size: 0.75rem; padding: 6px 16px; }
+  }
 
   @media (max-width: 767px) {
     .rasoaf-dsk { display: none !important; }
@@ -477,28 +531,62 @@ const CSS = `
     .rasoaf-navbar-inner { transform-style: flat !important; perspective: none !important; }
     .rasoaf-link { transform-style: flat !important; }
     .rasoaf-navbar-inner.glow-active::after { display: none !important; }
+    .rasoaf-drawer { width: min(92vw, 340px); }
+    .rasoaf-dlk { font-size: 0.9rem; padding: 11px 14px; min-height: 44px; }
+    .rasoaf-dlk-sub-item { font-size: 0.85rem; padding: 9px 12px; min-height: 42px; }
+  }
+
+  @media (max-width: 380px) {
+    .rasoaf-drawer { width: 100vw; }
+    .rasoaf-dlk { font-size: 0.85rem; padding: 10px 12px; min-height: 42px; }
+    .rasoaf-dlk-sub-item { font-size: 0.8rem; padding: 8px 10px; min-height: 40px; }
+    .rasoaf-mobile-book, .rasoaf-mobile-inquiry { font-size: 0.8rem; padding: 10px 16px; }
   }
 
   @media (min-width: 768px) { .rasoaf-mob { display: none !important; } }
 
+  @media (min-width: 1440px) {
+    .rasoaf-link { font-size: 0.95rem; padding: 8px 12px; }
+    .rasoaf-dropdown-item-3d { font-size: 0.95rem; padding: 10px 14px; }
+    .rasoaf-inquiry { font-size: 0.95rem; padding: 9px 22px; }
+    .rasoaf-book { font-size: 0.95rem; padding: 10px 28px; }
+  }
+
+  @supports (padding-top: env(safe-area-inset-top)) {
+    .rasoaf-navbar-inner { padding-top: var(--safe-area-top); }
+    .rasoaf-drawer { padding-bottom: var(--safe-area-bottom); }
+  }
+
   .rasoaf-link:focus-visible,
   .rasoaf-book:focus-visible,
   .rasoaf-inquiry:focus-visible,
-  .rasoaf-mob:focus-visible { outline: 2px solid #D4A017; outline-offset: 3px; border-radius: 8px; }
+  .rasoaf-mob:focus-visible,
+  .rasoaf-dlk:focus-visible,
+  .rasoaf-dlk-sub-item:focus-visible,
+  .rasoaf-mobile-book:focus-visible,
+  .rasoaf-mobile-inquiry:focus-visible { 
+    outline: 2px solid #D4A017; 
+    outline-offset: 3px; 
+    border-radius: 8px; 
+  }
 
   @media (prefers-reduced-motion: reduce) {
     .rasoaf-book, .rasoaf-book .book-shine { animation: none !important; }
-    .rasoaf-link, .rasoaf-book, .rasoaf-inquiry, .rasoaf-dlk, .rasoaf-dropdown-3d { transition: none !important; }
+    .rasoaf-link, .rasoaf-book, .rasoaf-inquiry, .rasoaf-dlk, .rasoaf-dropdown-3d,
+    .rasoaf-dlk-sub-item, .rasoaf-mobile-book, .rasoaf-mobile-inquiry { transition: none !important; }
+    .rasoaf-overlay { animation: none !important; }
+  }
+
+  @media (prefers-contrast: high) {
+    .rasoaf-link:focus-visible,
+    .rasoaf-book:focus-visible,
+    .rasoaf-mob:focus-visible { outline-width: 3px; }
   }
 `;
 
-// ── Framer Motion variants ──────────────────────────────────────────────────
 const drawerV = {
   hidden:  { x: "100%", transition: { type: "spring", damping: 30, stiffness: 280 } },
-  visible: {
-    x: 0,
-    transition: { type: "spring", damping: 24, stiffness: 210, staggerChildren: 0.045, delayChildren: 0.06 },
-  },
+  visible: { x: 0, transition: { type: "spring", damping: 24, stiffness: 210, staggerChildren: 0.045, delayChildren: 0.06 } },
   exit: { x: "100%", transition: { type: "spring", damping: 32, stiffness: 300 } },
 };
 
@@ -513,85 +601,57 @@ const overlayV = {
   exit:    { opacity: 0, transition: { duration: 0.18 } },
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
 export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [scrolled,       setScrolled]       = useState(false);
-  const [menuOpen,       setMenuOpen]       = useState(false);
-  const [activeLink,     setActiveLink]     = useState("Home");
-  const [isMobile,       setIsMobile]       = useState(false);
-  const [openDropdown,   setOpenDropdown]   = useState(null);
+  const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [activeLink, setActiveLink] = useState("Home");
+  const [isMobile, setIsMobile] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState(null);
   const [expandedMobile, setExpandedMobile] = useState(null);
 
-  const closeRef  = useRef(null);
+  const closeRef = useRef(null);
   const navbarRef = useRef(null);
-  const logoRef   = useRef(null);
+  const logoRef = useRef(null);
   const logoDotRef = useRef(null);
 
-  // ── Update active link based on current route ────────────────────────────
   useEffect(() => {
     const path = location.pathname;
-    if (path === "/") {
-      setActiveLink("Home");
-    } else if (path.startsWith("/services")) {
-      setActiveLink("Services");
-    } else if (path.startsWith("/hajj-umrah")) {
-      setActiveLink("Hajj & Umrah");
-    } else if (path.startsWith("/visa-services")) {
-      setActiveLink("Visa Services");
-    } else if (path.startsWith("/contact")) {
-      setActiveLink("Contact");
-    } else {
-      setActiveLink("Home");
-    }
+    if (path === "/") setActiveLink("Home");
+    else if (path.startsWith("/services")) setActiveLink("Services");
+    else if (path.startsWith("/hajj-umrah")) setActiveLink("Hajj & Umrah");
+    else if (path.startsWith("/visa-services")) setActiveLink("Visa Services");
+    else if (path.startsWith("/contact")) setActiveLink("Contact");
+    else setActiveLink("Home");
   }, [location]);
 
-  // ── GSAP entrance + logo animations ────────────────────────────────────
   useEffect(() => {
     if (isMobile) return;
     if (!navbarRef.current) return;
-
     const tl = gsap.timeline({ defaults: { ease: "power4.out" } });
     tl.fromTo(navbarRef.current, { y: -90, opacity: 0 }, { y: 0, opacity: 1, duration: 0.9, clearProps: "all" });
-
     const links = navbarRef.current.querySelectorAll(".rasoaf-link");
-    if (links.length) {
-      tl.fromTo(links, { y: -18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, stagger: 0.07, clearProps: "all" }, "-=0.45");
-    }
-
+    if (links.length) tl.fromTo(links, { y: -18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, stagger: 0.07, clearProps: "all" }, "-=0.45");
     const ctaBtns = navbarRef.current.querySelectorAll(".rasoaf-inquiry, .rasoaf-book-wrap");
-    if (ctaBtns.length) {
-      tl.fromTo(ctaBtns, { y: -14, opacity: 0, scale: 0.88 }, { y: 0, opacity: 1, scale: 1, duration: 0.5, stagger: 0.09, ease: "back.out(1.9)", clearProps: "all" }, "-=0.35");
-    }
-
-    if (logoRef.current) { gsap.to(logoRef.current, { y: -4, repeat: -1, yoyo: true, duration: 2.2, ease: "sine.inOut" }); }
-    if (logoDotRef.current) { gsap.to(logoDotRef.current, { scale: 1.9, repeat: -1, yoyo: true, duration: 1.1, ease: "power2.inOut" }); }
-
+    if (ctaBtns.length) tl.fromTo(ctaBtns, { y: -14, opacity: 0, scale: 0.88 }, { y: 0, opacity: 1, scale: 1, duration: 0.5, stagger: 0.09, ease: "back.out(1.9)", clearProps: "all" }, "-=0.35");
+    if (logoRef.current) gsap.to(logoRef.current, { y: -4, repeat: -1, yoyo: true, duration: 2.2, ease: "sine.inOut" });
+    if (logoDotRef.current) gsap.to(logoDotRef.current, { scale: 1.9, repeat: -1, yoyo: true, duration: 1.1, ease: "power2.inOut" });
     return () => { tl.kill(); };
   }, [isMobile]);
 
-  // ── GSAP 3D mouse-tilt (desktop only) ──────────────────────────────────
   useEffect(() => {
     if (isMobile) return;
     const nb = navbarRef.current;
     if (!nb) return;
-
-    const onMove = (e) => {
-      const r = nb.getBoundingClientRect();
-      const x = (e.clientX - r.left) / r.width - 0.5;
-      const y = (e.clientY - r.top) / r.height - 0.5;
-      gsap.to(nb, { rotationY: x * 2.5, rotationX: -y * 1.5, duration: 0.7, ease: "power2.out", transformPerspective: 1400 });
-    };
+    const onMove = (e) => { const r = nb.getBoundingClientRect(); gsap.to(nb, { rotationY: ((e.clientX - r.left) / r.width - 0.5) * 2.5, rotationX: -((e.clientY - r.top) / r.height - 0.5) * 1.5, duration: 0.7, ease: "power2.out", transformPerspective: 1400 }); };
     const onLeave = () => { gsap.to(nb, { rotationY: 0, rotationX: 0, duration: 0.6, ease: "power2.out" }); };
-
     nb.addEventListener("mousemove", onMove);
     nb.addEventListener("mouseleave", onLeave);
     return () => { nb.removeEventListener("mousemove", onMove); nb.removeEventListener("mouseleave", onLeave); };
   }, [isMobile]);
 
-  // ── Scroll / resize ─────────────────────────────────────────────────────
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
@@ -606,108 +666,46 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handler);
   }, []);
 
-  // ── Body scroll-lock ────────────────────────────────────────────────────
   useEffect(() => {
-    if (menuOpen) {
-      document.body.style.overflow = "hidden";
-      document.body.style.position = "fixed";
-      document.body.style.width = "100%";
-    } else {
-      document.body.style.overflow = "";
-      document.body.style.position = "";
-      document.body.style.width = "";
-    }
+    if (menuOpen) { document.body.style.overflow = "hidden"; document.body.style.position = "fixed"; document.body.style.width = "100%"; }
+    else { document.body.style.overflow = ""; document.body.style.position = ""; document.body.style.width = ""; }
     return () => { document.body.style.overflow = ""; document.body.style.position = ""; document.body.style.width = ""; };
   }, [menuOpen]);
 
   useEffect(() => { if (menuOpen) setTimeout(() => closeRef.current?.focus(), 80); }, [menuOpen]);
+  useEffect(() => { const h = (e) => { if (e.key === "Escape" && menuOpen) setMenuOpen(false); }; window.addEventListener("keydown", h); return () => window.removeEventListener("keydown", h); }, [menuOpen]);
 
-  useEffect(() => {
-    const handler = (e) => { if (e.key === "Escape" && menuOpen) setMenuOpen(false); };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [menuOpen]);
-
-  // ── Navigation Helpers ─────────────────────────────────────────────────
   const goTo = (section) => {
-    setActiveLink(section);
-    setMenuOpen(false);
-    setOpenDropdown(null);
-    setExpandedMobile(null);
-
-    if (section === "Home") {
-      navigate("/");
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    } else if (section === "Contact") {
-      navigate("/contact");
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    } else {
-      const pathMap = {
-        "Services": "/services",
-        "Hajj & Umrah": "/hajj-umrah",
-        "Visa Services": "/visa-services",
-      };
-      navigate(pathMap[section] || "/");
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
+    setActiveLink(section); setMenuOpen(false); setOpenDropdown(null); setExpandedMobile(null);
+    if (section === "Home") { navigate("/"); window.scrollTo({ top: 0, behavior: "smooth" }); }
+    else if (section === "Contact") { navigate("/contact"); window.scrollTo({ top: 0, behavior: "smooth" }); }
+    else { const m = { "Services": "/services", "Hajj & Umrah": "/hajj-umrah", "Visa Services": "/visa-services" }; navigate(m[section] || "/"); window.scrollTo({ top: 0, behavior: "smooth" }); }
   };
 
-  // ── goToSubPage HELPER ─────────────────────────────────────────────────
   const goToSubPage = (itemLabel) => {
-    setMenuOpen(false);
-    setOpenDropdown(null);
-    setExpandedMobile(null);
-    
+    setMenuOpen(false); setOpenDropdown(null); setExpandedMobile(null);
     const target = SUB_MENU_ANCHORS[itemLabel];
     if (!target) return;
-    
     navigate(target.route);
-    if (target.anchor) {
-      setTimeout(() => {
-        const el = document.getElementById(target.anchor);
-        if (!el) return;
-        const offset = 120;
-        const top = el.getBoundingClientRect().top + window.scrollY - offset;
-        window.scrollTo({ top, behavior: "smooth" });
-      }, 120);
-    } else {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
+    if (target.anchor) { setTimeout(() => { const el = document.getElementById(target.anchor); if (el) { const t = el.getBoundingClientRect().top + window.scrollY - 120; window.scrollTo({ top: t, behavior: "smooth" }); } }, 120); }
+    else { window.scrollTo({ top: 0, behavior: "smooth" }); }
   };
 
+  // ── UPDATED: Book Now navigates to /services and scrolls to top ────────
   const goToBooking = () => {
     setMenuOpen(false);
     setOpenDropdown(null);
     setExpandedMobile(null);
-    navigate("/");
-    setTimeout(() => {
-      const el = document.getElementById("booking");
-      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 100);
-  };
-
-  const goToVisaInquiry = () => {
-    setMenuOpen(false);
-    setOpenDropdown(null);
-    setExpandedMobile(null);
-    navigate("/visa-services");
+    navigate("/services");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const goHome = () => {
-    setActiveLink("Home");
-    setMenuOpen(false);
-    setOpenDropdown(null);
-    setExpandedMobile(null);
-    navigate("/");
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const hasSubMenu   = (link) => Boolean(SUB_MENUS[link]);
-  const toggleDrop   = (link) => setOpenDropdown(openDropdown === link ? null : link);
+  const goToVisaInquiry = () => { setMenuOpen(false); setOpenDropdown(null); setExpandedMobile(null); navigate("/visa-services"); window.scrollTo({ top: 0, behavior: "smooth" }); };
+  const goHome = () => { setActiveLink("Home"); setMenuOpen(false); setOpenDropdown(null); setExpandedMobile(null); navigate("/"); window.scrollTo({ top: 0, behavior: "smooth" }); };
+  const hasSubMenu = (link) => Boolean(SUB_MENUS[link]);
+  const toggleDrop = (link) => setOpenDropdown(openDropdown === link ? null : link);
   const toggleMobSub = (link) => setExpandedMobile(expandedMobile === link ? null : link);
 
-  // ── Computed styles ─────────────────────────────────────────────────────
   const navbarClass = isMobile ? "navbar-mobile" : scrolled ? "navbar-scrolled" : "navbar-transparent";
   const navBg = isMobile ? "rgba(6,6,14,0.95)" : scrolled ? "rgba(255,255,255,0.94)" : "transparent";
   const navBorder = isMobile ? "1px solid rgba(215,169,23,0.18)" : scrolled ? "1px solid rgba(17,17,17,0.06)" : "none";
@@ -715,48 +713,27 @@ export default function Navbar() {
   const logoTextColor = isMobile ? "#fff" : scrolled ? "#111" : "#fff";
   const logoLtdColor = isMobile ? "rgba(255,255,255,0.4)" : scrolled ? "rgba(17,17,17,0.45)" : "rgba(255,255,255,0.45)";
 
-  // ─────────────────────────────────────────────────────────────────────────
   return (
     <>
       <style>{CSS}</style>
-
       <div className="rasoaf-navbar-wrapper">
-        <nav
-          ref={navbarRef}
-          className={`rasoaf-navbar-inner ${navbarClass} ${!scrolled && !isMobile ? "glow-active" : ""}`}
-          role="navigation"
-          aria-label="Main navigation"
-          style={{
-            position: "relative", width: "100%", background: navBg,
-            backdropFilter: navBlur, WebkitBackdropFilter: navBlur,
-            borderBottom: navBorder,
-            boxShadow: scrolled ? "0 4px 32px rgba(0,0,0,0.10)" : "none",
-            borderRadius: scrolled ? "0" : "0 0 20px 20px", transition: "all 0.4s ease",
-          }}
-        >
-          <div style={{
-            maxWidth: 1340, margin: "0 auto",
-            padding: isMobile ? "12px 20px" : scrolled ? "12px 28px" : "16px 28px",
-            display: "flex", alignItems: "center", justifyContent: "space-between",
-            gap: "clamp(16px, 2vw, 32px)", transition: "padding 0.3s ease", position: "relative", zIndex: 2,
-          }}>
-            {/* LOGO */}
-            <button onClick={goHome} aria-label="RASOAF Travels and Tours — return to home" style={{ display: "flex", alignItems: "center", gap: "clamp(10px, 1.4vw, 16px)", background: "none", border: "none", cursor: "pointer", padding: 0, flexShrink: 0 }}>
-              <div ref={logoRef} style={{ transformStyle: "preserve-3d" }}><Rasaof size={isMobile ? 38 : scrolled ? 42 : 48} /></div>
+        <nav ref={navbarRef} className={`rasoaf-navbar-inner ${navbarClass} ${!scrolled && !isMobile ? "glow-active" : ""}`} role="navigation" aria-label="Main navigation"
+          style={{ position: "relative", width: "100%", background: navBg, backdropFilter: navBlur, WebkitBackdropFilter: navBlur, borderBottom: navBorder, boxShadow: scrolled ? "0 4px 32px rgba(0,0,0,0.10)" : "none", borderRadius: scrolled ? "0" : "0 0 20px 20px", transition: "all 0.4s ease" }}>
+          <div style={{ maxWidth: 1340, margin: "0 auto", padding: isMobile ? "clamp(10px, 1.5vh, 12px) clamp(12px, 2vw, 20px)" : scrolled ? "12px clamp(20px, 2.5vw, 28px)" : "clamp(14px, 1.8vh, 16px) clamp(20px, 2.5vw, 28px)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "clamp(12px, 2vw, 32px)", transition: "padding 0.3s ease", position: "relative", zIndex: 2 }}>
+            <button onClick={goHome} aria-label="RASOAF Travels and Tours — return to home" style={{ display: "flex", alignItems: "center", gap: "clamp(8px, 1.2vw, 16px)", background: "none", border: "none", cursor: "pointer", padding: 0, flexShrink: 0 }}>
+              <div ref={logoRef} style={{ transformStyle: "preserve-3d" }}><Rasaof size={isMobile ? 34 : scrolled ? 40 : 48} /></div>
               <div style={{ display: "flex", flexDirection: "column" }}>
-                <div style={{ display: "flex", alignItems: "baseline", gap: "clamp(4px,0.6vw,6px)", lineHeight: 1.1, flexWrap: "wrap" }}>
-                  <motion.span style={{ fontFamily: "'Manrope', sans-serif", fontWeight: 800, fontSize: isMobile ? "14px" : "clamp(14px,1.6vw,18px)", color: logoTextColor, letterSpacing: "-0.02em", whiteSpace: "nowrap", transition: "color 0.3s ease" }} whileHover={{ scale: 1.02 }}>RASOAF</motion.span>
-                  <span style={{ fontFamily: "'Manrope', sans-serif", fontWeight: 700, fontSize: isMobile ? "10px" : "clamp(11px,1.1vw,13px)", color: logoTextColor, letterSpacing: "-0.01em", whiteSpace: "nowrap", transition: "color 0.3s ease" }}>TRAVELS &amp; TOURS</span>
+                <div style={{ display: "flex", alignItems: "baseline", gap: "clamp(3px, 0.5vw, 6px)", lineHeight: 1.1, flexWrap: "wrap" }}>
+                  <motion.span style={{ fontFamily: "'Manrope', sans-serif", fontWeight: 800, fontSize: isMobile ? "clamp(12px, 2.5vw, 14px)" : "clamp(14px, 1.6vw, 18px)", color: logoTextColor, letterSpacing: "-0.02em", whiteSpace: "nowrap", transition: "color 0.3s ease" }} whileHover={{ scale: 1.02 }}>RASOAF</motion.span>
+                  <span style={{ fontFamily: "'Manrope', sans-serif", fontWeight: 700, fontSize: isMobile ? "clamp(8px, 1.8vw, 10px)" : "clamp(11px, 1.1vw, 13px)", color: logoTextColor, letterSpacing: "-0.01em", whiteSpace: "nowrap", transition: "color 0.3s ease" }}>TRAVELS &amp; TOURS</span>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
-                  <span style={{ fontFamily: "'Inter', sans-serif", fontSize: isMobile ? "7px" : "clamp(7px,0.75vw,9px)", fontWeight: 500, color: logoLtdColor, letterSpacing: "0.18em", textTransform: "uppercase", transition: "color 0.3s ease", whiteSpace: "nowrap" }}>LIMITED</span>
+                  <span style={{ fontFamily: "'Inter', sans-serif", fontSize: isMobile ? "clamp(6px, 1.2vw, 7px)" : "clamp(7px, 0.75vw, 9px)", fontWeight: 500, color: logoLtdColor, letterSpacing: "0.18em", textTransform: "uppercase", transition: "color 0.3s ease", whiteSpace: "nowrap" }}>LIMITED</span>
                   <motion.span ref={logoDotRef} style={{ width: 3, height: 3, borderRadius: "50%", background: "#D4A017", display: "inline-block", flexShrink: 0 }} />
-                  <span style={{ fontFamily: "'Inter', sans-serif", fontStyle: "italic", fontSize: isMobile ? "7px" : "clamp(7px,0.7vw,9px)", color: "#D4A017", fontWeight: 400, letterSpacing: "0.01em", whiteSpace: "nowrap" }}>Your Trusted Travel Partner</span>
+                  <span style={{ fontFamily: "'Inter', sans-serif", fontStyle: "italic", fontSize: isMobile ? "clamp(6px, 1.2vw, 7px)" : "clamp(7px, 0.7vw, 9px)", color: "#D4A017", fontWeight: 400, letterSpacing: "0.01em", whiteSpace: "nowrap" }}>Your Trusted Travel Partner</span>
                 </div>
               </div>
             </button>
-
-            {/* DESKTOP NAV LINKS */}
             <div className="rasoaf-dsk" style={{ display: "flex", alignItems: "center", gap: "clamp(2px, 1.2vw, 8px)", flex: 1, justifyContent: "center" }}>
               {NAV_LINKS.map((link) => (
                 <div key={link} style={{ position: "relative" }}>
@@ -767,23 +744,12 @@ export default function Navbar() {
                   </button>
                   {hasSubMenu(link) && (
                     <div className={`rasoaf-dropdown-3d${openDropdown === link ? " open" : ""}`} role="menu">
-                      {SUB_MENUS[link].map((item, idx) => {
-                        const Icon = item.icon;
-                        return (
-                          <button key={idx} className="rasoaf-dropdown-item-3d" role="menuitem" onClick={() => goToSubPage(item.label)}>
-                            <span className="di-icon-wrap"><Icon size={14} color="#B8860B" /></span>
-                            <span>{item.label}</span>
-                            <span className="di-arrow">→</span>
-                          </button>
-                        );
-                      })}
+                      {SUB_MENUS[link].map((item, idx) => { const Icon = item.icon; return (<button key={idx} className="rasoaf-dropdown-item-3d" role="menuitem" onClick={() => goToSubPage(item.label)}><span className="di-icon-wrap"><Icon size={14} color="#B8860B" /></span><span>{item.label}</span><span className="di-arrow">→</span></button>); })}
                     </div>
                   )}
                 </div>
               ))}
             </div>
-
-            {/* DESKTOP CTAs */}
             <div className="rasoaf-dsk" style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <button className="rasoaf-inquiry" onClick={goToVisaInquiry}>Visa Inquiry</button>
               <div className="rasoaf-book-wrap">
@@ -794,66 +760,37 @@ export default function Navbar() {
                 </button>
               </div>
             </div>
-
-            {/* MOBILE HAMBURGER */}
             <button className="rasoaf-mob" onClick={() => setMenuOpen(!menuOpen)} aria-label={menuOpen ? "Close navigation" : "Open navigation"} aria-expanded={menuOpen} aria-controls="rasoaf-drawer">
-              <motion.div animate={{ rotate: menuOpen ? 90 : 0 }} transition={{ duration: 0.3 }}>
-                {menuOpen ? <X size={22} strokeWidth={1.8} /> : <Menu size={22} strokeWidth={1.8} />}
-              </motion.div>
+              <motion.div animate={{ rotate: menuOpen ? 90 : 0 }} transition={{ duration: 0.3 }}>{menuOpen ? <X size={22} strokeWidth={1.8} /> : <Menu size={22} strokeWidth={1.8} />}</motion.div>
             </button>
           </div>
         </nav>
       </div>
-
-      {/* MOBILE DRAWER */}
       <AnimatePresence mode="wait">
         {menuOpen && (
           <>
             <motion.div className="rasoaf-overlay" variants={overlayV} initial="hidden" animate="visible" exit="exit" onClick={() => setMenuOpen(false)} aria-hidden="true" />
             <motion.aside id="rasoaf-drawer" role="dialog" aria-modal="true" aria-label="Navigation menu" variants={drawerV} initial="hidden" animate="visible" exit="exit" className="rasoaf-drawer">
-              <motion.div variants={itemV} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "28px 20px 20px", borderBottom: "1px solid rgba(215,169,23,0.1)", position: "sticky", top: 0, background: "rgba(6,6,14,0.98)", zIndex: 5, backdropFilter: "blur(12px)" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <Rasaof size={40} />
-                  <div>
-                    <div style={{ display: "flex", alignItems: "baseline", gap: 5, flexWrap: "wrap" }}>
-                      <span style={{ fontFamily: "'Manrope',sans-serif", fontWeight: 800, fontSize: 14, color: "#fff", letterSpacing: "-0.02em" }}>RASOAF</span>
-                      <span style={{ fontFamily: "'Manrope',sans-serif", fontWeight: 700, fontSize: 10, color: "#fff", letterSpacing: "-0.01em" }}>TRAVELS &amp; TOURS</span>
-                    </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 3 }}>
-                      <span style={{ fontFamily: "'Inter',sans-serif", fontSize: 8, fontWeight: 500, color: "rgba(255,255,255,0.4)", letterSpacing: "0.18em", textTransform: "uppercase" }}>Limited</span>
-                      <span style={{ width: 2.5, height: 2.5, borderRadius: "50%", background: "#D4A017", display: "inline-block" }} />
-                      <span style={{ fontFamily: "'Inter',sans-serif", fontStyle: "italic", fontSize: 8, color: "#D4A017", fontWeight: 400 }}>Your Trusted Partner</span>
-                    </div>
-                  </div>
-                </div>
+              <motion.div variants={itemV} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "clamp(20px, 3vh, 28px) 20px clamp(16px, 2vh, 20px)", borderBottom: "1px solid rgba(215,169,23,0.1)", position: "sticky", top: 0, background: "rgba(6,6,14,0.98)", zIndex: 5, backdropFilter: "blur(12px)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}><Rasaof size={36} /><div><div style={{ display: "flex", alignItems: "baseline", gap: 5, flexWrap: "wrap" }}><span style={{ fontFamily: "'Manrope',sans-serif", fontWeight: 800, fontSize: 14, color: "#fff", letterSpacing: "-0.02em" }}>RASOAF</span><span style={{ fontFamily: "'Manrope',sans-serif", fontWeight: 700, fontSize: 10, color: "#fff", letterSpacing: "-0.01em" }}>TRAVELS &amp; TOURS</span></div><div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 3 }}><span style={{ fontFamily: "'Inter',sans-serif", fontSize: 8, fontWeight: 500, color: "rgba(255,255,255,0.4)", letterSpacing: "0.18em", textTransform: "uppercase" }}>Limited</span><span style={{ width: 2.5, height: 2.5, borderRadius: "50%", background: "#D4A017", display: "inline-block" }} /><span style={{ fontFamily: "'Inter',sans-serif", fontStyle: "italic", fontSize: 8, color: "#D4A017", fontWeight: 400 }}>Your Trusted Partner</span></div></div></div>
                 <button ref={closeRef} onClick={() => setMenuOpen(false)} aria-label="Close menu" style={{ width: 40, height: 40, borderRadius: "50%", background: "rgba(215,169,23,0.12)", border: "1px solid rgba(215,169,23,0.3)", cursor: "pointer", color: "#D4A017", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center", transition: "background 0.2s ease", flexShrink: 0, boxShadow: "0 2px 12px rgba(0,0,0,0.3)" }} onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(215,169,23,0.2)"; }} onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(215,169,23,0.12)"; }}><X size={20} strokeWidth={2} /></button>
               </motion.div>
-              <nav style={{ flex: 1, padding: "16px 12px", display: "flex", flexDirection: "column", gap: 4 }}>
+              <nav style={{ flex: 1, padding: "clamp(12px, 2vh, 16px) 12px", display: "flex", flexDirection: "column", gap: 4 }}>
                 {NAV_LINKS.map((link) => (
                   <motion.div key={link} variants={itemV}>
-                    <button className="rasoaf-dlk" data-active={activeLink === link} onClick={() => hasSubMenu(link) ? toggleMobSub(link) : goTo(link)}>
-                      {link}
-                      <span className="rasoaf-dlk-arrow">{hasSubMenu(link) ? (<motion.span animate={{ rotate: expandedMobile === link ? 90 : 0 }} transition={{ duration: 0.3 }} style={{ display: "inline-block" }}>›</motion.span>) : "›"}</span>
-                    </button>
-                    {hasSubMenu(link) && expandedMobile === link && (
-                      <div className="rasoaf-dlk-sub">
-                        {SUB_MENUS[link].map((item, idx) => {
-                          const Icon = item.icon;
-                          return (<button key={idx} className="rasoaf-dlk-sub-item" onClick={() => goToSubPage(item.label)}><Icon size={14} style={{ color: "rgba(215,169,23,0.55)", flexShrink: 0 }} />{item.label}</button>);
-                        })}
-                      </div>
-                    )}
+                    <button className="rasoaf-dlk" data-active={activeLink === link} onClick={() => hasSubMenu(link) ? toggleMobSub(link) : goTo(link)}>{link}<span className="rasoaf-dlk-arrow">{hasSubMenu(link) ? (<motion.span animate={{ rotate: expandedMobile === link ? 90 : 0 }} transition={{ duration: 0.3 }} style={{ display: "inline-block" }}>›</motion.span>) : "›"}</span></button>
+                    {hasSubMenu(link) && expandedMobile === link && (<div className="rasoaf-dlk-sub">{SUB_MENUS[link].map((item, idx) => { const Icon = item.icon; return (<button key={idx} className="rasoaf-dlk-sub-item" onClick={() => goToSubPage(item.label)}><Icon size={14} style={{ color: "rgba(215,169,23,0.55)", flexShrink: 0 }} />{item.label}</button>); })}</div>)}
                   </motion.div>
                 ))}
               </nav>
-              <motion.div variants={itemV} style={{ padding: "16px 20px 28px", borderTop: "1px solid rgba(215,169,23,0.1)", display: "flex", flexDirection: "column", gap: 10 }}>
+              <motion.div variants={itemV} style={{ padding: "clamp(12px, 2vh, 16px) 20px clamp(20px, 3vh, 28px)", borderTop: "1px solid rgba(215,169,23,0.1)", display: "flex", flexDirection: "column", gap: 10 }}>
                 <button className="rasoaf-mobile-inquiry" onClick={goToVisaInquiry}>Visa Inquiry</button>
                 <button className="rasoaf-mobile-book" onClick={goToBooking}><span style={{ position: "relative", zIndex: 1, fontWeight: 600 }}>Book Now ✈</span></button>
                 <div style={{ textAlign: "center", marginTop: 10 }}>
-                  <p style={{ fontFamily: "'Inter',sans-serif", fontSize: 9, fontWeight: 500, color: "rgba(255,255,255,0.32)", marginBottom: 8, letterSpacing: "0.18em", textTransform: "uppercase" }}>24 / 7 Support</p>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
-                    <a href="tel:+2349037707888" style={{ fontFamily: "'Inter',sans-serif", fontSize: 14, fontWeight: 600, color: "#D4A017", textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}><Phone size={12} /> +234 903 770 7888</a>
-                    <a href="mailto:info@rasoaf.com" style={{ fontFamily: "'Inter',sans-serif", fontSize: 12, fontWeight: 500, color: "rgba(255,255,255,0.55)", textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}><Mail size={11} /> info@rasoaf.com</a>
+                  <p style={{ fontFamily: "'Inter',sans-serif", fontSize: "clamp(8px, 1.5vw, 9px)", fontWeight: 500, color: "rgba(255,255,255,0.32)", marginBottom: 8, letterSpacing: "0.18em", textTransform: "uppercase" }}>24 / 7 Support</p>
+                  <div className="rasoaf-mobile-contact">
+                    <a href="tel:+2348022352362"><Phone size={12} /> +234 802 235 2362</a>
+                    <a href="mailto:info@rasoaf.com"><Mail size={11} /> info@rasoaf.com</a>
                   </div>
                 </div>
               </motion.div>

@@ -4,13 +4,13 @@
 // All text content for the Visa Services page (Student, Work, Tourist, Business, Family)
 // ─────────────────────────────────────────────────────────────────────────────
 
-// ── Contact Information ────────────────────────────────────────────────────
+// ── Contact Information (UPDATED) ──────────────────────────────────────────
 export const CONTACT_INFO = {
-  phone: "+234-903-770-7888",
+  phone: "+234-802-235-2362",
   email: "info@rasoaf.com",
   address: "3 Bolaji Taylor Street, Off Alhaji Haruna Street, Ifako Ijaiye, Lagos State, Nigeria",
   phones: [
-    "+234-903-770-0888",
+    "+234-802-235-2362",
     "+234-803-475-2061", 
     "+234-802-488-5017",
     "+234-703-189-9529",
