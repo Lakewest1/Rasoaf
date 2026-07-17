@@ -4,11 +4,11 @@
 //
 // Textures are pre-loaded BEFORE the Canvas mounts.
 // Earth and Clouds receive textures as props — they render nothing until ready.
-// No placeholder sphere. No blue flash. No geometry swapping.
-// Fade-in animation when Earth appears.
+// Animated SunRig provides dynamic day/night cycle.
+// Atmosphere receives sunDirection for reactive scattering.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useState, useEffect, useMemo, Suspense, Component } from "react";
+import { useState, useEffect, useCallback, Suspense, Component } from "react";
 import { Canvas } from "@react-three/fiber";
 import { ACESFilmicToneMapping, SRGBColorSpace, TextureLoader, LoadingManager } from "three";
 import Earth from "./Earth";
@@ -18,10 +18,14 @@ import Stars from "./Stars";
 import SpaceDust from "./SpaceDust";
 import GoldParticles from "./GoldParticles";
 import CameraRig from "./CameraRig";
+import FlightNetwork from "./FlightNetwork/FlightNetwork";
+import ShootingStars from "./ShootingStars";
+import Satellites from "./Satellites";
+import SunRig from "./SunRig";
+
 
 // ══════════════════════════════════════════════════════════════════════════
 //  TEXTURE PRE-LOADING HOOK
-//  Loads all 4 textures before returning. Shows progress.
 // ══════════════════════════════════════════════════════════════════════════
 function useEarthTextures() {
   const [state, setState] = useState({
@@ -42,7 +46,6 @@ function useEarthTextures() {
       setState((prev) => ({ ...prev, progress: (loaded / 4) * 100 }));
     };
 
-    // Track each texture load
     const urls = {
       day: "/textures/earth-day.jpg",
       bump: "/textures/earth-bump.png",
@@ -53,7 +56,6 @@ function useEarthTextures() {
     const result = {};
     let cancelled = false;
 
-    // Load all textures
     Promise.all(
       Object.entries(urls).map(([key, url]) => {
         return new Promise((resolve, reject) => {
@@ -151,7 +153,7 @@ class SceneErrorBoundary extends Component {
 }
 
 // ══════════════════════════════════════════════════════════════════════════
-//  LOADING SCREEN (outside Canvas — premium, no geometry visible)
+//  LOADING SCREEN
 // ══════════════════════════════════════════════════════════════════════════
 function LoadingScreen({ progress, error }) {
   return (
@@ -169,15 +171,9 @@ function LoadingScreen({ progress, error }) {
         fontFamily: "'Manrope', sans-serif",
       }}
     >
-      {/* Progress ring */}
       <div style={{ position: "relative", width: 72, height: 72, marginBottom: 24 }}>
         <svg width="72" height="72" viewBox="0 0 72 72">
-          <circle
-            cx="36" cy="36" r="30"
-            fill="none"
-            stroke="rgba(255,255,255,0.06)"
-            strokeWidth="3"
-          />
+          <circle cx="36" cy="36" r="30" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="3" />
           <circle
             cx="36" cy="36" r="30"
             fill="none"
@@ -204,11 +200,9 @@ function LoadingScreen({ progress, error }) {
           {Math.round(progress)}%
         </div>
       </div>
-
       <p style={{ fontSize: "clamp(14px, 2vw, 18px)", fontWeight: 500, letterSpacing: "0.04em", margin: 0 }}>
         Preparing Your Journey
       </p>
-
       {error && (
         <p style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginTop: 12, maxWidth: 300, textAlign: "center" }}>
           Unable to load assets. Please check your connection and refresh.
@@ -222,23 +216,34 @@ function LoadingScreen({ progress, error }) {
 //  SCENE CONTENT
 // ══════════════════════════════════════════════════════════════════════════
 function Scene({ textures }) {
-  // Earth and Clouds only render when textures are ready
+  const [sunDirection, setSunDirection] = useState(null);
+  const [currentScene, setCurrentScene] = useState(0);
+
+  const handleSunDirection = useCallback((dir) => {
+    setSunDirection(dir);
+  }, []);
+
+  const handleSceneComplete = useCallback((completedSceneIndex) => {
+    // Auto-advance to next scene
+    setCurrentScene((prev) => Math.min(prev + 1, 4)); // 4 = CTA scene (last)
+  }, []);
+
   return (
     <>
-      <ambientLight color="#1a2a4a" intensity={0.3} />
-      <directionalLight position={[8, 3, 5]} intensity={2.2} color="#fff8e7" />
-      <directionalLight position={[-6, -1, -4]} intensity={0.5} color="#334477" />
-      <directionalLight position={[-3, 2, -6]} intensity={0.7} color="#ccaa44" />
+      <SunRig onSunDirectionChange={handleSunDirection} />
 
-      <CameraRig>
+      <CameraRig currentScene={currentScene} onSceneComplete={handleSceneComplete}>
         <Earth textures={textures} />
         <Clouds texture={textures?.clouds} />
-        <Atmosphere />
+        <Atmosphere sunDirection={sunDirection} />
       </CameraRig>
 
+      <FlightNetwork />
       <Stars />
       <SpaceDust />
       <GoldParticles />
+      <ShootingStars />
+      <Satellites />
     </>
   );
 }
@@ -251,10 +256,8 @@ export default function EarthScene() {
 
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 10, background: "#071018" }}>
-      {/* Loading screen — shown until textures are fully loaded */}
       {!ready && <LoadingScreen progress={progress} error={error} />}
 
-      {/* Canvas always mounted — but Earth won't render until textures arrive */}
       <SceneErrorBoundary>
         <Canvas
           gl={{
