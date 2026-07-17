@@ -198,28 +198,89 @@ export const PARTICLES = {
 };
 
 // ══════════════════════════════════════════════════════════════════════════
-//  PANEL CONTENT
+//  PANEL CONTENT — Updated with comprehensive travel and pilgrimage data
 // ══════════════════════════════════════════════════════════════════════════
 export const PANEL_IMAGES = {
   hajj:   "https://images.unsplash.com/photo-1591604129939-f1efa4d9f7fa?w=1200&h=1600&fit=crop",
   travel: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1200&h=1600&fit=crop",
 };
 
-export const PANEL_CONTENT = {
+// ── Feature tags for each panel ──────────────────────────────────────────
+export const PANEL_FEATURES = {
   hajj: {
-    badge:      "Sacred Journeys",
-    title:      "Hajj & Umrah",
-    description:"Embark on a blessed pilgrimage with expert guidance. Premium packages crafted with care and spiritual devotion.",
-    button:     "Explore Hajj & Umrah",
-    route:      "/hajj",
+    primary: [
+      { icon: 'Users', label: 'Group Packages' },
+      { icon: 'Shield', label: 'VIP Services' },
+      { icon: 'Clock', label: '24/7 Support' }
+    ],
+    secondary: [
+      { icon: 'Star', label: 'Premium Accommodations' },
+      { icon: 'Compass', label: 'Expert Guidance' },
+      { icon: 'Heart', label: 'Spiritual Journey' }
+    ]
   },
   travel: {
-    badge:      "Global Adventures",
-    title:      "Travel & Tours",
-    description:"Visa services, flight bookings, hotel reservations, and curated tours for every traveller.",
-    button:     "Explore Travel & Tours",
-    route:      "/travel",
+    primary: [
+      { icon: 'Plane', label: 'Flight Booking' },
+      { icon: 'MapPin', label: 'Hotel Stays' },
+      { icon: 'Compass', label: 'Tours' }
+    ],
+    secondary: [
+      { icon: 'Globe', label: 'Global Destinations' },
+      { icon: 'Shield', label: 'Visa Services' },
+      { icon: 'Clock', label: 'Fast Processing' }
+    ]
+  }
+};
+
+// ── Main panel content ────────────────────────────────────────────────────
+export const PANEL_CONTENT = {
+  hajj: {
+    badge: "Sacred Journeys",
+    title: "Hajj & Umrah",
+    subtitle: "Premium Pilgrimage Packages",
+    description: "Experience the spiritual journey of a lifetime with our exclusive Hajj and Umrah packages, featuring VIP accommodations and expert guidance.",
+    button: "Explore Packages",
+    route: "/hajj",
+    features: PANEL_FEATURES.hajj,
+    stats: {
+      years: "15+",
+      pilgrims: "10,000+",
+      satisfaction: "99%"
+    }
   },
+  travel: {
+    badge: "Global Destinations",
+    title: "Visa & Travel",
+    subtitle: "Seamless Global Travel Solutions",
+    description: "From visa processing to luxury accommodations, we make international travel effortless for business and leisure across the globe.",
+    button: "Plan Your Trip",
+    route: "/travel",
+    features: PANEL_FEATURES.travel,
+    stats: {
+      countries: "50+",
+      clients: "5,000+",
+      success: "98%"
+    }
+  }
+};
+
+// ── Combined content for quick access ────────────────────────────────────
+export const PANEL_CONTENT_MAP = {
+  hajj: PANEL_CONTENT.hajj,
+  travel: PANEL_CONTENT.travel,
+};
+
+// ── Helper to get panel content by key ──────────────────────────────────
+export const getPanelContent = (key) => {
+  return PANEL_CONTENT_MAP[key] || PANEL_CONTENT.hajj;
+};
+
+// ── Helper to get feature tags ──────────────────────────────────────────
+export const getFeatureTags = (key, type = 'primary') => {
+  const panel = PANEL_CONTENT_MAP[key];
+  if (!panel) return [];
+  return panel.features[type] || [];
 };
 
 // ══════════════════════════════════════════════════════════════════════════
