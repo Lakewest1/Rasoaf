@@ -12,6 +12,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useRef, useEffect, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Compass,
   Star,
@@ -35,6 +36,7 @@ const SERVICES = [
     description:
       "Comprehensive pilgrimage packages with guided support, accommodation, transportation, and travel planning.",
     color: "#D4A017",
+    route: "/hajj/packages/hajj",
   },
   {
     id: 2,
@@ -43,6 +45,7 @@ const SERVICES = [
     description:
       "Flexible Umrah experiences designed for individuals, couples, and groups seeking comfort and convenience.",
     color: "#D4A017",
+    route: "/hajj/packages/umrah",
   },
   {
     id: 3,
@@ -51,6 +54,7 @@ const SERVICES = [
     description:
       "Professional assistance with travel documentation and visa processing to simplify your journey.",
     color: "#D4A017",
+    route: "/travel/student-visa",
   },
   {
     id: 4,
@@ -59,6 +63,7 @@ const SERVICES = [
     description:
       "Competitive flight options and itinerary planning to ensure smooth and reliable travel.",
     color: "#D4A017",
+    route: "/hajj/flight-booking",
   },
   {
     id: 5,
@@ -67,6 +72,7 @@ const SERVICES = [
     description:
       "Carefully selected accommodations that balance comfort, location, and value.",
     color: "#D4A017",
+    route: "/hajj/hotel-reservation",
   },
   {
     id: 6,
@@ -75,6 +81,7 @@ const SERVICES = [
     description:
       "Well-organized travel experiences for communities, organizations, and large groups.",
     color: "#D4A017",
+    route: "/hajj/packages/hajj",
   },
   {
     id: 7,
@@ -83,6 +90,7 @@ const SERVICES = [
     description:
       "Family-friendly travel solutions tailored to create comfortable and memorable experiences for all ages.",
     color: "#D4A017",
+    route: "/travel/family-visa",
   },
   {
     id: 8,
@@ -91,6 +99,7 @@ const SERVICES = [
     description:
       "Curated tours and vacation packages to exciting destinations around the world.",
     color: "#D4A017",
+    route: "/travel/tourist-visa",
   },
 ];
 
@@ -121,7 +130,7 @@ function useInView(threshold = 0.12) {
 }
 
 // ── Service Card ──────────────────────────────────────────────────────────────
-function ServiceCard({ service, index, inView, isCarousel = false }) {
+function ServiceCard({ service, index, inView, isCarousel = false, onClick }) {
   const [hovered, setHovered] = useState(false);
   const delay = 0.06 * index;
   const Icon = service.icon;
@@ -145,6 +154,7 @@ function ServiceCard({ service, index, inView, isCarousel = false }) {
         className="service-card"
         onMouseEnter={() => !isCarousel && setHovered(true)}
         onMouseLeave={() => !isCarousel && setHovered(false)}
+        onClick={onClick}
         style={{
           background: "#ffffff",
           borderRadius: "20px",
@@ -160,7 +170,7 @@ function ServiceCard({ service, index, inView, isCarousel = false }) {
           transition: "all 0.35s cubic-bezier(0.25, 1, 0.5, 1)",
           position: "relative",
           overflow: "hidden",
-          cursor: "default",
+          cursor: "pointer",
         }}
       >
         {/* Gold accent line - top */}
@@ -295,7 +305,7 @@ function ServiceCard({ service, index, inView, isCarousel = false }) {
 }
 
 // ── Carousel for Smaller Screens ────────────────────────────────────────────
-function ServiceCarousel({ services, inView }) {
+function ServiceCarousel({ services, inView, onCardClick }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -420,6 +430,7 @@ function ServiceCarousel({ services, inView }) {
               index={index}
               inView={inView}
               isCarousel={true}
+              onClick={() => onCardClick(service.route)}
             />
           </div>
         ))}
@@ -547,6 +558,7 @@ export default function ServicesGrid() {
   const [sectionRef, inView] = useInView(0.1);
   const [headerInView, setHeaderInView] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (inView) {
@@ -563,6 +575,13 @@ export default function ServicesGrid() {
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
+
+  const handleCardClick = (route) => {
+    if (route) {
+      navigate(route);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
 
   return (
     <>
@@ -812,12 +831,17 @@ export default function ServicesGrid() {
                 index={index}
                 inView={inView}
                 isCarousel={false}
+                onClick={() => handleCardClick(service.route)}
               />
             ))}
           </div>
 
           {/* ── Mobile Carousel ── */}
-          <ServiceCarousel services={SERVICES} inView={inView} />
+          <ServiceCarousel
+            services={SERVICES}
+            inView={inView}
+            onCardClick={handleCardClick}
+          />
 
           {/* Bottom Divider */}
           <div

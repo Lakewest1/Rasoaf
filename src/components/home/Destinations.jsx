@@ -5,6 +5,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useRef, useEffect, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { MapPin, ArrowRight, Star, ChevronLeft, ChevronRight } from "lucide-react";
 
 const DESTINATIONS = [
@@ -233,7 +234,7 @@ function HeroBanner({ inView }) {
   );
 }
 
-function DestinationCard({ destination, index, inView, isCarousel = false }) {
+function DestinationCard({ destination, index, inView, isCarousel = false, onClick }) {
   const [hovered, setHovered] = useState(false);
   const delay = 0.08 * index;
 
@@ -256,6 +257,7 @@ function DestinationCard({ destination, index, inView, isCarousel = false }) {
         className="destination-card"
         onMouseEnter={() => !isCarousel && setHovered(true)}
         onMouseLeave={() => !isCarousel && setHovered(false)}
+        onClick={onClick}
         style={{
           background: "#ffffff",
           borderRadius: "20px",
@@ -457,7 +459,7 @@ function DestinationCard({ destination, index, inView, isCarousel = false }) {
   );
 }
 
-function DestinationCarousel({ destinations, inView }) {
+function DestinationCarousel({ destinations, inView, onCardClick }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -523,6 +525,7 @@ function DestinationCarousel({ destinations, inView }) {
               index={index}
               inView={inView}
               isCarousel={true}
+              onClick={() => onCardClick(destination.slug)}
             />
           </div>
         ))}
@@ -590,6 +593,25 @@ function DestinationCarousel({ destinations, inView }) {
 export default function Destinations() {
   const [sectionRef, inView] = useInView(0.1);
   const [heroInView, setHeroInView] = useState(false);
+  const navigate = useNavigate();
+
+  // ── Route map: each destination slug → its correct page ──────────────
+  const routeMap = {
+    makkah: "/hajj/packages/hajj",
+    madinah: "/hajj/packages/hajj",
+    dubai: "/travel/tourist-visa",
+    istanbul: "/travel/tourist-visa",
+    cairo: "/travel/tourist-visa",
+    doha: "/travel/tourist-visa",
+  };
+
+  const handleViewPackages = (slug) => {
+    const route = routeMap[slug];
+    if (route) {
+      navigate(route);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
 
   useEffect(() => {
     if (inView) {
@@ -710,11 +732,16 @@ export default function Destinations() {
                 index={index}
                 inView={inView}
                 isCarousel={false}
+                onClick={() => handleViewPackages(destination.slug)}
               />
             ))}
           </div>
 
-          <DestinationCarousel destinations={DESTINATIONS} inView={inView} />
+          <DestinationCarousel
+            destinations={DESTINATIONS}
+            inView={inView}
+            onCardClick={handleViewPackages}
+          />
 
           <div
             style={{

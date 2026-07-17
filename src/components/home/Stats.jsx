@@ -7,6 +7,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useRef, useEffect, useState, useCallback, useMemo, memo } from "react";
+import { useNavigate } from "react-router-dom";
 import { Users, Star, Plane, Calendar, Shield, Clock, Award, Heart } from "lucide-react";
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
@@ -271,6 +272,7 @@ const TrustChip = memo(function TrustChip({ indicator, index, visible }) {
 
 // ── Main component ────────────────────────────────────────────────────────────
 export default function RasoafStats() {
+  const navigate = useNavigate();
   const [dotRef,  dotOffset] = useScrollParallax(0.18);
   const [orbRef,  orbOffset] = useScrollParallax(0.09);
   const [secRef,  inView]    = useInView(0.12);
@@ -299,9 +301,20 @@ export default function RasoafStats() {
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
   }, [inView]);
 
-  const scrollTo = useCallback((id) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, []);
+  const handleBookTrip = () => {
+    navigate("/hajj/packages/hajj");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleSeePackages = () => {
+    const el = document.getElementById("services");
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      navigate("/hajj/services");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
 
   return (
     <>
@@ -373,11 +386,11 @@ export default function RasoafStats() {
 
           <div className={`rs-ctas${ctasOn ? " rs-ctas--on" : ""}`}>
             <button type="button" className="rs-btn rs-btn--fill"
-              onClick={() => scrollTo("booking")} aria-label="Book a trip">
+              onClick={handleBookTrip} aria-label="Book a trip">
               ✈ Book a Trip
             </button>
             <button type="button" className="rs-btn rs-btn--out"
-              onClick={() => scrollTo("services")} aria-label="See Packages">
+              onClick={handleSeePackages} aria-label="See Packages">
               See Packages
             </button>
           </div>

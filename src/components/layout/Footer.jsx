@@ -1,10 +1,11 @@
 // src/components/layout/Footer.jsx
 // ─────────────────────────────────────────────────────────────────────────────
-// RASOAF Travels and Tours — Footer Section
+// RASOAF Travels and Tours — Modern Footer Section
 //
 // Design System: Manrope (headings) · Inter (body) · Yellow/Black brand
 // Layout: 4-column responsive grid + bottom bar
 // Responsive: 4 → 2 → 1 columns (desktop → tablet → mobile)
+// Updated: Correct routing for /hajj/* and /travel/* architecture
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useRef, useEffect, useState } from "react";
@@ -38,35 +39,31 @@ const TwitterIcon = ({ size = 18, color = "currentColor" }) => (
 // ── Scroll To Top Hook ───────────────────────────────────────────────────
 function useScrollToTop() {
   const { pathname } = useLocation();
-  
   useEffect(() => {
-    window.scrollTo({
-      top: 0,
-      behavior: "instant"
-    });
+    window.scrollTo({ top: 0, behavior: "instant" });
   }, [pathname]);
 }
 
-// ── Data ─────────────────────────────────────────────────────────────────
+// ── Data — Updated routes for new architecture ───────────────────────────
 const QUICK_LINKS = [
-  { name: "Home", href: "/" },
-  { name: "Services", href: "/services" },
-  { name: "Hajj Packages", href: "/services/hajj" },
-  { name: "Umrah Packages", href: "/services/umrah" },
-  { name: "Flight Booking", href: "/services/flight-booking" },
-  { name: "Hotel Reservation", href: "/services/hotel-reservation" },
-  { name: "Visa Services", href: "/visa-services" },
-  { name: "Contact", href: "/contact" },
+  { name: "Home", href: "/hajj" },
+  { name: "Hajj Packages", href: "/hajj/packages/hajj" },
+  { name: "Umrah Packages", href: "/hajj/packages/umrah" },
+  { name: "Flight Booking", href: "/hajj/flight-booking" },
+  { name: "Hotel Reservation", href: "/hajj/hotel-reservation" },
+  { name: "Visa Services", href: "/travel/student-visa" },
+  { name: "Travel & Tours", href: "/travel" },
+  { name: "Contact", href: "/hajj/contact" },
 ];
 
 const SERVICES_LIST = [
-  { name: "Hajj Packages", icon: Compass, href: "/services/hajj" },
-  { name: "Umrah Packages", icon: Star, href: "/services/umrah" },
-  { name: "Visa Services", icon: Shield, href: "/visa-services" },
-  { name: "Flight Booking", icon: Plane, href: "/services/flight-booking" },
-  { name: "Hotel Reservation", icon: Hotel, href: "/services/hotel-reservation" },
-  { name: "Group & Family Travel", icon: Users, href: "/services/hajj" },
-  { name: "International Tours", icon: Globe, href: "/services" },
+  { name: "Hajj Packages", icon: Compass, href: "/hajj/packages/hajj" },
+  { name: "Umrah Packages", icon: Star, href: "/hajj/packages/umrah" },
+  { name: "Visa Services", icon: Shield, href: "/travel/student-visa" },
+  { name: "Flight Booking", icon: Plane, href: "/hajj/flight-booking" },
+  { name: "Hotel Reservation", icon: Hotel, href: "/hajj/hotel-reservation" },
+  { name: "Group & Family Travel", icon: Users, href: "/hajj/packages/hajj" },
+  { name: "International Tours", icon: Globe, href: "/travel/tourist-visa" },
 ];
 
 const SOCIAL_LINKS = [
@@ -182,6 +179,7 @@ function FooterServices({ inView }) {
 // ── Contact Column ───────────────────────────────────────────────────────
 function FooterContact({ inView }) {
   const [hoveredCta, setHoveredCta] = useState(false);
+  const [hoveredConsult, setHoveredConsult] = useState(false);
   return (
     <div style={{ opacity: inView ? 1 : 0, transform: inView ? "translateY(0)" : "translateY(20px)", transition: "opacity 0.6s ease 0.3s, transform 0.6s cubic-bezier(0.16,1,0.3,1) 0.3s" }}>
       <h4 style={{ fontFamily: "'Inter', sans-serif", fontSize: "clamp(13px, 1vw, 15px)", fontWeight: 700, color: "#fff", marginBottom: "16px", letterSpacing: "0.02em" }}>Get in Touch</h4>
@@ -202,18 +200,38 @@ function FooterContact({ inView }) {
       </div>
       {/* CTA Buttons */}
       <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+        {/* WhatsApp Button */}
         <a href="https://wa.me/2348022352362?text=Hello%20RASAOF%20Travels%2C%20I'd%20like%20to%20inquire%20about%20your%20services" target="_blank" rel="noopener noreferrer"
           onMouseEnter={() => setHoveredCta(true)} onMouseLeave={() => setHoveredCta(false)}
-          style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "8px", fontFamily: "'Inter', sans-serif", fontSize: "clamp(13px, 0.9vw, 15px)", fontWeight: 600, color: "#fff", background: "#25D366", padding: "clamp(10px, 1vw, 12px) clamp(20px, 2vw, 28px)", borderRadius: "12px", textDecoration: "none", transition: "all 0.3s cubic-bezier(0.25,1,0.5,1)", boxShadow: hoveredCta ? "0 4px 24px rgba(37,211,102,0.45)" : "0 4px 16px rgba(37,211,102,0.25)", transform: hoveredCta ? "translateY(-2px) scale(1.02)" : "translateY(0) scale(1)", width: "100%", animation: hoveredCta ? "cta-pulse 2s ease-in-out infinite" : "none", minHeight: "44px" }}>
+          style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "8px", fontFamily: "'Inter', sans-serif", fontSize: "clamp(13px, 0.9vw, 15px)", fontWeight: 600, color: "#fff", background: "#25D366", padding: "clamp(10px, 1vw, 12px) clamp(20px, 2vw, 28px)", borderRadius: "12px", textDecoration: "none", transition: "all 0.3s cubic-bezier(0.25,1,0.5,1)", boxShadow: hoveredCta ? "0 4px 24px rgba(37,211,102,0.45)" : "0 4px 16px rgba(37,211,102,0.25)", transform: hoveredCta ? "translateY(-2px) scale(1.02)" : "translateY(0) scale(1)", width: "100%", minHeight: "44px" }}>
           <MessageCircle size={18} /><span>Chat on WhatsApp</span>
         </a>
+        {/* ── 3-D Get Consultation Button ── */}
         <Link 
-          to="/contact" 
+          to="/hajj/contact" 
           onClick={() => window.scrollTo({ top: 0, behavior: 'instant' })}
-          style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "8px", fontFamily: "'Inter', sans-serif", fontSize: "clamp(13px, 0.9vw, 15px)", fontWeight: 500, color: "rgba(255,255,255,0.8)", background: "rgba(255,255,255,0.06)", padding: "clamp(10px, 1vw, 12px) clamp(20px, 2vw, 28px)", borderRadius: "12px", textDecoration: "none", border: "1px solid rgba(255,255,255,0.06)", transition: "all 0.3s ease", width: "100%", minHeight: "44px" }}
-          onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(212,160,23,0.1)"; e.currentTarget.style.borderColor = "rgba(212,160,23,0.2)"; e.currentTarget.style.color = "#D4A017"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)"; e.currentTarget.style.color = "rgba(255,255,255,0.8)"; }}>
-          <span>Get Consultation</span><ArrowRight size={16} />
+          onMouseEnter={() => setHoveredConsult(true)} onMouseLeave={() => setHoveredConsult(false)}
+          style={{ 
+            display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "8px", 
+            fontFamily: "'Inter', sans-serif", fontSize: "clamp(13px, 0.9vw, 15px)", fontWeight: 600, 
+            color: "#111", 
+            background: "linear-gradient(135deg, #F7C948 0%, #D4A017 45%, #B8860B 100%)",
+            padding: "clamp(10px, 1vw, 12px) clamp(20px, 2vw, 28px)", 
+            borderRadius: "12px", textDecoration: "none", 
+            transition: "all 0.3s cubic-bezier(0.25,1,0.5,1)", 
+            width: "100%", minHeight: "44px",
+            position: "relative",
+            overflow: "hidden",
+            boxShadow: hoveredConsult 
+              ? "0 6px 0 #A07000, 0 10px 0 #6A4500, 0 14px 0 rgba(0,0,0,0.35), 0 20px 40px rgba(212,160,23,0.45)"
+              : "0 4px 0 #A07000, 0 7px 0 #6A4500, 0 9px 0 rgba(0,0,0,0.40), 0 9px 22px rgba(215,169,23,0.30)",
+            transform: hoveredConsult ? "translateY(-3px)" : "translateY(0)",
+          }}
+        >
+          <span style={{ position: "relative", zIndex: 1 }}>Get Consultation</span>
+          <ArrowRight size={16} style={{ position: "relative", zIndex: 1, transition: "transform 0.3s ease", transform: hoveredConsult ? "translateX(4px)" : "translateX(0)" }} />
+          {/* Top highlight bevel */}
+          <span style={{ position: "absolute", inset: 0, borderRadius: "12px", background: "linear-gradient(180deg, rgba(255,255,255,0.35) 0%, transparent 55%)", pointerEvents: "none" }} aria-hidden="true" />
         </Link>
       </div>
     </div>
@@ -224,8 +242,6 @@ function FooterContact({ inView }) {
 export default function Footer() {
   const [sectionRef, inView] = useInView(0.05);
   const [currentYear] = useState(new Date().getFullYear());
-  
-  // Apply scroll to top on route change
   useScrollToTop();
 
   return (
@@ -233,8 +249,6 @@ export default function Footer() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;450;500;600;700;800&display=swap');
-
-        @keyframes cta-pulse { 0%, 100% { box-shadow: 0 4px 24px rgba(37,211,102,0.45); } 50% { box-shadow: 0 4px 32px rgba(37,211,102,0.65); } }
 
         .footer-section { background: #0a0a0e; position: relative; overflow: hidden; }
         .footer-section::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: clamp(80px, 20vw, 200px); height: 2px; background: linear-gradient(90deg, transparent, #D4A017, transparent); border-radius: 999px; }

@@ -1,14 +1,11 @@
-// src/main.jsx (or src/index.jsx)
+// src/main.jsx
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom'; // ← IMPORT THIS
 import App from './App.jsx';
 import './index.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <BrowserRouter>  {/* ← WRAP APP WITH BrowserRouter */}
-      <App />
-    </BrowserRouter>
+    <App />
   </React.StrictMode>
 );

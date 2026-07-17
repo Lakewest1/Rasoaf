@@ -1,88 +1,74 @@
 // src/App.jsx
-import { Routes, Route } from "react-router-dom";
 import { lazy, Suspense } from "react";
-
-// Layout Components
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { AnimatePresence } from "framer-motion";
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
+import FloatingWhatsApp from "./components/layout/FloatingWhatsApp";
 
-// Pages - Lazy loaded for better performance
-const Home = lazy(() => import("./pages/Home"));
-const Services = lazy(() => import("./pages/Services"));
-const HajjPackages = lazy(() => import("./pages/services/HajjPackages"));
-const UmrahPackages = lazy(() => import("./pages/services/UmrahPackages"));
-const FlightBooking = lazy(() => import("./pages/services/FlightBooking"));
-const HotelReservation = lazy(() => import("./pages/services/HotelReservation"));
-const HajjUmrah = lazy(() => import("./pages/HajjUmrah"));
-const VisaServices = lazy(() => import("./pages/VisaServices"));
-
-// Individual Visa Pages
-const StudentVisa = lazy(() => import("./pages/visa/StudentVisa"));
-const WorkVisa = lazy(() => import("./pages/visa/WorkVisa"));
-const TouristVisa = lazy(() => import("./pages/visa/TouristVisa"));
-const BusinessVisa = lazy(() => import("./pages/visa/BusinessVisa"));
-const FamilyVisa = lazy(() => import("./pages/visa/FamilyVisa"));
-
-// Contact Page
-const Contact = lazy(() => import("./pages/Contact"));
-
+const Gateway = lazy(() => import("./pages/Gateway"));
+const HajjHome = lazy(() => import("./pages/hajj/Home"));
+const HajjServices = lazy(() => import("./pages/hajj/Services"));
+const HajjUmrah = lazy(() => import("./pages/hajj/HajjUmrah"));
+const HajjContact = lazy(() => import("./pages/hajj/Contact"));
+const HajjPackages = lazy(() => import("./pages/hajj/services/HajjPackages"));
+const UmrahPackages = lazy(() => import("./pages/hajj/services/UmrahPackages"));
+const HajjFlightBooking = lazy(() => import("./pages/hajj/services/FlightBooking"));
+const HajjHotelReservation = lazy(() => import("./pages/hajj/services/HotelReservation"));
+const TravelHome = lazy(() => import("./pages/travel/Home"));
+const TravelServices = lazy(() => import("./pages/travel/Services"));
+const TravelContact = lazy(() => import("./pages/travel/Contact"));
+const StudentVisa = lazy(() => import("./pages/travel/StudentVisa"));
+const WorkVisa = lazy(() => import("./pages/travel/WorkVisa"));
+const TouristVisa = lazy(() => import("./pages/travel/TouristVisa"));
+const BusinessVisa = lazy(() => import("./pages/travel/BusinessVisa"));
+const FamilyVisa = lazy(() => import("./pages/travel/FamilyVisa"));
+const TravelFlightBooking = lazy(() => import("./pages/travel/FlightBooking"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
-// Loading fallback component
 const PageLoader = () => (
-  <div className="min-h-screen flex items-center justify-center bg-gray-50">
-    <div className="text-center">
-      <div className="w-16 h-16 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-      <p className="text-gray-600 font-['Inter']">Loading...</p>
+  <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#FFF8E6" }}>
+    <div style={{ textAlign: "center" }}>
+      <div style={{ width: 40, height: 40, border: "3px solid #E6D5A8", borderTopColor: "#D4A017", borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 16px" }} />
+      <p style={{ fontFamily: "'Manrope', sans-serif", color: "#111" }}>Loading...</p>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   </div>
 );
 
-function App() {
+export default function App() {
   return (
-    <div className="App">
+    <Router>
       <Navbar />
-      
-      <main className="min-h-screen">
-        <Suspense fallback={<PageLoader />}>
-          <Routes>
-            {/* Home Page */}
-            <Route path="/" element={<Home />} />
-            
-            {/* Services Index Page */}
-            <Route path="/services" element={<Services />} />
-            
-            {/* Individual Service Pages */}
-            <Route path="/services/hajj" element={<HajjPackages />} />
-            <Route path="/services/umrah" element={<UmrahPackages />} />
-            <Route path="/services/flight-booking" element={<FlightBooking />} />
-            <Route path="/services/hotel-reservation" element={<HotelReservation />} />
-            
-            {/* Hajj & Umrah Overview Page */}
-            <Route path="/hajj-umrah" element={<HajjUmrah />} />
-            
-            {/* Visa Services Index Page */}
-            <Route path="/visa-services" element={<VisaServices />} />
-            
-            {/* Individual Visa Pages */}
-            <Route path="/visa-services/student" element={<StudentVisa />} />
-            <Route path="/visa-services/work" element={<WorkVisa />} />
-            <Route path="/visa-services/tourist" element={<TouristVisa />} />
-            <Route path="/visa-services/business" element={<BusinessVisa />} />
-            <Route path="/visa-services/family" element={<FamilyVisa />} />
-            
-            {/* Contact Page */}
-            <Route path="/contact" element={<Contact />} />
-            
-            {/* 404 Page */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Suspense>
+      <main style={{ minHeight: "100vh" }}>
+        <AnimatePresence mode="wait">
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              <Route path="/" element={<Gateway />} />
+              <Route path="/hajj" element={<HajjHome />} />
+              <Route path="/hajj/services" element={<HajjServices />} />
+              <Route path="/hajj/umrah" element={<HajjUmrah />} />
+              <Route path="/hajj/contact" element={<HajjContact />} />
+              <Route path="/hajj/packages/hajj" element={<HajjPackages />} />
+              <Route path="/hajj/packages/umrah" element={<UmrahPackages />} />
+              <Route path="/hajj/flight-booking" element={<HajjFlightBooking />} />
+              <Route path="/hajj/hotel-reservation" element={<HajjHotelReservation />} />
+              <Route path="/travel" element={<TravelHome />} />
+              <Route path="/travel/services" element={<TravelServices />} />
+              <Route path="/travel/contact" element={<TravelContact />} />
+              <Route path="/travel/student-visa" element={<StudentVisa />} />
+              <Route path="/travel/work-visa" element={<WorkVisa />} />
+              <Route path="/travel/tourist-visa" element={<TouristVisa />} />
+              <Route path="/travel/business-visa" element={<BusinessVisa />} />
+              <Route path="/travel/family-visa" element={<FamilyVisa />} />
+              <Route path="/travel/flights" element={<TravelFlightBooking />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
+        </AnimatePresence>
       </main>
-      
       <Footer />
-    </div>
+      <FloatingWhatsApp />
+    </Router>
   );
 }
-
-export default App;
