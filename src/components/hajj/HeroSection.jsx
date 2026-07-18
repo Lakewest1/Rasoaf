@@ -39,7 +39,6 @@ const DEFAULT_PANELS = [
 ];
 
 const DEFAULT_BG_VIDEOS = [
-  "https://res.cloudinary.com/dbqdgvvgq/video/upload/v1782647090/VID-20260628-WA0005_q9gvbi.mp4",
   "https://res.cloudinary.com/dbqdgvvgq/video/upload/v1782646887/VID-20260628-WA0000_tl1nxg.mp4",
   "https://res.cloudinary.com/dbqdgvvgq/video/upload/v1781351650/3473-170690984_medium_h9g9gt.mp4",
 ];
@@ -282,8 +281,8 @@ export default function Hero({
   const rafHandleRef = useRef(null);
   const magnetMapRef = useRef(new Map());
 
-  const [isTvPlaying, setIsTvPlaying] = useState(true);
-  const [isTvMuted, setIsTvMuted] = useState(false);
+  const [isTvPlaying, setIsTvPlaying] = useState(false); // Changed from true to false - paused by default
+  const [isTvMuted, setIsTvMuted] = useState(true); // Changed from false to true - muted by default
   const [tvVideoError, setTvVideoError] = useState(false);
   const [marqueePaused, setMarqueePaused] = useState(false);
   const isMobileRef = useRef(false);
@@ -527,15 +526,20 @@ export default function Hero({
                       <span style={{ fontSize: 32 }}>✈️</span><span>Video loading…</span>
                     </div>
                   ) : (
-                    <video ref={tvVideoRef} className="rh-tv-video" autoPlay loop playsInline muted={isTvMuted} onError={handleTvVideoError}>
+                    <video ref={tvVideoRef} className="rh-tv-video" loop playsInline muted={isTvMuted} onError={handleTvVideoError}>
+                      {/* Removed autoPlay attribute */}
                       <source src={tvVideo} type="video/mp4" />
                     </video>
                   )}
                   <div className="rh-tv-glass" />
                   {!tvVideoError && (
                     <div className="rh-tv-controls">
-                      <button className="rh-tv-control-btn" onClick={toggleTvPlay}>{isTvPlaying ? <Pause size={16} /> : <Play size={16} />}</button>
-                      <button className="rh-tv-control-btn" onClick={toggleTvMute}>{isTvMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}</button>
+                      <button className="rh-tv-control-btn" onClick={toggleTvPlay} aria-label={isTvPlaying ? "Pause video" : "Play video"}>
+                        {isTvPlaying ? <Pause size={16} /> : <Play size={16} />}
+                      </button>
+                      <button className="rh-tv-control-btn" onClick={toggleTvMute} aria-label={isTvMuted ? "Unmute video" : "Mute video"}>
+                        {isTvMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+                      </button>
                     </div>
                   )}
                   <div className="rh-tv-badge">✈️ WANDERLUST</div>

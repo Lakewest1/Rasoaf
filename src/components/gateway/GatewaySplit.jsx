@@ -2,7 +2,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // RASOAF TRAVELS AND TOURS LIMITED — Premium Cinematic Gateway
 //
-// 1. RASOAF brand with heartbeat animation at top
+// 1. RASOAF brand with logo image at top
 // 2. Ultra-transparent glass cards (stars + Earth visible through them)
 // 3. Cards stay side-by-side on all screens, minimal words on smaller screens
 // 4. All original content preserved — nothing reduced or changed
@@ -22,7 +22,6 @@ import {
   Users, 
   Shield, 
   Clock,
-  Heart,
   Award,
   Briefcase
 } from "lucide-react";
@@ -30,12 +29,13 @@ import EarthBackground from "./EarthBackground";
 import GatewayOverlay from "./GatewayOverlay";
 import { useTransitionController } from "./TransitionController";
 import { COLORS, PANEL_CONTENT } from "./constants";
+import rasaofLogo from "../../images/rasoaf.png"; // Import the logo image
 
 // ══════════════════════════════════════════════════════════════════════════
 //  ICON MAP
 // ══════════════════════════════════════════════════════════════════════════
 const ICON_MAP = {
-  Users, Shield, Clock, Star, Compass, Heart, Plane, MapPin, Globe, Award, Briefcase,
+  Users, Shield, Clock, Star, Compass, Plane, MapPin, Globe, Award, Briefcase,
 };
 
 const renderFeatureTags = (features) => {
@@ -86,7 +86,7 @@ const CSS = `
     font-family: 'Inter', sans-serif;
   }
 
-  /* ── RASOAF Brand Bar with Heartbeat ──────────────────────────────── */
+  /* ── RASOAF Brand Bar with Logo Image ──────────────────────────────── */
   .gw-brand-bar {
     position: fixed;
     top: 0;
@@ -104,7 +104,28 @@ const CSS = `
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2px;
+    gap: 4px;
+  }
+
+  .gw-brand-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 2px;
+  }
+
+  .gw-logo-image {
+    width: clamp(32px, 3.5vw, 44px);
+    height: clamp(32px, 3.5vw, 44px);
+    border-radius: 10px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 12px rgba(196,151,42,0.4));
+    animation: gw-logo-pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes gw-logo-pulse {
+    0%, 100% { filter: drop-shadow(0 0 12px rgba(196,151,42,0.4)); }
+    50% { filter: drop-shadow(0 0 20px rgba(247,201,72,0.7)); }
   }
 
   .gw-brand-name {
@@ -118,21 +139,6 @@ const CSS = `
     align-items: center;
     gap: 8px;
     text-shadow: 0 0 30px rgba(196,151,42,0.3);
-  }
-
-  .gw-brand-name .gw-heart {
-    display: inline-flex;
-    animation: gw-heartbeat 1.2s ease-in-out infinite;
-    color: #F7C948;
-    filter: drop-shadow(0 0 6px rgba(247,201,72,0.5));
-  }
-
-  @keyframes gw-heartbeat {
-    0%, 100% { transform: scale(1); }
-    14% { transform: scale(1.28); }
-    28% { transform: scale(1); }
-    42% { transform: scale(1.22); }
-    56% { transform: scale(1); }
   }
 
   .gw-brand-sub {
@@ -425,9 +431,10 @@ const CSS = `
     to { transform: rotate(360deg); }
   }
 
-  /* ═════════════════════════════════════════════════════════════════════
+    /* ═════════════════════════════════════════════════════════════════════
      RESPONSIVE — Cards stay side-by-side, text shrinks on small screens
      All content preserved — never hidden, only smaller
+     Minimum readable sizes maintained for accessibility
   ═════════════════════════════════════════════════════════════════════ */
   @media (max-width: 900px) {
     .gw-stage { gap: 16px; padding: clamp(12px, 2vw, 20px); padding-top: clamp(75px, 11vh, 110px); }
@@ -435,16 +442,18 @@ const CSS = `
     .gw-col-left { flex: 0 0 clamp(220px, 30vw, 280px); }
     .gw-col-right { flex: 0 0 clamp(220px, 30vw, 280px); }
     .gw-card { padding: 16px 12px; border-radius: 20px; }
-    .gw-title { font-size: clamp(16px, 3.5vw, 22px); }
-    .gw-desc { font-size: clamp(9px, 1.5vw, 11px); max-width: 100%; }
-    .gw-subtitle { font-size: clamp(9px, 1.2vw, 11px); }
+    .gw-title { font-size: clamp(18px, 3.5vw, 22px); }
+    .gw-desc { font-size: clamp(11px, 1.5vw, 13px); max-width: 100%; }
+    .gw-subtitle { font-size: clamp(10px, 1.2vw, 12px); }
     .gw-badge { padding: 3px 10px; margin-bottom: 12px; }
-    .gw-badge__text { font-size: 8px; }
+    .gw-badge__text { font-size: 9px; }
     .gw-btn { padding: 9px 20px; font-size: 11px; }
     .gw-stats { gap: 10px; }
-    .gw-stat-number { font-size: clamp(13px, 2vw, 16px); }
+    .gw-stat-number { font-size: clamp(14px, 2vw, 16px); }
+    .gw-stat-label { font-size: 7px; }
     .gw-features { gap: 4px; }
-    .gw-feature-tag { font-size: 7px; padding: 2px 7px; }
+    .gw-feature-tag { font-size: 8px; padding: 2px 7px; }
+    .gw-logo-image { width: clamp(28px, 4vw, 36px); height: clamp(28px, 4vw, 36px); }
   }
 
   @media (max-width: 600px) {
@@ -452,39 +461,46 @@ const CSS = `
     .gw-col-center { flex: 0.6 1 0; }
     .gw-col-left { flex: 0 0 clamp(140px, 32vw, 200px); }
     .gw-col-right { flex: 0 0 clamp(140px, 32vw, 200px); }
-    .gw-card { padding: 10px 6px; border-radius: 16px; }
-    .gw-title { font-size: clamp(11px, 4vw, 14px); margin-bottom: 3px; }
-    .gw-desc { font-size: clamp(7px, 2.2vw, 9px); line-height: 1.35; margin-bottom: 10px; }
-    .gw-subtitle { font-size: clamp(7px, 2vw, 9px); margin-bottom: 6px; }
-    .gw-badge { padding: 2px 7px; margin-bottom: 8px; gap: 4px; }
-    .gw-badge__text { font-size: 6px; letter-spacing: 0.04em; }
-    .gw-btn { padding: 6px 12px; font-size: 8px; border-radius: 10px; gap: 5px; }
-    .gw-stats { gap: 6px; margin-bottom: 10px; }
-    .gw-stat-number { font-size: clamp(10px, 3vw, 13px); }
-    .gw-stat-label { font-size: 6px; }
+    .gw-card { padding: 12px 8px; border-radius: 16px; }
+    .gw-title { font-size: clamp(14px, 4vw, 16px); margin-bottom: 3px; }
+    .gw-desc { font-size: clamp(10px, 2.2vw, 12px); line-height: 1.35; margin-bottom: 10px; }
+    .gw-subtitle { font-size: clamp(9px, 2vw, 10px); margin-bottom: 6px; }
+    .gw-badge { padding: 3px 8px; margin-bottom: 8px; gap: 4px; }
+    .gw-badge__text { font-size: 8px; letter-spacing: 0.04em; }
+    .gw-btn { padding: 8px 14px; font-size: 10px; border-radius: 10px; gap: 5px; }
+    .gw-stats { gap: 8px; margin-bottom: 10px; }
+    .gw-stat-number { font-size: clamp(12px, 3vw, 14px); }
+    .gw-stat-label { font-size: 7px; }
     .gw-features { gap: 3px; margin-bottom: 10px; }
-    .gw-feature-tag { font-size: 6px; padding: 1px 5px; }
-    .gw-brand-name { font-size: clamp(13px, 3vw, 16px); }
-    .gw-brand-sub { font-size: 7px; }
-    .gw-brand-tagline { font-size: 6px; }
+    .gw-feature-tag { font-size: 7px; padding: 2px 6px; }
+    .gw-brand-name { font-size: clamp(14px, 3vw, 16px); }
+    .gw-brand-sub { font-size: 8px; }
+    .gw-brand-tagline { font-size: 7px; }
+    .gw-logo-image { width: clamp(24px, 5vw, 28px); height: clamp(24px, 5vw, 28px); }
   }
 
   @media (max-width: 380px) {
     .gw-stage { gap: 4px; padding: 3px; padding-top: clamp(55px, 8vh, 70px); }
     .gw-col-center { flex: 0.3 1 0; }
-    .gw-col-left { flex: 0 0 clamp(120px, 35vw, 160px); }
-    .gw-col-right { flex: 0 0 clamp(120px, 35vw, 160px); }
-    .gw-card { padding: 8px 4px; border-radius: 12px; }
-    .gw-title { font-size: 10px; }
-    .gw-desc { font-size: 6px; }
-    .gw-btn { padding: 5px 8px; font-size: 7px; border-radius: 8px; }
-    .gw-brand-name { font-size: 11px; }
+    .gw-col-left { flex: 0 0 clamp(130px, 38vw, 160px); }
+    .gw-col-right { flex: 0 0 clamp(130px, 38vw, 160px); }
+    .gw-card { padding: 10px 5px; border-radius: 12px; }
+    .gw-title { font-size: 13px; }
+    .gw-desc { font-size: 9px; }
+    .gw-subtitle { font-size: 8px; }
+    .gw-badge__text { font-size: 7px; }
+    .gw-btn { padding: 7px 10px; font-size: 9px; border-radius: 8px; }
+    .gw-stat-number { font-size: 12px; }
+    .gw-stat-label { font-size: 6px; }
+    .gw-feature-tag { font-size: 6px; }
+    .gw-brand-name { font-size: 13px; }
+    .gw-logo-image { width: clamp(20px, 6vw, 24px); height: clamp(20px, 6vw, 24px); }
   }
 
   @media (prefers-reduced-motion: reduce) {
     .gw-card { animation: none !important; transition: none !important; }
     .gw-card:hover { transform: none !important; }
-    .gw-brand-name .gw-heart { animation: none !important; }
+    .gw-logo-image { animation: none !important; }
   }
 `;
 
@@ -513,7 +529,7 @@ export default function GatewaySplit() {
         <EarthBackground />
         <GatewayOverlay />
 
-        {/* ── RASOAF Brand with Heartbeat Animation ─────────────────────── */}
+        {/* ── RASOAF Brand with Logo Image ─────────────────────── */}
         <motion.div
           className="gw-brand-bar"
           variants={logoVariants}
@@ -521,12 +537,13 @@ export default function GatewaySplit() {
           animate="visible"
         >
           <div className="gw-brand-content">
-            <div className="gw-brand-name">
-              RASOAF
-              <span className="gw-heart">
-                <Heart size={14} fill="#F7C948" />
-              </span>
-              
+            <div className="gw-brand-logo ">
+              <img 
+                src={rasaofLogo} 
+                alt="RASOAF Logo" 
+                className="gw-logo-image"
+              />
+              <div className="gw-brand-name">RASOAF</div>
             </div>
             <div className="gw-brand-tagline">Your Trusted Travel Partner</div>
           </div>
