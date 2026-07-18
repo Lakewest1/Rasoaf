@@ -18,7 +18,7 @@ const EXIT_TARGETS = {
   hajj: {
     position: [0.2, 0.6, 6.5],
     target: [0.4, 0.1, 0.3],
-    duration: 1.8,
+    duration: 0.5,
   },
   travel: {
     position: [-0.5, 0.4, 6.8],

@@ -526,9 +526,8 @@ export default function GatewaySplit() {
               <span className="gw-heart">
                 <Heart size={14} fill="#F7C948" />
               </span>
-              TRAVELS
+              
             </div>
-            <div className="gw-brand-sub">Travels & Tours Limited</div>
             <div className="gw-brand-tagline">Your Trusted Travel Partner</div>
           </div>
         </motion.div>

@@ -6,9 +6,10 @@
 // Earth and Clouds receive textures as props — they render nothing until ready.
 // Animated SunRig provides dynamic day/night cycle.
 // Atmosphere receives sunDirection for reactive scattering.
+// Mouse parallax enabled via CameraRig ref.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useState, useEffect, useCallback, Suspense, Component } from "react";
+import { useState, useEffect, useRef, useCallback, Suspense, Component } from "react";
 import { Canvas } from "@react-three/fiber";
 import { ACESFilmicToneMapping, SRGBColorSpace, TextureLoader, LoadingManager } from "three";
 import Earth from "./Earth";
@@ -218,6 +219,7 @@ function LoadingScreen({ progress, error }) {
 function Scene({ textures }) {
   const [sunDirection, setSunDirection] = useState(null);
   const [currentScene, setCurrentScene] = useState(0);
+  const cameraRigRef = useRef(null);
 
   const handleSunDirection = useCallback((dir) => {
     setSunDirection(dir);
@@ -232,7 +234,11 @@ function Scene({ textures }) {
     <>
       <SunRig onSunDirectionChange={handleSunDirection} />
 
-      <CameraRig currentScene={currentScene} onSceneComplete={handleSceneComplete}>
+      <CameraRig
+        ref={cameraRigRef}
+        currentScene={currentScene}
+        onSceneComplete={handleSceneComplete}
+      >
         <Earth textures={textures} />
         <Clouds texture={textures?.clouds} />
         <Atmosphere sunDirection={sunDirection} />

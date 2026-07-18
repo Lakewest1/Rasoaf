@@ -2,6 +2,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // RASOAF Flight Network — Single Floating Label
 // Per-country offsets prevent overlap. Fades behind globe.
+// Responsive font size — smaller on mobile.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useRef, useMemo } from "react";
@@ -27,6 +28,16 @@ const OFFSETS = {
 };
 
 const cameraPos = new Vector3(0, 0, 8);
+
+// ── Responsive font size ───────────────────────────────────────────────────
+function getFontSize() {
+  if (typeof window === "undefined") return "7px";
+  const w = window.innerWidth;
+  if (w <= 380) return "5px";
+  if (w <= 600) return "5.5px";
+  if (w <= 900) return "6px";
+  return "7px";
+}
 
 export default function FloatingLabel({ city }) {
   const groupRef = useRef(null);
@@ -66,6 +77,8 @@ export default function FloatingLabel({ city }) {
     htmlRef.current.style.opacity = visibility;
   });
 
+  const fontSize = getFontSize();
+
   return (
     <group ref={groupRef}>
       <mesh position={surface}>
@@ -78,7 +91,7 @@ export default function FloatingLabel({ city }) {
             ref={htmlRef}
             style={{
               fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
-              fontSize: "7px",
+              fontSize: fontSize,
               fontWeight: 400,
               letterSpacing: "0.07em",
               color: "#E8C547",
