@@ -19,8 +19,8 @@ export default function FlightArc({ start, end, opacity = 1, state = "traveling"
     const curve = createFlightArc(start, end);
     const points = curve.getPoints(FLIGHTS.ARC_SEGMENTS);
     const catmullCurve = new CatmullRomCurve3(points);
-    const main = new TubeGeometry(catmullCurve, FLIGHTS.TUBE_SEGMENTS, FLIGHTS.MAIN_TUBE_RADIUS, FLIGHTS.TUBE_RADIAL_SEGMENTS, false);
-    const glow = new TubeGeometry(catmullCurve, FLIGHTS.TUBE_SEGMENTS, FLIGHTS.GLOW_TUBE_RADIUS, FLIGHTS.TUBE_RADIAL_SEGMENTS, false);
+    const main = new TubeGeometry(catmullCurve, FLIGHTS.TUBE_SEGMENTS, FLIGHTS.MAIN_TUBE_RADIUS, 6, false);
+const glow = new TubeGeometry(catmullCurve, FLIGHTS.TUBE_SEGMENTS, FLIGHTS.GLOW_TUBE_RADIUS, 6, false);
     return { mainGeo: main, glowGeo: glow };
   }, [start, end]);
 

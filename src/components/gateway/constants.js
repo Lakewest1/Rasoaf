@@ -236,34 +236,23 @@ export const PANEL_FEATURES = {
 // ── Main panel content ────────────────────────────────────────────────────
 export const PANEL_CONTENT = {
   hajj: {
-    badge: "Sacred Journeys",
-    title: "Hajj & Umrah",
-    subtitle: "Premium Pilgrimage Packages",
-    description: "Experience the spiritual journey of a lifetime with our exclusive Hajj and Umrah packages, featuring VIP accommodations and expert guidance.",
-    button: "Explore Packages",
-    route: "/hajj",
-    features: PANEL_FEATURES.hajj,
-    stats: {
-      years: "15+",
-      pilgrims: "10,000+",
-      satisfaction: "99%"
-    }
+    badge:      "Sacred Journeys",
+    title:      "Hajj & Umrah",
+    subtitle:   "Premium pilgrimage packages",
+    description: "Embark on a blessed journey with expert guidance and complete peace of mind.",
+    button:     "Explore Hajj & Umrah",
+    route:      "/hajj",
   },
   travel: {
-    badge: "Global Destinations",
-    title: "Visa & Travel",
-    subtitle: "Seamless Global Travel Solutions",
-    description: "From visa processing to luxury accommodations, we make international travel effortless for business and leisure across the globe.",
-    button: "Plan Your Trip",
-    route: "/travel",
-    features: PANEL_FEATURES.travel,
-    stats: {
-      countries: "50+",
-      clients: "5,000+",
-      success: "98%"
-    }
-  }
+    badge:      "Global Adventures",
+    title:      "Travel & Tours",
+    subtitle:   "Visa, Flights & Hotels",
+    description: "Discover the world with seamless visa services and curated travel experiences.",
+    button:     "Explore Travel & Tours",
+    route:      "/travel",
+  },
 };
+
 
 // ── Combined content for quick access ────────────────────────────────────
 export const PANEL_CONTENT_MAP = {

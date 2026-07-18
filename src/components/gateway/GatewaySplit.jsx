@@ -6,6 +6,7 @@
 // 2. Ultra-transparent glass cards (stars + Earth visible through them)
 // 3. Cards stay side-by-side on all screens, minimal words on smaller screens
 // 4. All original content preserved — nothing reduced or changed
+// 5. Premium cinematic transition — Earth visible during navigation
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useState, useCallback } from "react";
@@ -153,7 +154,7 @@ const CSS = `
     margin-top: 1px;
   }
 
-  /* ── Stage ─────────────────────────────────────────────────────────── */
+  /* ── Stage — wider Earth window, narrower cards ────────────────────── */
   .gw-stage {
     position: fixed;
     inset: 0;
@@ -163,31 +164,30 @@ const CSS = `
     align-items: center;
     justify-content: center;
     pointer-events: none;
-    padding: clamp(20px, 3vw, 48px);
+    gap: clamp(24px, 4vw, 56px);
+    padding: clamp(24px, 4vw, 56px);
     padding-top: clamp(85px, 13vh, 130px);
   }
 
   .gw-col-left {
-    flex: 0 0 clamp(280px, 26vw, 340px);
+    flex: 0 0 clamp(260px, 22vw, 320px);
     display: flex;
     align-items: center;
     justify-content: flex-end;
     pointer-events: auto;
-    padding-right: clamp(8px, 1vw, 20px);
   }
 
   .gw-col-center {
-    flex: 0 0 clamp(200px, 38vw, 520px);
+    flex: 2 1 0;
     pointer-events: none;
   }
 
   .gw-col-right {
-    flex: 0 0 clamp(280px, 26vw, 340px);
+    flex: 0 0 clamp(260px, 22vw, 320px);
     display: flex;
     align-items: center;
     justify-content: flex-start;
     pointer-events: auto;
-    padding-left: clamp(8px, 1vw, 20px);
   }
 
   /* ═════════════════════════════════════════════════════════════════════
@@ -397,7 +397,6 @@ const CSS = `
   .gw-transition {
     position: fixed;
     inset: 0;
-    background: #071018;
     z-index: 100;
     display: flex;
     align-items: center;
@@ -405,15 +404,36 @@ const CSS = `
     pointer-events: auto;
   }
 
+  .gw-transition-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(7,16,24,0.55);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    z-index: 1;
+  }
+
+  .gw-transition-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    color: #F7C948;
+    font-family: 'Manrope', sans-serif;
+  }
+
+  @keyframes gw-spin {
+    to { transform: rotate(360deg); }
+  }
+
   /* ═════════════════════════════════════════════════════════════════════
      RESPONSIVE — Cards stay side-by-side, text shrinks on small screens
      All content preserved — never hidden, only smaller
   ═════════════════════════════════════════════════════════════════════ */
   @media (max-width: 900px) {
-    .gw-stage { gap: 10px; padding: clamp(12px, 2vw, 20px); padding-top: clamp(75px, 11vh, 110px); }
-    .gw-col-center { flex: 0.6 1 0; }
-    .gw-col-left { flex: 0 0 clamp(220px, 30vw, 280px); padding-right: 6px; }
-    .gw-col-right { flex: 0 0 clamp(220px, 30vw, 280px); padding-left: 6px; }
+    .gw-stage { gap: 16px; padding: clamp(12px, 2vw, 20px); padding-top: clamp(75px, 11vh, 110px); }
+    .gw-col-center { flex: 1.2 1 0; }
+    .gw-col-left { flex: 0 0 clamp(220px, 30vw, 280px); }
+    .gw-col-right { flex: 0 0 clamp(220px, 30vw, 280px); }
     .gw-card { padding: 16px 12px; border-radius: 20px; }
     .gw-title { font-size: clamp(16px, 3.5vw, 22px); }
     .gw-desc { font-size: clamp(9px, 1.5vw, 11px); max-width: 100%; }
@@ -428,10 +448,10 @@ const CSS = `
   }
 
   @media (max-width: 600px) {
-    .gw-stage { gap: 6px; padding: 6px; padding-top: clamp(65px, 10vh, 90px); }
-    .gw-col-center { flex: 0.3 1 0; }
-    .gw-col-left { flex: 0 0 clamp(140px, 32vw, 200px); padding-right: 3px; }
-    .gw-col-right { flex: 0 0 clamp(140px, 32vw, 200px); padding-left: 3px; }
+    .gw-stage { gap: 8px; padding: 6px; padding-top: clamp(65px, 10vh, 90px); }
+    .gw-col-center { flex: 0.6 1 0; }
+    .gw-col-left { flex: 0 0 clamp(140px, 32vw, 200px); }
+    .gw-col-right { flex: 0 0 clamp(140px, 32vw, 200px); }
     .gw-card { padding: 10px 6px; border-radius: 16px; }
     .gw-title { font-size: clamp(11px, 4vw, 14px); margin-bottom: 3px; }
     .gw-desc { font-size: clamp(7px, 2.2vw, 9px); line-height: 1.35; margin-bottom: 10px; }
@@ -450,10 +470,10 @@ const CSS = `
   }
 
   @media (max-width: 380px) {
-    .gw-stage { gap: 3px; padding: 3px; padding-top: clamp(55px, 8vh, 70px); }
-    .gw-col-center { flex: 0.15 1 0; }
-    .gw-col-left { flex: 0 0 clamp(120px, 35vw, 160px); padding-right: 2px; }
-    .gw-col-right { flex: 0 0 clamp(120px, 35vw, 160px); padding-left: 2px; }
+    .gw-stage { gap: 4px; padding: 3px; padding-top: clamp(55px, 8vh, 70px); }
+    .gw-col-center { flex: 0.3 1 0; }
+    .gw-col-left { flex: 0 0 clamp(120px, 35vw, 160px); }
+    .gw-col-right { flex: 0 0 clamp(120px, 35vw, 160px); }
     .gw-card { padding: 8px 4px; border-radius: 12px; }
     .gw-title { font-size: 10px; }
     .gw-desc { font-size: 6px; }
@@ -652,6 +672,7 @@ export default function GatewaySplit() {
             )}
           </AnimatePresence>
 
+          {/* ── Premium Cinematic Transition — Earth visible through overlay ── */}
           <AnimatePresence>
             {isTransitioning && (
               <motion.div
@@ -659,22 +680,42 @@ export default function GatewaySplit() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
               >
-                <div style={{ textAlign: "center", color: "#F7C948", fontFamily: "'Manrope', sans-serif" }}>
-                  <div style={{
-                    width: 44, height: 44,
-                    border: "2px solid rgba(196,151,42,0.3)",
-                    borderTopColor: "#F7C948",
-                    borderRadius: "50%",
-                    animation: "gw-spin 0.8s linear infinite",
-                    margin: "0 auto 18px",
-                  }} />
-                  <span style={{ fontSize: "clamp(15px, 2vw, 22px)", fontWeight: 600, letterSpacing: "0.04em" }}>
-                    Preparing Your Journey
+                {/* Semi-transparent overlay — Earth visible through it */}
+                <div className="gw-transition-overlay" />
+
+                {/* Centered content */}
+                <div className="gw-transition-content">
+                  <motion.div
+                    animate={{ scale: [1, 1.05, 1] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                    style={{
+                      width: 48,
+                      height: 48,
+                      border: "2px solid rgba(196,151,42,0.4)",
+                      borderTopColor: "#F7C948",
+                      borderRadius: "50%",
+                      animation: "gw-spin 1s linear infinite",
+                      margin: "0 auto 20px",
+                    }}
+                  />
+                  <span style={{
+                    fontSize: "clamp(16px, 2.5vw, 24px)",
+                    fontWeight: 600,
+                    letterSpacing: "0.04em",
+                    display: "block",
+                  }}>
+                    Beginning Your Journey
                   </span>
+                  <p style={{
+                    fontSize: "clamp(11px, 1.2vw, 14px)",
+                    color: "rgba(255,255,255,0.5)",
+                    marginTop: 8,
+                  }}>
+                    The world awaits
+                  </p>
                 </div>
-                <style>{`@keyframes gw-spin { to { transform: rotate(360deg); } }`}</style>
               </motion.div>
             )}
           </AnimatePresence>

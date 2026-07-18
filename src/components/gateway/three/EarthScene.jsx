@@ -264,10 +264,10 @@ export default function EarthScene() {
             antialias: true,
             powerPreference: "high-performance",
             toneMapping: ACESFilmicToneMapping,
-            toneMappingExposure: 1.0,
+            toneMappingExposure: 1.1,
             outputColorSpace: SRGBColorSpace,
           }}
-          dpr={[1, 2]}
+          dpr={[1, 1.5]}
           camera={{ fov: 45, near: 0.1, far: 200, position: [0, 0, 8] }}
           style={{
             width: "100%",

@@ -63,7 +63,7 @@ export default function FlightParticle({ start, end, opacity = 1, state = "trave
   return (
     <group>
       <mesh ref={glowRef}>
-        <sphereGeometry args={[PARTICLES.SIZE * PARTICLES.GLOW_SIZE_MULTIPLIER, 8, 8]} />
+        <sphereGeometry args={[PARTICLES.SIZE, 6, 6]} />
         <meshBasicMaterial
           color={PARTICLES.COLOR}
           transparent

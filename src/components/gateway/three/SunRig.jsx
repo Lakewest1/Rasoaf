@@ -175,11 +175,18 @@ export default function SunRig({ onSunDirectionChange }) {
         color="#334477"
       />
 
-      {/* Ambient — constant subtle blue */}
+      {/* Ambient — increased for night-side visibility */}
       <ambientLight
         ref={ambientRef}
-        color="#1a2a4a"
-        intensity={0.3}
+        color="#2a3a5a"
+        intensity={0.45}
+      />
+
+      {/* Hemisphere light — sky/ground indirect bounce */}
+      <hemisphereLight
+        color="#4466aa"
+        groundColor="#1a1a2e"
+        intensity={0.25}
       />
     </>
   );

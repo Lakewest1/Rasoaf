@@ -2,6 +2,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // RASOAF Flight Network — Dynamic Global Route System
 // Cinematic timing. Routes feel like real aircraft journeys.
+// Countries as labels for a premium worldwide travel feel.
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const EARTH_RADIUS = 2.5;
@@ -23,13 +24,13 @@ export const FLIGHTS = {
 };
 
 export const PARTICLES = {
-  COUNT_PER_ROUTE: 1,              // Single particle per route — cleaner, more premium
+  COUNT_PER_ROUTE: 1,
   SIZE: 0.01,
   COLOR: "#FFE082",
   OPACITY: 0.7,
   GLOW_OPACITY: 0.15,
   GLOW_SIZE_MULTIPLIER: 3.5,
-  MIN_DURATION: 3.5,              // Particle travel time: 3.5–5.5 seconds
+  MIN_DURATION: 3.5,
   MAX_DURATION: 5.5,
 };
 
@@ -48,75 +49,51 @@ export const LABELS = {
 export const ROUTE_TIMING = {
   ACTIVE_ROUTES_MIN: 3,
   ACTIVE_ROUTES_MAX: 5,
-
-  // Phase 1: Route fades in
   FADE_IN_DURATION: 0.7,
-
-  // Phase 2: Particle travels origin → destination
-  // (uses PARTICLES.MIN_DURATION / MAX_DURATION)
-
-  // Phase 3: Destination pulse on arrival
   ARRIVAL_PULSE_DURATION: 0.8,
-
-  // Phase 4: Completed route remains visible
   HOLD_DURATION_MIN: 2.0,
   HOLD_DURATION_MAX: 3.5,
-
-  // Phase 5: Route fades out
   FADE_OUT_DURATION: 1.0,
-
-  // Gap between route removal and next spawn
   SPAWN_GAP_MIN: 0.5,
   SPAWN_GAP_MAX: 1.2,
-
-  // Initial stagger when page loads
   INITIAL_STAGGER: 1.0,
 };
 
-// ── Origin Cities ───────────────────────────────────────────────────────────
+// ── Origin Countries (where RASOAF travelers depart from) ──────────────────
 export const ORIGINS = [
-  { name: "London",        lat: 51.5074, lng: -0.1278  },
-  { name: "Manchester",    lat: 53.4808, lng: -2.2426  },
-  { name: "Lagos",         lat: 6.5244,  lng: 3.3792   },
-  { name: "Abuja",         lat: 9.0765,  lng: 7.3986   },
-  { name: "Accra",         lat: 5.6037,  lng: -0.1870  },
-  { name: "Nairobi",       lat: -1.2921, lng: 36.8219  },
-  { name: "Johannesburg",  lat: -26.2041,lng: 28.0473  },
-  { name: "Toronto",       lat: 43.6532, lng: -79.3832 },
-  { name: "New York",      lat: 40.7128, lng: -74.0060 },
-  { name: "Washington DC", lat: 38.9072, lng: -77.0369 },
-  { name: "Dubai",         lat: 25.2048, lng: 55.2708  },
-  { name: "Doha",          lat: 25.2854, lng: 51.5310  },
-  { name: "Istanbul",      lat: 41.0082, lng: 28.9784  },
-  { name: "Jeddah",        lat: 21.3891, lng: 39.8579  },
+  { name: "United Kingdom",  lat: 51.5074, lng: -0.1278  },
+  { name: "Nigeria",         lat: 6.5244,  lng: 3.3792   },
+  { name: "Ghana",           lat: 5.6037,  lng: -0.1870  },
+  { name: "Kenya",           lat: -1.2921, lng: 36.8219  },
+  { name: "South Africa",    lat: -26.2041,lng: 28.0473  },
+  { name: "Canada",          lat: 43.6532, lng: -79.3832 },
+  { name: "United States",   lat: 40.7128, lng: -74.0060 },
+  { name: "UAE",             lat: 25.2048, lng: 55.2708  },
+  { name: "Qatar",           lat: 25.2854, lng: 51.5310  },
+  { name: "Turkey",          lat: 41.0082, lng: 28.9784  },
+  { name: "Saudi Arabia",    lat: 21.3891, lng: 39.8579  },
 ];
 
-// ── Destination Cities ──────────────────────────────────────────────────────
+// ── Destination Countries (RASOAF services) ────────────────────────────────
 export const DESTINATIONS = [
-  { name: "Makkah",   lat: 21.3891, lng: 39.8579 },
-  { name: "Madinah",  lat: 24.5247, lng: 39.5692 },
-  { name: "Dubai",    lat: 25.2048, lng: 55.2708 },
-  { name: "London",   lat: 51.5074, lng: -0.1278 },
-  { name: "Toronto",  lat: 43.6532, lng: -79.3832 },
-  { name: "New York", lat: 40.7128, lng: -74.0060 },
+  { name: "Saudi Arabia",    lat: 21.3891, lng: 39.8579 },
+  { name: "UAE",             lat: 25.2048, lng: 55.2708 },
+  { name: "United Kingdom",  lat: 51.5074, lng: -0.1278 },
+  { name: "Canada",          lat: 43.6532, lng: -79.3832 },
+  { name: "United States",   lat: 40.7128, lng: -74.0060 },
 ];
 
-// ── Label Offsets ───────────────────────────────────────────────────────────
+// ── Label Offsets (countries) ──────────────────────────────────────────────
 export const LABEL_OFFSETS = {
-  "London":        { u: -0.5, v: 0.5  },
-  "Manchester":    { u: -0.55,v: 0.6  },
-  "Lagos":         { u: 0,    v: -0.6 },
-  "Abuja":         { u: 0.1,  v: -0.5 },
-  "Accra":         { u: 0.2,  v: -0.7 },
-  "Nairobi":       { u: 0.4,  v: -0.6 },
-  "Johannesburg":  { u: 0.3,  v: -0.8 },
-  "Toronto":       { u: -0.6, v: -0.4 },
-  "New York":      { u: -0.5, v: -0.55},
-  "Washington DC": { u: -0.55,v: -0.45},
-  "Dubai":         { u: 0.4,  v: -0.2 },
-  "Doha":          { u: 0.45, v: -0.15},
-  "Istanbul":      { u: 0.3,  v: 0.5  },
-  "Jeddah":        { u: 0.5,  v: 0.2  },
-  "Makkah":        { u: 0.5,  v: 0.35 },
-  "Madinah":       { u: 0.55, v: 0.5  },
+  "United Kingdom":  { u: -0.65, v: 0.55 },
+  "Nigeria":         { u: 0,     v: -0.7 },
+  "Ghana":           { u: 0.2,   v: -0.7 },
+  "Kenya":           { u: 0.4,   v: -0.65 },
+  "South Africa":    { u: 0.35,  v: -0.8 },
+  "Canada":          { u: -0.7,  v: -0.45 },
+  "United States":   { u: -0.55, v: -0.65 },
+  "UAE":             { u: 0.45,  v: -0.25 },
+  "Qatar":           { u: 0.5,   v: -0.15 },
+  "Turkey":          { u: 0.35,  v: 0.55 },
+  "Saudi Arabia":    { u: 0.55,  v: 0.4 },
 };
