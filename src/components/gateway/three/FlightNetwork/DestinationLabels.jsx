@@ -9,27 +9,38 @@
 import { useMemo } from "react";
 import FloatingLabel from "./FloatingLabel";
 
-export default function DestinationLabels({ routes }) {
+// A route endpoint is only worth labeling if it's still visible (not mid
+// fade-out) and its coordinates are real, finite numbers rather than
+// missing/NaN/null — using Number.isFinite instead of `!== undefined`
+// also protects against upstream data bugs like `null` or `NaN` slipping
+// through, which `!== undefined` would silently accept.
+function isLabelableEndpoint(endpoint, routeIsVisible) {
+  return (
+    routeIsVisible &&
+    !!endpoint?.name &&
+    Number.isFinite(endpoint?.lat) &&
+    Number.isFinite(endpoint?.lng)
+  );
+}
+
+function isRouteVisible(route) {
+  return route.state !== "fadingOut" || route.opacity > 0.1;
+}
+
+export default function DestinationLabels({ routes = [] }) {
   // Collect unique countries from active routes
   const activeCountries = useMemo(() => {
-    const map = new Map();
+    if (!Array.isArray(routes) || routes.length === 0) return [];
 
-    // Guard: ensure routes is an array before iterating
-    if (!routes || !Array.isArray(routes)) return [];
+    const map = new Map();
 
     routes.forEach((route) => {
       // Safety check — skip routes with missing origin or destination
       if (!route || !route.origin || !route.destination) return;
 
-      const routeIsVisible = route.state !== "fadingOut" || route.opacity > 0.1;
+      const routeIsVisible = isRouteVisible(route);
 
-      // Add origin country if visible and has complete data
-      if (
-        routeIsVisible &&
-        route.origin.name &&
-        route.origin.lat !== undefined &&
-        route.origin.lng !== undefined
-      ) {
+      if (isLabelableEndpoint(route.origin, routeIsVisible)) {
         map.set(route.origin.name, {
           name: route.origin.name,
           lat: route.origin.lat,
@@ -38,13 +49,7 @@ export default function DestinationLabels({ routes }) {
         });
       }
 
-      // Add destination country if visible and has complete data
-      if (
-        routeIsVisible &&
-        route.destination.name &&
-        route.destination.lat !== undefined &&
-        route.destination.lng !== undefined
-      ) {
+      if (isLabelableEndpoint(route.destination, routeIsVisible)) {
         map.set(route.destination.name, {
           name: route.destination.name,
           lat: route.destination.lat,

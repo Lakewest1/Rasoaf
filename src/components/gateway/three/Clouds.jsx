@@ -2,6 +2,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // RASOAF Gateway — Cloud Layer
 // All hooks called unconditionally. Renders null when texture isn't ready.
+// Texture configuration runs once per texture change (useEffect), not on
+// every render, and flags needsUpdate so filtering/colorSpace changes are
+// actually re-uploaded to the GPU.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useRef, useEffect } from "react";
@@ -24,6 +27,18 @@ export default function Clouds({ texture }) {
     }
   });
 
+  // Configure the texture once when it changes, not on every render.
+  useEffect(() => {
+    if (!texture) return;
+    texture.colorSpace = SRGBColorSpace;
+    texture.anisotropy = 4;
+    texture.minFilter = LinearMipmapLinearFilter;
+    texture.magFilter = LinearFilter;
+    // Required after changing colorSpace/filtering, or the GPU may keep
+    // serving the texture's previous upload state.
+    texture.needsUpdate = true;
+  }, [texture]);
+
   useEffect(() => {
     return () => {
       materialRef.current?.dispose();
@@ -33,11 +48,6 @@ export default function Clouds({ texture }) {
 
   // ── Early return AFTER hooks ──────────────────────────────────────────
   if (!texture) return null;
-
-  texture.colorSpace = SRGBColorSpace;
-  texture.anisotropy = 4;
-  texture.minFilter = LinearMipmapLinearFilter;
-  texture.magFilter = LinearFilter;
 
   return (
     <mesh ref={meshRef}>

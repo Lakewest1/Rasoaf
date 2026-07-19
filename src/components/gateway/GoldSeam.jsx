@@ -1,13 +1,13 @@
 // src/components/gateway/GoldSeam.jsx
 // ─────────────────────────────────────────────────────────────────────────────
 // RASOAF Gateway — Luxury Center Gold Seam
-// Production-ready. No changes required.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { memo } from "react";
 import { motion } from "framer-motion";
-import { COLORS, GRADIENTS, SHADOWS, Z_INDEX, EASING } from "./constants";
+import { COLORS, GRADIENTS, SHADOWS, Z_INDEX } from "./constants";
 import { transitions } from "./animations";
+import usePrefersReducedMotion from "../../hooks/usePrefersReducedMotion";
 
 const CONTAINER_STYLE = {
   position: "absolute",
@@ -27,16 +27,15 @@ const CORE_STYLE = {
   boxShadow: SHADOWS.SEAM,
 };
 
-const GLOW_STYLE = {
+const GLOW_STYLE_BASE = {
   position: "absolute",
   inset: 0,
   background: COLORS.GOLD_LIGHT,
   filter: "blur(6px)",
   willChange: "opacity",
-  animation: "gw-seam-glow 3s ease-in-out infinite",
 };
 
-const SHIMMER_STYLE = {
+const SHIMMER_STYLE_BASE = {
   position: "absolute",
   top: "-10%",
   left: 0,
@@ -44,10 +43,23 @@ const SHIMMER_STYLE = {
   height: "35%",
   background: GRADIENTS.SHIMMER,
   willChange: "top",
-  animation: "gw-seam-shimmer 4s ease-in-out infinite",
 };
 
 const GoldSeam = memo(function GoldSeam({ visible }) {
+  const reducedMotion = usePrefersReducedMotion();
+
+  // The seam's fade in/out is handled by Framer Motion above (which is safe
+  // to leave as-is), but the ambient glow/shimmer are separate, infinite CSS
+  // keyframe loops with no built-in way to opt out — so they need an
+  // explicit guard here.
+  const glowStyle = reducedMotion
+    ? { ...GLOW_STYLE_BASE, animation: "none" }
+    : { ...GLOW_STYLE_BASE, animation: "gw-seam-glow 3s ease-in-out infinite" };
+
+  const shimmerStyle = reducedMotion
+    ? { ...SHIMMER_STYLE_BASE, animation: "none", top: "10%" }
+    : { ...SHIMMER_STYLE_BASE, animation: "gw-seam-shimmer 4s ease-in-out infinite" };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -57,8 +69,8 @@ const GoldSeam = memo(function GoldSeam({ visible }) {
       aria-hidden="true"
     >
       <div style={CORE_STYLE} />
-      <div style={GLOW_STYLE} />
-      <div style={SHIMMER_STYLE} />
+      <div style={glowStyle} />
+      <div style={shimmerStyle} />
     </motion.div>
   );
 });

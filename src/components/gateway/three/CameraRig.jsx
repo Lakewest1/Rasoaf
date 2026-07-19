@@ -12,10 +12,12 @@ import MouseParallax from "./MouseParallax";
 const CameraRig = forwardRef(function CameraRig({ children, currentScene, onSceneComplete }, ref) {
   const earthGroupRef = useRef(null);
 
-  // Expose the group ref to parent for Earth tilt
+  // earthGroupRef is a stable ref object for the lifetime of this component,
+  // so the imperative handle only needs to be built once — the empty deps
+  // array avoids recreating the handle object on every render.
   useImperativeHandle(ref, () => ({
     getEarthGroup: () => earthGroupRef.current,
-  }));
+  }), []);
 
   return (
     <>

@@ -7,7 +7,7 @@
 // Only visible on the night side. Wavy organic motion.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useRef, useMemo } from "react";
+import { useRef, useMemo, useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import { RingGeometry, Color, Vector3, AdditiveBlending, DoubleSide } from "three";
 import { EARTH } from "../constants";
@@ -73,6 +73,15 @@ function AuroraRing({ sunDirection, position, color1, color2 }) {
   const geometry = useMemo(() => {
     return new RingGeometry(ringRadius * 0.85, ringRadius * 1.05, 128, 1);
   }, [ringRadius]);
+
+  // `geometry` is constructed manually (new RingGeometry(...)) rather than
+  // as a JSX element, so React Three Fiber's automatic disposal doesn't
+  // cover it — R3F only auto-disposes objects it constructs itself via
+  // tags like <ringGeometry>. Without this, every mount/unmount of an
+  // AuroraRing leaks a 128-segment ring geometry.
+  useEffect(() => {
+    return () => geometry.dispose();
+  }, [geometry]);
 
   useFrame((_, delta) => {
     if (!uniforms || !sunDirection) return;

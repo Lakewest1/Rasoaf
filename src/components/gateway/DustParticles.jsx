@@ -3,10 +3,12 @@
 // RASOAF Gateway — Ambient Floating Dust Particles
 // Generated once at module scope. Zero runtime allocations.
 // Each particle memoized independently. GPU accelerated.
+// Respects prefers-reduced-motion — particles stay visible but stop floating.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { memo } from "react";
 import { COLORS, PARTICLES } from "./constants";
+import usePrefersReducedMotion from "../../hooks/usePrefersReducedMotion";
 
 // ── Generate stable particles at module level ──────────────────────────────
 function createParticles(count) {
@@ -36,7 +38,7 @@ const CONTAINER_STYLE = {
 };
 
 // ── Individual particle — memoized, zero-rerender leaf ──────────────────────
-const ParticleDot = memo(function ParticleDot({ particle }) {
+const ParticleDot = memo(function ParticleDot({ particle, reducedMotion }) {
   const style = {
     position: "absolute",
     left: particle.left,
@@ -46,9 +48,11 @@ const ParticleDot = memo(function ParticleDot({ particle }) {
     borderRadius: "50%",
     background: COLORS.DUST_COLOR,
     opacity: particle.opacity,
-    willChange: "transform, opacity",
-    animation: `gw-dust-float ${particle.duration}s ease-in-out infinite`,
-    animationDelay: `${particle.delay}s`,
+    willChange: reducedMotion ? undefined : "transform, opacity",
+    animation: reducedMotion
+      ? "none"
+      : `gw-dust-float ${particle.duration}s ease-in-out infinite`,
+    animationDelay: reducedMotion ? undefined : `${particle.delay}s`,
   };
 
   return <div aria-hidden="true" style={style} />;
@@ -56,10 +60,12 @@ const ParticleDot = memo(function ParticleDot({ particle }) {
 
 // ── Main container ──────────────────────────────────────────────────────────
 const DustParticles = memo(function DustParticles() {
+  const reducedMotion = usePrefersReducedMotion();
+
   return (
     <div style={CONTAINER_STYLE} aria-hidden="true">
       {PARTICLES_DATA.map((p) => (
-        <ParticleDot key={p.id} particle={p} />
+        <ParticleDot key={p.id} particle={p} reducedMotion={reducedMotion} />
       ))}
     </div>
   );

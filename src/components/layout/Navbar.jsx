@@ -257,7 +257,7 @@ export default function Navbar() {
       "Hajj Packages": `${basePath}/packages/hajj`,
       "Umrah Packages": `${basePath}/packages/umrah`,
       "Flight Booking": isHajjContext ? `${basePath}/flight-booking` : "/travel/flights",
-      "Hotel Reservation": isHajjContext ? `${basePath}/hotel-reservation` : "/travel/hotel-reservation",
+      "Hotel Reservation": isHajjContext ? `${basePath}/hotel-reservation` : "/hajj/hotel-reservation",
       "Group Travel": `${basePath}/packages/hajj`,
       "VIP Packages": `${basePath}/packages/hajj`,
       "Student Visa": "/travel/student-visa",

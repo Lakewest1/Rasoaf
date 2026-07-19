@@ -7,7 +7,7 @@
 // Color shifts with sun position: cool blue at noon, gold at sunrise/sunset.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useRef, useMemo } from "react";
+import { useRef, useMemo, useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import { BackSide, Color, Vector3, AdditiveBlending } from "three";
 import { EARTH } from "../constants";
@@ -73,6 +73,17 @@ export default function AtmosphereScatter({ sunDirection }) {
     if (!uniforms || !sunDirection) return;
     uniforms.uSunDirection.value.copy(sunDirection).normalize();
   });
+
+  // The shader material and sphere geometry are created by R3F via JSX, but
+  // this cleanup is kept explicit and consistent with Earth.jsx/Clouds.jsx
+  // so disposal behavior for this "shell" family of meshes doesn't depend
+  // on which auto-dispose defaults R3F happens to apply.
+  useEffect(() => {
+    return () => {
+      materialRef.current?.dispose();
+      meshRef.current?.geometry?.dispose();
+    };
+  }, []);
 
   return (
     <mesh ref={meshRef}>
