@@ -14,3 +14,7 @@ export { default as FinalCTA } from "./FinalCTA";
 export { default as FooterCTA } from "./FooterCTA";
 export { default as VisaServicesGrid } from "./VisaServicesGrid";
 export { default as CTASection } from "./CTASection";
+
+// Add this line:
+export { default as VisaSlider } from "./VisaSlider";
+export { default as AboutRasoaf } from "./AboutRasoaf";

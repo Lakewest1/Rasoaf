@@ -7,15 +7,7 @@
 import { useCallback } from "react";
 import TravelHeroSection from "../components/travel/HeroSection";
 import { GatewaySplit } from "../components/gateway";
-import {
-  FeaturedDestinations,
-  TravelServices,
-  WhyChooseRasoaf,
-  TravelStatistics,
-  TestimonialsSection,
-  FAQSection,
-  CTASection,
-} from "../components/travel";
+
 
 export default function Gateway() {
   const scrollToGateway = useCallback(() => {
@@ -57,17 +49,7 @@ export default function Gateway() {
         <GatewaySplit />
       </div>
 
-      {/* ═══════════════════════════════════════════════════════════
-          PREMIUM TRAVEL SECTIONS
-          "Explore what we offer"
-      ═══════════════════════════════════════════════════════════ */}
-      <FeaturedDestinations />
-      <TravelServices />
-      <WhyChooseRasoaf />
-      <TravelStatistics />
-      <TestimonialsSection />
-      <FAQSection />
-      <CTASection />
+      
     </>
   );
 }

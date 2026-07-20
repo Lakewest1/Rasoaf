@@ -1,533 +1,742 @@
 // src/components/travel/TravelStatistics.jsx
 // ─────────────────────────────────────────────────────────────────────────────
-// RASOAF TRAVELS AND TOURS LIMITED - Animated Statistics
-// Premium Rasoaf Typography · Glassmorphism Cards · EarthScene Background
+// RASOAF TRAVELS AND TOURS LIMITED — Premium Statistics Badges
+// Luxury shield design · Gold-dominant · Icon rotate 360° · Slide-up reveal
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import { motion, useInView } from "framer-motion";
-import { Briefcase, Users, Globe, CheckCircle, Headphones, Star, Sparkles, TrendingUp } from "lucide-react";
+import {
+  Briefcase, Users, Globe, CheckCircle, Headphones,
+  Star, Sparkles, TrendingUp, ChevronLeft, ChevronRight,
+} from "lucide-react";
 
+// ── Data — removed "Always Available" from description ──────────────────
 const stats = [
-  { 
-    icon: Briefcase, 
-    value: 20, 
-    suffix: "+", 
+  {
+    icon: Briefcase,
+    value: 20,
+    suffix: "+",
     label: "Years Experience",
     color: "#D4A017",
-    accentBg: "rgba(212, 160, 23, 0.1)",
-    description: "Industry Expertise"
+    description: "Industry Expertise",
   },
-  { 
-    icon: Users, 
-    value: 5000, 
-    suffix: "+", 
+  {
+    icon: Users,
+    value: 5000,
+    suffix: "+",
     label: "Satisfied Travelers",
     color: "#F7C948",
-    accentBg: "rgba(247, 201, 72, 0.1)",
-    description: "Happy Clients"
+    description: "Happy Clients",
   },
-  { 
-    icon: Globe, 
-    value: 60, 
-    suffix: "+", 
+  {
+    icon: Globe,
+    value: 60,
+    suffix: "+",
     label: "Countries",
-    color: "#1A73E8",
-    accentBg: "rgba(26, 115, 232, 0.1)",
-    description: "Global Reach"
+    color: "#D4A017",
+    description: "Global Reach",
   },
-  { 
-    icon: CheckCircle, 
-    value: 98, 
-    suffix: "%", 
+  {
+    icon: CheckCircle,
+    value: 98,
+    suffix: "%",
     label: "Visa Success Rate",
-    color: "#059669",
-    accentBg: "rgba(5, 150, 105, 0.1)",
-    description: "Proven Results"
+    color: "#D4A017",
+    description: "Proven Results",
   },
-  { 
-    icon: Headphones, 
-    value: 24, 
-    suffix: "/7", 
-    label: "Support",
-    color: "#7C3AED",
-    accentBg: "rgba(124, 58, 237, 0.1)",
-    description: "Always Available"
-  },
+  // Removed: Round The Clock support card
 ];
 
-// Fixed AnimatedNumber component
+// ── AnimatedNumber (preserved) ──────────────────────────────────────────
 function AnimatedNumber({ target, suffix, isInView }) {
   const [count, setCount] = useState(0);
 
   useEffect(() => {
     if (!isInView) return;
-    
-    let animationFrameId;
-    const duration = 2000; // 2 seconds
+    let raf;
+    const duration = 2400;
     const startTime = performance.now();
-    
-    const animate = (currentTime) => {
-      const elapsed = currentTime - startTime;
+
+    const animate = (now) => {
+      const elapsed = now - startTime;
       const progress = Math.min(elapsed / duration, 1);
-      
-      // Easing function for smooth deceleration
-      const easeOutQuart = 1 - Math.pow(1 - progress, 4);
-      const currentValue = Math.floor(easeOutQuart * target);
-      
-      setCount(currentValue);
-      
-      if (progress < 1) {
-        animationFrameId = requestAnimationFrame(animate);
-      }
+      const easeOutExpo = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+      setCount(Math.floor(easeOutExpo * target));
+      if (progress < 1) raf = requestAnimationFrame(animate);
     };
-    
-    animationFrameId = requestAnimationFrame(animate);
-    
-    return () => {
-      if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
-      }
-    };
+
+    raf = requestAnimationFrame(animate);
+    return () => { if (raf) cancelAnimationFrame(raf); };
   }, [isInView, target]);
 
   return <span>{count}{suffix}</span>;
 }
 
-const PremiumCSS = `
-  /* ── Rasoaf Design Tokens ── */
-  :root {
-    --rasoaf-gold: #D4A017;
-    --rasoaf-gold-light: #F7C948;
-    --rasoaf-gold-dark: #B8860B;
-    --rasoaf-cream: #FFFDF8;
-    --rasoaf-cream-dim: rgba(255, 253, 248, 0.7);
-    --rasoaf-cream-muted: rgba(255, 253, 248, 0.5);
-    --rasoaf-font-display: 'Manrope', system-ui, sans-serif;
-    --rasoaf-font-body: 'Inter', system-ui, sans-serif;
-    --rasoaf-shadow-card: 0 8px 32px rgba(0, 0, 0, 0.3);
-    --rasoaf-shadow-card-hover: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(212, 160, 23, 0.15);
-    --rasoaf-transition-smooth: 0.5s cubic-bezier(0.25, 1, 0.5, 1);
-    --rasoaf-transition-bounce: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
+// ── Design Tokens ───────────────────────────────────────────────────────
+const tokens = {
+  display: "'Manrope', system-ui, sans-serif",
+  body: "'Inter', system-ui, sans-serif",
+  gold: "#D4A017",
+  goldLight: "#F7C948",
+  goldDark: "#B8860B",
+  cream: "#FFF8E6",
+  creamWarm: "#FFFDF8",
+  charcoal: "#0B0F17",
+  charcoalLight: "#1B2230",
+  white: "#FFFFFF",
+  textPrimary: "#0B0F17",
+  textSecondary: "#525252",
+  textMuted: "#8B8B8B",
+  transition: "0.6s cubic-bezier(0.22, 1, 0.36, 1)",
+  transitionBounce: "0.5s cubic-bezier(0.34, 1.56, 0.64, 1)",
+};
 
-  /* ── Section - Transparent for EarthScene ── */
-  .rst-section {
+// ── Premium CSS ─────────────────────────────────────────────────────────
+const CSS = `
+  .rts-section {
     position: relative;
     z-index: 10;
-    padding: clamp(60px, 10vh, 100px) clamp(20px, 5vw, 80px);
-    background: transparent;
-    font-family: var(--rasoaf-font-body);
+    padding: clamp(80px, 12vh, 130px) clamp(20px, 5vw, 80px);
+    font-family: ${tokens.body};
     overflow: visible;
+    background: #FFFFFF;
+  }
+
+  .rts-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
   }
 
   /* ── Section Header ── */
-  .rst-header {
+  .rts-header {
     text-align: center;
-    margin-bottom: clamp(40px, 5vh, 56px);
+    margin-bottom: clamp(52px, 7vh, 72px);
   }
 
-  .rst-header-badge {
+  .rts-header-badge {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 8px 24px;
-    background: rgba(255, 255, 255, 0.12);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 8px 22px;
+    background: rgba(11, 15, 23, 0.05);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(11, 15, 23, 0.08);
     border-radius: 100px;
-    color: #FFFDF8;
-    font-family: var(--rasoaf-font-body);
+    color: ${tokens.charcoal};
+    font-family: ${tokens.body};
     font-size: 11px;
     font-weight: 700;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.13em;
     text-transform: uppercase;
-    margin-bottom: 20px;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    transition: all 0.3s ease;
+    margin-bottom: 22px;
+    text-shadow: none;
+    transition: all 0.35s ease;
   }
 
-  .rst-header-badge:hover {
-    background: rgba(255, 255, 255, 0.18);
+  .rts-header-badge:hover {
+    background: rgba(11, 15, 23, 0.08);
     border-color: rgba(212, 160, 23, 0.35);
     transform: translateY(-1px);
   }
 
-  .rst-header-badge-icon {
-    animation: rst-icon-pulse 2s ease-in-out infinite;
+  .rts-header-badge-icon {
+    animation: rts-pulse 2.5s ease-in-out infinite;
   }
 
-  @keyframes rst-icon-pulse {
+  @keyframes rts-pulse {
     0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.6; transform: scale(0.9); }
+    50% { opacity: 0.5; transform: scale(0.9); }
   }
 
-  .rst-header-title {
-    font-family: var(--rasoaf-font-display);
+  .rts-header-title {
+    font-family: ${tokens.display};
     font-weight: 800;
-    font-size: clamp(28px, 3.5vw, 42px);
-    color: #FFFDF8;
+    font-size: clamp(30px, 4vw, 46px);
+    color: ${tokens.charcoal};
     letter-spacing: -0.03em;
-    line-height: 1.15;
-    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-    margin-bottom: 8px;
+    line-height: 1.12;
+    text-shadow: none;
+    margin-bottom: 12px;
   }
 
-  .rst-header-title-gradient {
-    background: linear-gradient(
-      135deg, 
-      var(--rasoaf-gold-light) 0%, 
-      var(--rasoaf-gold) 40%, 
-      var(--rasoaf-gold-dark) 100%
-    );
+  .rts-header-title-gradient {
+    background: linear-gradient(135deg, ${tokens.goldLight} 0%, ${tokens.gold} 45%, ${tokens.goldDark} 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    filter: drop-shadow(0 2px 4px rgba(212, 160, 23, 0.4));
+    filter: drop-shadow(0 2px 6px rgba(212, 160, 23, 0.25));
   }
 
-  .rst-header-subtitle {
-    font-family: var(--rasoaf-font-body);
-    font-size: clamp(13px, 1.1vw, 15px);
-    color: var(--rasoaf-cream-muted);
+  .rts-header-subtitle {
+    font-family: ${tokens.body};
+    font-size: clamp(13px, 1.1vw, 15.5px);
+    color: ${tokens.textSecondary};
     line-height: 1.6;
-    max-width: 500px;
+    max-width: 520px;
     margin: 0 auto;
     font-weight: 400;
     letter-spacing: 0.01em;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    text-shadow: none;
   }
 
-  /* ── Grid ── */
-  .rst-grid {
+  /* ── Desktop Grid ── */
+  .rts-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: clamp(18px, 2.2vw, 28px);
     max-width: 1100px;
     margin: 0 auto;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: clamp(16px, 2.2vw, 28px);
-    text-align: center;
-    position: relative;
-    z-index: 1;
   }
 
-  /* ── Stat Cards - Glassmorphism ── */
-  .rst-item {
+  /* ── Badge Card ── */
+  .rts-badge {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 16px;
-    padding: clamp(28px, 3.5vw, 40px) clamp(20px, 2.5vw, 28px);
-    background: rgba(255, 255, 255, 0.06);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 32px;
-    transition: all var(--rasoaf-transition-smooth);
+    cursor: default;
     position: relative;
+    transition: transform ${tokens.transition};
+  }
+
+  .rts-badge:hover {
+    transform: translateY(-8px);
+  }
+
+  /* ── Shield Top (Charcoal/Gold) ── */
+  .rts-shield {
+    position: relative;
+    width: 100%;
+    background: linear-gradient(175deg, ${tokens.charcoalLight} 0%, ${tokens.charcoal} 50%, #0A0F17 100%);
+    border-radius: 22px 22px 6px 6px;
+    padding: clamp(28px, 3.2vw, 40px) clamp(14px, 2vw, 22px) clamp(24px, 2.8vw, 34px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    box-shadow:
+      0 10px 36px rgba(0, 0, 0, 0.35),
+      inset 0 1px 0 rgba(255, 255, 255, 0.06),
+      0 0 0 1px rgba(212, 160, 23, 0.08);
+    transition: all ${tokens.transition};
+    z-index: 2;
     overflow: hidden;
-    isolation: isolate;
   }
 
-  .rst-item::before {
+  /* Gold light sweep on hover */
+  .rts-shield::before {
     content: '';
     position: absolute;
-    inset: 0;
-    border-radius: 32px;
-    padding: 1px;
-    background: linear-gradient(
-      135deg, 
-      rgba(212, 160, 23, 0.3), 
-      transparent 30%, 
-      transparent 70%, 
-      rgba(212, 160, 23, 0.15)
-    );
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    opacity: 0;
-    transition: opacity 0.5s ease;
-    pointer-events: none;
-  }
-
-  .rst-item::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
+    top: -50%;
+    left: -50%;
     width: 200%;
-    height: 100%;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      rgba(255, 255, 255, 0.05),
-      transparent
-    );
-    transition: left 0.8s ease;
+    height: 200%;
+    background: radial-gradient(circle at center, rgba(212, 160, 23, 0.08) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity ${tokens.transition};
     pointer-events: none;
   }
 
-  .rst-item:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(212, 160, 23, 0.3);
-    transform: translateY(-6px);
-    box-shadow: var(--rasoaf-shadow-card-hover);
-  }
-
-  .rst-item:hover::before {
+  .rts-badge:hover .rts-shield::before {
     opacity: 1;
   }
 
-  .rst-item:hover::after {
-    left: 100%;
-  }
-
-  /* ── Icon ── */
-  .rst-icon-wrap {
-    position: relative;
-    display: inline-flex;
-  }
-
-  .rst-icon-glow {
+  /* Shield bottom notch */
+  .rts-shield::after {
+    content: '';
     position: absolute;
-    inset: -8px;
-    border-radius: 18px;
-    opacity: 0;
-    transition: all 0.5s ease;
-    filter: blur(14px);
+    bottom: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 14px solid transparent;
+    border-right: 14px solid transparent;
+    border-top: 12px solid #0A0F17;
+    z-index: 1;
+    transition: border-top-color ${tokens.transition};
   }
 
-  .rst-item:hover .rst-icon-glow {
-    opacity: 0.3;
-    transform: scale(1.3);
+  .rts-badge:hover .rts-shield::after {
+    border-top-color: ${tokens.charcoal};
   }
 
-  .rst-icon {
-    width: 64px;
-    height: 64px;
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+  .rts-badge:hover .rts-shield {
+    box-shadow:
+      0 16px 48px rgba(0, 0, 0, 0.5),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1),
+      0 0 0 1px rgba(212, 160, 23, 0.2),
+      0 0 60px rgba(212, 160, 23, 0.06);
+  }
+
+  /* ── Shield Icon — Pentagon Shape ── */
+  .rts-shield-icon {
+    width: 58px;
+    height: 58px;
     display: flex;
     align-items: center;
     justify-content: center;
+    background: rgba(212, 160, 23, 0.08);
+    border: 1.5px solid rgba(212, 160, 23, 0.2);
+    transition: all ${tokens.transition};
     position: relative;
     z-index: 2;
-    transition: all var(--rasoaf-transition-smooth);
+    clip-path: polygon(50% 0%, 100% 38%, 81% 100%, 19% 100%, 0% 38%);
+    background: linear-gradient(135deg, rgba(212, 160, 23, 0.12), rgba(212, 160, 23, 0.04));
   }
 
-  .rst-item:hover .rst-icon {
-    transform: scale(1.1) rotate(-3deg);
-    border-color: rgba(212, 160, 23, 0.3);
-    box-shadow: 0 4px 20px rgba(212, 160, 23, 0.1);
+  .rts-badge:hover .rts-shield-icon {
+    transform: rotate(360deg) scale(1.12);
+    border-color: ${tokens.gold};
+    background: rgba(212, 160, 23, 0.18);
+    box-shadow: 0 0 28px rgba(212, 160, 23, 0.35), 0 0 0 4px rgba(212, 160, 23, 0.04);
   }
 
-  /* ── Value ── */
-  .rst-value {
-    font-family: var(--rasoaf-font-display);
+  .rts-shield-icon svg {
+    filter: drop-shadow(0 2px 4px rgba(212, 160, 23, 0.2));
+  }
+
+  .rts-shield-subtitle {
+    font-family: ${tokens.body};
+    font-size: clamp(9.5px, 0.7vw, 10.5px);
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.45);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    position: relative;
+    z-index: 2;
+    transition: color ${tokens.transition};
+  }
+
+  .rts-badge:hover .rts-shield-subtitle {
+    color: rgba(255, 255, 255, 0.65);
+  }
+
+  /* ── Bottom Cream Circle ── */
+  .rts-badge-circle {
+    width: 88%;
+    background: linear-gradient(180deg, ${tokens.creamWarm} 0%, ${tokens.cream} 100%);
+    border-radius: 0 0 50% 50% / 0 0 55% 55%;
+    padding: clamp(22px, 2.8vw, 32px) clamp(10px, 1.4vw, 16px) clamp(18px, 2.2vw, 26px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    box-shadow:
+      0 10px 30px rgba(0, 0, 0, 0.08),
+      0 0 0 1px rgba(212, 160, 23, 0.06);
+    position: relative;
+    z-index: 1;
+    margin-top: -3px;
+    transition: all ${tokens.transition};
+  }
+
+  .rts-badge:hover .rts-badge-circle {
+    box-shadow:
+      0 14px 40px rgba(0, 0, 0, 0.14),
+      0 0 0 1px rgba(212, 160, 23, 0.14);
+  }
+
+  /* ── Number (Gold) ── */
+  .rts-badge-number {
+    font-family: ${tokens.display};
     font-weight: 800;
-    font-size: clamp(38px, 5.5vw, 56px);
-    background: linear-gradient(
-      135deg, 
-      var(--rasoaf-gold-light) 0%, 
-      var(--rasoaf-gold) 40%, 
-      var(--rasoaf-gold-dark) 100%
-    );
+    font-size: clamp(36px, 5vw, 52px);
+    background: linear-gradient(135deg, ${tokens.goldDark} 0%, ${tokens.gold} 40%, ${tokens.goldLight} 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     line-height: 1;
-    letter-spacing: -0.02em;
-    filter: drop-shadow(0 2px 8px rgba(212, 160, 23, 0.3));
-    transition: all 0.3s ease;
-    min-height: clamp(38px, 5.5vw, 56px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    letter-spacing: -0.03em;
+    transition: all ${tokens.transition};
+    filter: drop-shadow(0 2px 4px rgba(212, 160, 23, 0.2));
   }
 
-  .rst-item:hover .rst-value {
-    filter: drop-shadow(0 4px 12px rgba(212, 160, 23, 0.5));
-    transform: scale(1.05);
+  .rts-badge:hover .rts-badge-number {
+    transform: scale(1.06);
+    filter: drop-shadow(0 4px 12px rgba(212, 160, 23, 0.45));
   }
 
   /* ── Label ── */
-  .rst-label {
-    font-family: var(--rasoaf-font-body);
-    font-size: 0.85rem;
+  .rts-badge-label {
+    font-family: ${tokens.body};
+    font-size: clamp(11px, 0.85vw, 13px);
     font-weight: 600;
-    color: var(--rasoaf-cream-dim);
-    letter-spacing: 0.02em;
-    transition: color 0.3s ease;
+    color: ${tokens.textSecondary};
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    transition: color ${tokens.transition};
   }
 
-  .rst-item:hover .rst-label {
-    color: #FFFDF8;
+  .rts-badge:hover .rts-badge-label {
+    color: ${tokens.textPrimary};
   }
 
-  /* ── Description (appears on hover) ── */
-  .rst-description {
-    font-family: var(--rasoaf-font-body);
-    font-size: 0.7rem;
+  .rts-badge-desc {
+    font-family: ${tokens.body};
+    font-size: clamp(9px, 0.68vw, 10px);
     font-weight: 500;
-    color: var(--rasoaf-gold-light);
-    letter-spacing: 0.05em;
+    color: ${tokens.textMuted};
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     opacity: 0;
-    transform: translateY(10px);
-    transition: all 0.4s ease;
+    transform: translateY(8px);
+    transition: all ${tokens.transition};
   }
 
-  .rst-item:hover .rst-description {
+  .rts-badge:hover .rts-badge-desc {
     opacity: 1;
     transform: translateY(0);
+    color: ${tokens.goldDark};
   }
 
-  /* ── Responsive Design ── */
+  /* ── Mobile Carousel ── */
+  .rts-carousel-wrapper {
+    display: none;
+    position: relative;
+    overflow: hidden;
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 0 10px;
+  }
+
+  .rts-carousel-track {
+    display: flex;
+    transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+    gap: 12px;
+  }
+
+  .rts-carousel-slide {
+    min-width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 0 4px;
+    box-sizing: border-box;
+  }
+
+  /* Smaller cards on mobile */
+  .rts-carousel-slide .rts-badge {
+    transform: scale(0.85);
+    transform-origin: center;
+  }
+
+  .rts-carousel-slide .rts-shield {
+    padding: clamp(16px, 2.5vw, 22px) clamp(10px, 1.5vw, 14px) clamp(14px, 2vw, 18px);
+    border-radius: 16px 16px 4px 4px;
+  }
+
+  .rts-carousel-slide .rts-shield-icon {
+    width: 42px;
+    height: 42px;
+  }
+
+  .rts-carousel-slide .rts-shield-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .rts-carousel-slide .rts-shield-subtitle {
+    font-size: clamp(7px, 1.2vw, 8.5px);
+  }
+
+  .rts-carousel-slide .rts-badge-circle {
+    padding: clamp(14px, 2vw, 18px) clamp(8px, 1vw, 12px) clamp(12px, 1.5vw, 16px);
+    border-radius: 0 0 40% 40% / 0 0 45% 45%;
+  }
+
+  .rts-carousel-slide .rts-badge-number {
+    font-size: clamp(24px, 4vw, 32px);
+  }
+
+  .rts-carousel-slide .rts-badge-label {
+    font-size: clamp(8px, 1.2vw, 10px);
+  }
+
+  .rts-carousel-slide .rts-badge-desc {
+    font-size: clamp(6.5px, 1vw, 8px);
+  }
+
+  .rts-carousel-btn {
+    position: absolute;
+    top: 45%;
+    transform: translateY(-50%);
+    z-index: 5;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(212, 160, 23, 0.2);
+    color: ${tokens.charcoal};
+    cursor: pointer;
+    box-shadow: 0 2px 14px rgba(0, 0, 0, 0.12);
+    transition: all 0.35s ease;
+  }
+
+  .rts-carousel-btn:hover {
+    background: ${tokens.white};
+    border-color: ${tokens.gold};
+    box-shadow: 0 4px 22px rgba(0, 0, 0, 0.18);
+  }
+
+  .rts-carousel-btn-left { left: -4px; }
+  .rts-carousel-btn-right { right: -4px; }
+
+  .rts-carousel-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .rts-carousel-dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 16px;
+  }
+
+  .rts-carousel-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(11, 15, 23, 0.2);
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: all 0.35s ease;
+  }
+
+  .rts-carousel-dot-active {
+    width: 20px;
+    background: ${tokens.gold};
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 1024px) {
+    .rts-grid {
+      grid-template-columns: repeat(2, 1fr);
+      max-width: 600px;
+      gap: clamp(16px, 2.5vw, 24px);
+    }
+  }
+
   @media (max-width: 768px) {
-    .rst-section {
-      padding: clamp(40px, 8vh, 60px) 20px;
+    .rts-section {
+      padding: clamp(48px, 7vh, 64px) 16px;
     }
-    
-    .rst-grid {
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 14px;
+
+    /* Hide main grid on small screens */
+    .rts-grid {
+      display: none !important;
     }
-    
-    .rst-item {
-      padding: 24px 16px;
-      border-radius: 24px;
-    }
-    
-    .rst-icon {
-      width: 52px;
-      height: 52px;
-      border-radius: 16px;
-    }
-    
-    .rst-value {
-      font-size: clamp(32px, 6vw, 44px);
-      min-height: clamp(32px, 6vw, 44px);
+
+    /* Show only carousel */
+    .rts-carousel-wrapper {
+      display: block !important;
     }
   }
 
   @media (max-width: 480px) {
-    .rst-grid {
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
+    .rts-carousel-wrapper {
+      max-width: 340px;
     }
     
-    .rst-item {
-      padding: 20px 12px;
-      border-radius: 20px;
-      gap: 12px;
+    .rts-carousel-slide .rts-badge {
+      transform: scale(0.75);
     }
     
-    .rst-icon {
-      width: 44px;
-      height: 44px;
-      border-radius: 14px;
+    .rts-carousel-btn {
+      width: 28px;
+      height: 28px;
     }
     
-    .rst-value {
-      font-size: clamp(28px, 7vw, 36px);
-      min-height: clamp(28px, 7vw, 36px);
+    .rts-carousel-btn svg {
+      width: 14px;
+      height: 14px;
+    }
+  }
+
+  @media (max-width: 380px) {
+    .rts-carousel-wrapper {
+      max-width: 290px;
     }
     
-    .rst-label {
-      font-size: 0.75rem;
+    .rts-carousel-slide .rts-badge {
+      transform: scale(0.7);
     }
-    
-    .rst-description {
-      font-size: 0.65rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rts-badge,
+    .rts-badge * {
+      transition: none !important;
+    }
+    .rts-carousel-track {
+      transition: none !important;
+    }
+    .rts-shield-icon {
+      transition: none !important;
     }
   }
 `;
 
+// ══════════════════════════════════════════════════════════════════════════
+//  Badge Card — Slides up on scroll, icon rotates 360° on hover
+// ══════════════════════════════════════════════════════════════════════════
+function BadgeCard({ stat, isInView, index }) {
+  const Icon = stat.icon;
+  return (
+    <motion.div
+      className="rts-badge"
+      // Slide up animation on scroll
+      initial={{ opacity: 0, y: 80, scale: 0.94 }}
+      animate={isInView ? { opacity: 1, y: 0, scale: 1 } : {}}
+      transition={{
+        delay: 0.16 * index,
+        duration: 0.9,
+        ease: [0.22, 1, 0.36, 1],
+      }}
+      whileHover={{ y: -8 }}
+    >
+      {/* Shield Top — Charcoal with gold accents */}
+      <div className="rts-shield">
+        <div className="rts-shield-subtitle">{stat.description}</div>
+        {/* Icon rotates 360° on hover - Pentagon shape */}
+        <div className="rts-shield-icon">
+          <Icon size={26} color={stat.color} strokeWidth={1.6} />
+        </div>
+      </div>
+
+      {/* Bottom Circle — Warm Cream */}
+      <div className="rts-badge-circle">
+        <div className="rts-badge-number">
+          <AnimatedNumber target={stat.value} suffix={stat.suffix} isInView={isInView} />
+        </div>
+        <div className="rts-badge-label">{stat.label}</div>
+        <div className="rts-badge-desc">
+          <Star size={8} style={{ display: 'inline', marginRight: 4 }} />
+          {stat.description}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+//  Mobile Carousel — 2 cards per slide, reduced size
+// ══════════════════════════════════════════════════════════════════════════
+function MobileCarousel({ stats, isInView }) {
+  const [current, setCurrent] = useState(0);
+  const [touchStart, setTouchStart] = useState(null);
+  const timerRef = useRef(null);
+  const total = Math.ceil(stats.length / 2);
+
+  // Group stats into pairs for 2-per-slide display
+  const groupedStats = [];
+  for (let i = 0; i < stats.length; i += 2) {
+    groupedStats.push(stats.slice(i, i + 2));
+  }
+
+  const goTo = useCallback((i) => setCurrent(((i % total) + total) % total), [total]);
+  const prev = () => goTo(current - 1);
+  const next = () => goTo(current + 1);
+
+  useEffect(() => {
+    if (!isInView) return;
+    timerRef.current = setInterval(() => setCurrent(prev => (prev + 1) % total), 4000);
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [isInView, total]);
+
+  const handleTouchStart = (e) => setTouchStart(e.touches[0].clientX);
+  const handleTouchEnd = (e) => {
+    if (touchStart === null) return;
+    const diff = e.changedTouches[0].clientX - touchStart;
+    if (diff > 50) prev();
+    else if (diff < -50) next();
+    setTouchStart(null);
+  };
+
+  return (
+    <div className="rts-carousel-wrapper" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+      <div className="rts-carousel-track" style={{ transform: `translateX(-${current * 100}%)` }}>
+        {groupedStats.map((group, groupIndex) => (
+          <div key={groupIndex} className="rts-carousel-slide">
+            {group.map((stat, i) => (
+              <BadgeCard key={i} stat={stat} isInView={isInView} index={i} />
+            ))}
+          </div>
+        ))}
+      </div>
+
+      <button className="rts-carousel-btn rts-carousel-btn-left" onClick={prev} aria-label="Previous slide">
+        <ChevronLeft size={18} />
+      </button>
+      <button className="rts-carousel-btn rts-carousel-btn-right" onClick={next} aria-label="Next slide">
+        <ChevronRight size={18} />
+      </button>
+
+      <div className="rts-carousel-dots">
+        {groupedStats.map((_, i) => (
+          <button
+            key={i}
+            className={`rts-carousel-dot${i === current ? " rts-carousel-dot-active" : ""}`}
+            onClick={() => goTo(i)}
+            aria-label={`Go to slide ${i + 1}`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+//  MAIN COMPONENT
+// ══════════════════════════════════════════════════════════════════════════
 export default function TravelStatistics() {
   const sectionRef = useRef(null);
   const isInView = useInView(sectionRef, { once: true, margin: "-80px" });
 
   return (
     <>
-      <style>{PremiumCSS}</style>
-      
-      <section className="rst-section" ref={sectionRef}>
-        {/* Section Header */}
-        <motion.div 
-          className="rst-header"
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.7, ease: [0.25, 1, 0.5, 1] }}
-        >
-          <span className="rst-header-badge">
-            <TrendingUp size={12} className="rst-header-badge-icon" />
-            Our Track Record
-            <Sparkles size={12} className="rst-header-badge-icon" />
-          </span>
-          <h2 className="rst-header-title">
-            Trusted by{" "}
-            <span className="rst-header-title-gradient">Thousands</span>
-          </h2>
-          <p className="rst-header-subtitle">
-            Numbers that speak for our commitment to excellence in travel services.
-          </p>
-        </motion.div>
+      <style>{CSS}</style>
 
-        {/* Stats Grid */}
-        <div className="rst-grid">
-          {stats.map((s, i) => {
-            const Icon = s.icon;
-            return (
-              <motion.div 
-                key={i} 
-                className="rst-item"
-                initial={{ opacity: 0, y: 30 }}
-                animate={isInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ 
-                  delay: 0.1 * i, 
-                  duration: 0.5, 
-                  ease: [0.25, 1, 0.5, 1] 
-                }}
-                whileHover={{ y: -6 }}
-              >
-                {/* Icon with glow */}
-                <div className="rst-icon-wrap">
-                  <div 
-                    className="rst-icon-glow"
-                    style={{ background: s.color }}
-                  />
-                  <div 
-                    className="rst-icon" 
-                    style={{ background: s.accentBg }}
-                  >
-                    <Icon 
-                      size={28} 
-                      color={s.color}
-                      strokeWidth={1.8}
-                    />
-                  </div>
-                </div>
+      <section className="rts-section" ref={sectionRef} aria-labelledby="stats-heading">
+        <div className="rts-container">
+          {/* Header */}
+          <motion.div
+            className="rts-header"
+            initial={{ opacity: 0, y: 30 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <span className="rts-header-badge">
+              <TrendingUp size={12} className="rts-header-badge-icon" />
+              Our Track Record
+              <Sparkles size={12} className="rts-header-badge-icon" />
+            </span>
+            <h2 id="stats-heading" className="rts-header-title">
+              Trusted by{" "}
+              <span className="rts-header-title-gradient">Thousands</span>
+            </h2>
+            <p className="rts-header-subtitle">
+              Numbers that speak for our commitment to excellence in travel services.
+            </p>
+          </motion.div>
 
-                {/* Animated Value */}
-                <div className="rst-value">
-                  <AnimatedNumber 
-                    target={s.value} 
-                    suffix={s.suffix} 
-                    isInView={isInView}
-                  />
-                </div>
+          {/* Desktop Grid - 4 cards in a horizontal line */}
+          <div className="rts-grid">
+            {stats.map((stat, i) => (
+              <BadgeCard key={i} stat={stat} isInView={isInView} index={i} />
+            ))}
+          </div>
 
-                {/* Label */}
-                <div className="rst-label">{s.label}</div>
-
-                {/* Description (appears on hover) */}
-                <div className="rst-description">
-                  <Star size={8} style={{ display: 'inline', marginRight: 4 }} />
-                  {s.description}
-                </div>
-              </motion.div>
-            );
-          })}
+          {/* Mobile Carousel - 2 cards per slide, reduced size */}
+          <MobileCarousel stats={stats} isInView={isInView} />
         </div>
       </section>
     </>
