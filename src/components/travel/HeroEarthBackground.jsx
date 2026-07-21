@@ -3,7 +3,6 @@
 // RASOAF TRAVELS AND TOURS LIMITED — Hero Earth Background
 // Reuses gateway/three/ Earth pipeline with cinematic zooming camera
 // No duplication — same Earth, same textures, same shaders as Gateway
-// v2 — Now accepts children so slider images render ABOVE the 3D Canvas
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { Suspense, useState, useEffect, useRef } from "react";
@@ -61,6 +60,18 @@ function useHeroTextures() {
   return state;
 }
 
+// ══════════════════════════════════════════════════════════════════════════
+//  CINEMATIC HERO CAMERA — 3-Phase Zoom Sequence
+//  Phase 1 (0-3.5s): Rapid approach — Earth zooms from far to filling screen
+//  Phase 2 (3.5-6s): Hold — Earth massive, slowly rotating
+//  Phase 3 (6-8s):   Slow drift back
+//  After 8s:         Breathing loop — Earth stays large
+// ══════════════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════════════
+//  CINEMATIC HERO CAMERA — Very close orbit, Earth fills screen
+//  Starts close, stays close, gentle breathing, continuous rotation
+//  Completely independent from Gateway camera
+// ══════════════════════════════════════════════════════════════════════════
 // ══════════════════════════════════════════════════════════════════════════
 //  CINEMATIC HERO CAMERA — Already in orbit, Earth massive, subtle breathing
 //  Starts close · Holds · Gentle pull back · Push forward · Loop
@@ -290,12 +301,10 @@ function HeroSceneContent({ textures, reducedMotion }) {
 
 // ══════════════════════════════════════════════════════════════════════════
 //  MAIN HERO EARTH BACKGROUND
-//  v2 — Now wraps children so slider content renders ABOVE the 3D Canvas
 // ══════════════════════════════════════════════════════════════════════════
 export default function HeroEarthBackground({
   reducedMotion: reducedMotionProp = false,
   className = "",
-  children, // ← NEW: Accept children to render above Earth
 }) {
   const { ready, textures } = useHeroTextures();
   const [prefersReduced, setPrefersReduced] = useState(false);
@@ -313,46 +322,27 @@ export default function HeroEarthBackground({
   return (
     <div
       className={className}
-      style={{
-        position: "relative",
-        width: "100%",
-        minHeight: "72vh",
-        background: "#010612",
-        overflow: "hidden",
-      }}
+      style={{ position: "absolute", inset: 0, zIndex: 0, background: "#010612" }}
     >
-      {/* 3D Earth Canvas — absolutely positioned behind everything */}
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          zIndex: 0,
-          pointerEvents: "none",
-        }}
-      >
-        {ready && (
-          <Canvas
-            gl={{
-              antialias: true,
-              alpha: true,
-              powerPreference: "high-performance",
-              toneMapping: THREE.ACESFilmicToneMapping,
-              toneMappingExposure: 1.3,
-              outputColorSpace: THREE.SRGBColorSpace,
-            }}
-            dpr={[1, 1.5]}
-            camera={{ fov: 42, near: 0.1, far: 60, position: [0, 0.02, 2.2] }}
-            style={{ width: "100%", height: "100%" }}
-          >
-            <Suspense fallback={null}>
-              <HeroSceneContent textures={textures} reducedMotion={reducedMotion} />
-            </Suspense>
-          </Canvas>
-        )}
-      </div>
-
-      {/* Slider/content renders ABOVE the 3D Earth in DOM order */}
-      {children}
+      {ready && (
+        <Canvas
+          gl={{
+            antialias: true,
+            alpha: true,
+            powerPreference: "high-performance",
+            toneMapping: THREE.ACESFilmicToneMapping,
+            toneMappingExposure: 1.3,
+            outputColorSpace: THREE.SRGBColorSpace,
+          }}
+          dpr={[1, 1.5]}
+          camera={{ fov: 42, near: 0.1, far: 60, position: [0, 0.02, 2.2] }}
+          style={{ width: "100%", height: "100%" }}
+        >
+          <Suspense fallback={null}>
+            <HeroSceneContent textures={textures} reducedMotion={reducedMotion} />
+          </Suspense>
+        </Canvas>
+      )}
     </div>
   );
 }

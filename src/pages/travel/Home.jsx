@@ -19,6 +19,7 @@ import {
   FinalCTA,
   VisaSlider,
   AboutRasoaf,
+  Training,
 } from "../../components/travel";
 
 export default function TravelHome() {
@@ -46,17 +47,17 @@ export default function TravelHome() {
           with position: relative and a HIGH z-index
       ═══════════════════════════════════════════════════════════ */}
       <div style={{ 
-  position: "relative", 
-  zIndex: 9999,           // Extremely high z-index
-  background: "transparent",  // Solid background blocks Earth Canvas
-}}>
-  <VisaSlider/>
-</div>
+        position: "relative", 
+        zIndex: 9999,
+        background: "transparent",
+      }}>
+        <VisaSlider />
+      </div>
 
-     {/*About PAge */}
-     <AboutRasoaf/>
- {/*Statistics */}
-       <TravelStatistics />
+      {/* ═══════════════════════════════════════════════════════════
+          ABOUT RASOAF
+      ═══════════════════════════════════════════════════════════ */}
+      <AboutRasoaf />
 
       {/* ═══════════════════════════════════════════════════════════
           3. VISA SERVICES GRID — "Core offerings"
@@ -69,47 +70,52 @@ export default function TravelHome() {
       <FeaturedDestinations />
 
       {/* ═══════════════════════════════════════════════════════════
-          5. TRAVEL SERVICES — "Additional offerings"
+          5. TRAINING SERVICES — "Educational offerings"
+      ═══════════════════════════════════════════════════════════ */}
+      <Training />
+
+      {/* ═══════════════════════════════════════════════════════════
+          6. TRAVEL SERVICES — "Additional offerings"
       ═══════════════════════════════════════════════════════════ */}
       <TravelServices />
 
       {/* ═══════════════════════════════════════════════════════════
-          6. TRAVEL EXPERIENCES — "Why people travel"
+          7. TRAVEL EXPERIENCES — "Why people travel"
       ═══════════════════════════════════════════════════════════ */}
       <TravelExperience />
 
       {/* ═══════════════════════════════════════════════════════════
-          7. WHY CHOOSE US — "Build trust"
+          8. WHY CHOOSE US — "Build trust"
       ═══════════════════════════════════════════════════════════ */}
       <WhyChooseRasoaf />
 
       {/* ═══════════════════════════════════════════════════════════
-          8. VISA SUPPORT — "Reduce anxiety"
+          9. VISA SUPPORT — "Reduce anxiety"
       ═══════════════════════════════════════════════════════════ */}
       <VisaSupport />
 
       {/* ═══════════════════════════════════════════════════════════
-          9. TRAVEL PROCESS — "Simple journey"
+          10. TRAVEL PROCESS — "Simple journey"
       ═══════════════════════════════════════════════════════════ */}
       <TravelProcess />
 
       {/* ═══════════════════════════════════════════════════════════
-          10. STATISTICS — "Show authority"
+          11. STATISTICS — "Show authority"
       ═══════════════════════════════════════════════════════════ */}
-    
+      <TravelStatistics />
 
       {/* ═══════════════════════════════════════════════════════════
-          11. TESTIMONIALS — "Social proof"
+          12. TESTIMONIALS — "Social proof"
       ═══════════════════════════════════════════════════════════ */}
       <TestimonialsSection />
 
       {/* ═══════════════════════════════════════════════════════════
-          12. FAQ — "Address concerns"
+          13. FAQ — "Address concerns"
       ═══════════════════════════════════════════════════════════ */}
       <FAQSection />
 
       {/* ═══════════════════════════════════════════════════════════
-          13. FINAL CTA — "Strong closing"
+          14. FINAL CTA — "Strong closing"
       ═══════════════════════════════════════════════════════════ */}
       <FinalCTA />
     </div>

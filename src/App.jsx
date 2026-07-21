@@ -24,6 +24,8 @@ const TouristVisa = lazy(() => import("./pages/travel/TouristVisa"));
 const BusinessVisa = lazy(() => import("./pages/travel/BusinessVisa"));
 const FamilyVisa = lazy(() => import("./pages/travel/FamilyVisa"));
 const TravelFlightBooking = lazy(() => import("./pages/travel/FlightBooking"));
+const Training = lazy(() => import("./components/travel/Training"));
+const TrainingDetail = lazy(() => import("./pages/travel/TrainingDetail"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const PageLoader = () => (
@@ -62,6 +64,8 @@ export default function App() {
               <Route path="/travel/business-visa" element={<BusinessVisa />} />
               <Route path="/travel/family-visa" element={<FamilyVisa />} />
               <Route path="/travel/flights" element={<TravelFlightBooking />} />
+              <Route path="/travel/training" element={<Training />} />
+              <Route path="/travel/training/:id" element={<TrainingDetail />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>

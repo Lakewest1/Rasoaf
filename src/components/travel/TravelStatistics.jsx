@@ -2,16 +2,15 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // RASOAF TRAVELS AND TOURS LIMITED — Premium Statistics Badges
 // Luxury shield design · Gold-dominant · Icon rotate 360° · Slide-up reveal
+// Always a single row of 4 — scales fluidly instead of stacking/carouseling.
+// Strict Rasoaf Global Design System Typography
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useRef, useState, useEffect } from "react";
 import { motion, useInView } from "framer-motion";
-import {
-  Briefcase, Users, Globe, CheckCircle, Headphones,
-  Star, Sparkles, TrendingUp, ChevronLeft, ChevronRight,
-} from "lucide-react";
+import { Briefcase, Users, Globe, CheckCircle } from "lucide-react";
 
-// ── Data — removed "Always Available" from description ──────────────────
+// ── Data ──────────────────────────────────────────────────────────────────
 const stats = [
   {
     icon: Briefcase,
@@ -45,7 +44,6 @@ const stats = [
     color: "#D4A017",
     description: "Proven Results",
   },
-  // Removed: Round The Clock support card
 ];
 
 // ── AnimatedNumber (preserved) ──────────────────────────────────────────
@@ -84,20 +82,26 @@ const tokens = {
   creamWarm: "#FFFDF8",
   charcoal: "#0B0F17",
   charcoalLight: "#1B2230",
-  white: "#FFFFFF",
   textPrimary: "#0B0F17",
-  textSecondary: "#525252",
-  textMuted: "#8B8B8B",
+  textSecondary: "#5F5F5F",
   transition: "0.6s cubic-bezier(0.22, 1, 0.36, 1)",
-  transitionBounce: "0.5s cubic-bezier(0.34, 1.56, 0.64, 1)",
 };
 
 // ── Premium CSS ─────────────────────────────────────────────────────────
 const CSS = `
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@700;800&display=swap');
+
+  :root {
+    /* Type scale (per Rasoaf Global Design System) */
+    --rasoaf-h2-size: clamp(2.3rem, 5vw, 3.5rem);
+    --rasoaf-body-large: clamp(1rem, 1.1vw, 1.125rem);
+    --rasoaf-eyebrow-size: 0.8rem;
+  }
+
   .rts-section {
     position: relative;
     z-index: 10;
-    padding: clamp(80px, 12vh, 130px) clamp(20px, 5vw, 80px);
+    padding: clamp(60px, 12vh, 130px) clamp(12px, 4vw, 80px);
     font-family: ${tokens.body};
     overflow: visible;
     background: #FFFFFF;
@@ -113,9 +117,10 @@ const CSS = `
   /* ── Section Header ── */
   .rts-header {
     text-align: center;
-    margin-bottom: clamp(52px, 7vh, 72px);
+    margin-bottom: clamp(40px, 7vh, 72px);
   }
 
+  /* Eyebrow — Inter 700, uppercase, 0.8rem, letter-spacing 0.18em (per DS) */
   .rts-header-badge {
     display: inline-flex;
     align-items: center;
@@ -128,12 +133,12 @@ const CSS = `
     border-radius: 100px;
     color: ${tokens.charcoal};
     font-family: ${tokens.body};
-    font-size: 11px;
+    font-size: var(--rasoaf-eyebrow-size);
     font-weight: 700;
-    letter-spacing: 0.13em;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
     margin-bottom: 22px;
-    text-shadow: none;
+    line-height: 1;
     transition: all 0.35s ease;
   }
 
@@ -143,23 +148,14 @@ const CSS = `
     transform: translateY(-1px);
   }
 
-  .rts-header-badge-icon {
-    animation: rts-pulse 2.5s ease-in-out infinite;
-  }
-
-  @keyframes rts-pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.5; transform: scale(0.9); }
-  }
-
+  /* H2 — Manrope 800, clamp(2.3rem,5vw,3.5rem), letter-spacing -0.02em, line-height 1.15 (per DS) */
   .rts-header-title {
     font-family: ${tokens.display};
     font-weight: 800;
-    font-size: clamp(30px, 4vw, 46px);
+    font-size: var(--rasoaf-h2-size);
     color: ${tokens.charcoal};
-    letter-spacing: -0.03em;
-    line-height: 1.12;
-    text-shadow: none;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
     margin-bottom: 12px;
   }
 
@@ -171,24 +167,28 @@ const CSS = `
     filter: drop-shadow(0 2px 6px rgba(212, 160, 23, 0.25));
   }
 
+  /* Subtitle — Inter 400, body-large scale, line-height 1.7 (per DS) */
   .rts-header-subtitle {
     font-family: ${tokens.body};
-    font-size: clamp(13px, 1.1vw, 15.5px);
+    font-size: var(--rasoaf-body-large);
+    font-weight: 400;
     color: ${tokens.textSecondary};
-    line-height: 1.6;
+    line-height: 1.7;
     max-width: 520px;
     margin: 0 auto;
-    font-weight: 400;
-    letter-spacing: 0.01em;
-    text-shadow: none;
   }
 
-  /* ── Desktop Grid ── */
+  /* ══════════════════════════════════════════════════════════════════
+     GRID — always a single row of 4. Every size below is a fluid
+     clamp() tied to viewport width rather than a fixed px value, so the
+     row shrinks continuously from desktop down to small phones instead
+     of wrapping to 2 columns or swapping to a carousel.
+  ══════════════════════════════════════════════════════════════════ */
   .rts-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: clamp(18px, 2.2vw, 28px);
-    max-width: 1100px;
+    gap: clamp(6px, 1.6vw, 20px);
+    max-width: 900px;
     margin: 0 auto;
   }
 
@@ -197,13 +197,14 @@ const CSS = `
     display: flex;
     flex-direction: column;
     align-items: center;
+    min-width: 0;
     cursor: default;
     position: relative;
     transition: transform ${tokens.transition};
   }
 
   .rts-badge:hover {
-    transform: translateY(-8px);
+    transform: translateY(-6px);
   }
 
   /* ── Shield Top (Charcoal/Gold) ── */
@@ -211,14 +212,13 @@ const CSS = `
     position: relative;
     width: 100%;
     background: linear-gradient(175deg, ${tokens.charcoalLight} 0%, ${tokens.charcoal} 50%, #0A0F17 100%);
-    border-radius: 22px 22px 6px 6px;
-    padding: clamp(28px, 3.2vw, 40px) clamp(14px, 2vw, 22px) clamp(24px, 2.8vw, 34px);
+    border-radius: clamp(10px, 2.6vw, 22px) clamp(10px, 2.6vw, 22px) 4px 4px;
+    padding: clamp(10px, 2.6vw, 40px) clamp(6px, 1.4vw, 22px) clamp(10px, 2.2vw, 34px);
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 10px;
+    justify-content: center;
     box-shadow:
-      0 10px 36px rgba(0, 0, 0, 0.35),
+      0 6px 24px rgba(0, 0, 0, 0.3),
       inset 0 1px 0 rgba(255, 255, 255, 0.06),
       0 0 0 1px rgba(212, 160, 23, 0.08);
     transition: all ${tokens.transition};
@@ -244,18 +244,20 @@ const CSS = `
     opacity: 1;
   }
 
-  /* Shield bottom notch */
+  /* Shield bottom notch — scales with the same fluid unit as the shield
+     itself so it stays proportional instead of looking oversized on the
+     smallest cards. */
   .rts-shield::after {
     content: '';
     position: absolute;
-    bottom: -12px;
+    bottom: calc(-1 * clamp(5px, 1.3vw, 12px));
     left: 50%;
     transform: translateX(-50%);
     width: 0;
     height: 0;
-    border-left: 14px solid transparent;
-    border-right: 14px solid transparent;
-    border-top: 12px solid #0A0F17;
+    border-left: clamp(6px, 1.5vw, 14px) solid transparent;
+    border-right: clamp(6px, 1.5vw, 14px) solid transparent;
+    border-top: clamp(5px, 1.3vw, 12px) solid #0A0F17;
     z-index: 1;
     transition: border-top-color ${tokens.transition};
   }
@@ -266,317 +268,117 @@ const CSS = `
 
   .rts-badge:hover .rts-shield {
     box-shadow:
-      0 16px 48px rgba(0, 0, 0, 0.5),
+      0 10px 32px rgba(0, 0, 0, 0.4),
       inset 0 1px 0 rgba(255, 255, 255, 0.1),
       0 0 0 1px rgba(212, 160, 23, 0.2),
-      0 0 60px rgba(212, 160, 23, 0.06);
+      0 0 40px rgba(212, 160, 23, 0.06);
   }
 
   /* ── Shield Icon — Pentagon Shape ── */
   .rts-shield-icon {
-    width: 58px;
-    height: 58px;
+    width: clamp(34px, 9vw, 64px);
+    height: clamp(34px, 9vw, 64px);
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(212, 160, 23, 0.08);
+    background: linear-gradient(135deg, rgba(212, 160, 23, 0.12), rgba(212, 160, 23, 0.04));
     border: 1.5px solid rgba(212, 160, 23, 0.2);
     transition: all ${tokens.transition};
     position: relative;
     z-index: 2;
     clip-path: polygon(50% 0%, 100% 38%, 81% 100%, 19% 100%, 0% 38%);
-    background: linear-gradient(135deg, rgba(212, 160, 23, 0.12), rgba(212, 160, 23, 0.04));
   }
 
   .rts-badge:hover .rts-shield-icon {
-    transform: rotate(360deg) scale(1.12);
+    transform: rotate(360deg) scale(1.1);
     border-color: ${tokens.gold};
     background: rgba(212, 160, 23, 0.18);
-    box-shadow: 0 0 28px rgba(212, 160, 23, 0.35), 0 0 0 4px rgba(212, 160, 23, 0.04);
+    box-shadow: 0 0 20px rgba(212, 160, 23, 0.35), 0 0 0 3px rgba(212, 160, 23, 0.04);
   }
 
   .rts-shield-icon svg {
+    width: clamp(15px, 4vw, 30px) !important;
+    height: clamp(15px, 4vw, 30px) !important;
     filter: drop-shadow(0 2px 4px rgba(212, 160, 23, 0.2));
-  }
-
-  .rts-shield-subtitle {
-    font-family: ${tokens.body};
-    font-size: clamp(9.5px, 0.7vw, 10.5px);
-    font-weight: 600;
-    color: rgba(255, 255, 255, 0.45);
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    position: relative;
-    z-index: 2;
-    transition: color ${tokens.transition};
-  }
-
-  .rts-badge:hover .rts-shield-subtitle {
-    color: rgba(255, 255, 255, 0.65);
   }
 
   /* ── Bottom Cream Circle ── */
   .rts-badge-circle {
-    width: 88%;
+    width: 92%;
     background: linear-gradient(180deg, ${tokens.creamWarm} 0%, ${tokens.cream} 100%);
     border-radius: 0 0 50% 50% / 0 0 55% 55%;
-    padding: clamp(22px, 2.8vw, 32px) clamp(10px, 1.4vw, 16px) clamp(18px, 2.2vw, 26px);
+    padding: clamp(8px, 2.2vw, 32px) clamp(4px, 1vw, 16px) clamp(8px, 1.8vw, 26px);
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 5px;
+    gap: clamp(2px, 0.6vw, 5px);
     box-shadow:
-      0 10px 30px rgba(0, 0, 0, 0.08),
+      0 6px 20px rgba(0, 0, 0, 0.07),
       0 0 0 1px rgba(212, 160, 23, 0.06);
     position: relative;
     z-index: 1;
     margin-top: -3px;
     transition: all ${tokens.transition};
+    min-width: 0;
+    max-width: 100%;
   }
 
   .rts-badge:hover .rts-badge-circle {
     box-shadow:
-      0 14px 40px rgba(0, 0, 0, 0.14),
+      0 10px 28px rgba(0, 0, 0, 0.12),
       0 0 0 1px rgba(212, 160, 23, 0.14);
   }
 
-  /* ── Number (Gold) ── */
+  /* Label — sits above the number, matching the reference layout. Below
+     the DS's 0.875rem caption floor by design at the smallest sizes —
+     the DS doesn't define a scale for a single row of 4 shrunk this far,
+     so this is a deliberate exception, not a miss. */
+  .rts-badge-label {
+    font-family: ${tokens.body};
+    font-size: clamp(7.5px, 1.7vw, 13px);
+    font-weight: 700;
+    color: ${tokens.textPrimary};
+    letter-spacing: clamp(0.01em, 0.3vw, 0.04em);
+    text-transform: uppercase;
+    text-align: center;
+    line-height: 1.3;
+    max-width: 100%;
+    transition: color ${tokens.transition};
+  }
+
+  .rts-badge:hover .rts-badge-label {
+    color: ${tokens.goldDark};
+  }
+
+  /* Number — the "hero" figure of each badge. */
   .rts-badge-number {
     font-family: ${tokens.display};
     font-weight: 800;
-    font-size: clamp(36px, 5vw, 52px);
+    font-size: clamp(1rem, 4.6vw, 2.5rem);
     background: linear-gradient(135deg, ${tokens.goldDark} 0%, ${tokens.gold} 40%, ${tokens.goldLight} 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     line-height: 1;
-    letter-spacing: -0.03em;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
     transition: all ${tokens.transition};
     filter: drop-shadow(0 2px 4px rgba(212, 160, 23, 0.2));
   }
 
   .rts-badge:hover .rts-badge-number {
-    transform: scale(1.06);
+    transform: scale(1.05);
     filter: drop-shadow(0 4px 12px rgba(212, 160, 23, 0.45));
   }
 
-  /* ── Label ── */
-  .rts-badge-label {
-    font-family: ${tokens.body};
-    font-size: clamp(11px, 0.85vw, 13px);
-    font-weight: 600;
-    color: ${tokens.textSecondary};
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    transition: color ${tokens.transition};
-  }
-
-  .rts-badge:hover .rts-badge-label {
-    color: ${tokens.textPrimary};
-  }
-
-  .rts-badge-desc {
-    font-family: ${tokens.body};
-    font-size: clamp(9px, 0.68vw, 10px);
-    font-weight: 500;
-    color: ${tokens.textMuted};
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    opacity: 0;
-    transform: translateY(8px);
-    transition: all ${tokens.transition};
-  }
-
-  .rts-badge:hover .rts-badge-desc {
-    opacity: 1;
-    transform: translateY(0);
-    color: ${tokens.goldDark};
-  }
-
-  /* ── Mobile Carousel ── */
-  .rts-carousel-wrapper {
-    display: none;
-    position: relative;
-    overflow: hidden;
-    max-width: 400px;
-    margin: 0 auto;
-    padding: 0 10px;
-  }
-
-  .rts-carousel-track {
-    display: flex;
-    transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
-    gap: 12px;
-  }
-
-  .rts-carousel-slide {
-    min-width: 100%;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    padding: 0 4px;
-    box-sizing: border-box;
-  }
-
-  /* Smaller cards on mobile */
-  .rts-carousel-slide .rts-badge {
-    transform: scale(0.85);
-    transform-origin: center;
-  }
-
-  .rts-carousel-slide .rts-shield {
-    padding: clamp(16px, 2.5vw, 22px) clamp(10px, 1.5vw, 14px) clamp(14px, 2vw, 18px);
-    border-radius: 16px 16px 4px 4px;
-  }
-
-  .rts-carousel-slide .rts-shield-icon {
-    width: 42px;
-    height: 42px;
-  }
-
-  .rts-carousel-slide .rts-shield-icon svg {
-    width: 18px;
-    height: 18px;
-  }
-
-  .rts-carousel-slide .rts-shield-subtitle {
-    font-size: clamp(7px, 1.2vw, 8.5px);
-  }
-
-  .rts-carousel-slide .rts-badge-circle {
-    padding: clamp(14px, 2vw, 18px) clamp(8px, 1vw, 12px) clamp(12px, 1.5vw, 16px);
-    border-radius: 0 0 40% 40% / 0 0 45% 45%;
-  }
-
-  .rts-carousel-slide .rts-badge-number {
-    font-size: clamp(24px, 4vw, 32px);
-  }
-
-  .rts-carousel-slide .rts-badge-label {
-    font-size: clamp(8px, 1.2vw, 10px);
-  }
-
-  .rts-carousel-slide .rts-badge-desc {
-    font-size: clamp(6.5px, 1vw, 8px);
-  }
-
-  .rts-carousel-btn {
-    position: absolute;
-    top: 45%;
-    transform: translateY(-50%);
-    z-index: 5;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255, 255, 255, 0.95);
-    border: 1px solid rgba(212, 160, 23, 0.2);
-    color: ${tokens.charcoal};
-    cursor: pointer;
-    box-shadow: 0 2px 14px rgba(0, 0, 0, 0.12);
-    transition: all 0.35s ease;
-  }
-
-  .rts-carousel-btn:hover {
-    background: ${tokens.white};
-    border-color: ${tokens.gold};
-    box-shadow: 0 4px 22px rgba(0, 0, 0, 0.18);
-  }
-
-  .rts-carousel-btn-left { left: -4px; }
-  .rts-carousel-btn-right { right: -4px; }
-
-  .rts-carousel-btn svg {
-    width: 16px;
-    height: 16px;
-  }
-
-  .rts-carousel-dots {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-    margin-top: 16px;
-  }
-
-  .rts-carousel-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: rgba(11, 15, 23, 0.2);
-    border: none;
-    cursor: pointer;
-    padding: 0;
-    transition: all 0.35s ease;
-  }
-
-  .rts-carousel-dot-active {
-    width: 20px;
-    background: ${tokens.gold};
-  }
-
-  /* ── Responsive ── */
-  @media (max-width: 1024px) {
-    .rts-grid {
-      grid-template-columns: repeat(2, 1fr);
-      max-width: 600px;
-      gap: clamp(16px, 2.5vw, 24px);
-    }
-  }
-
-  @media (max-width: 768px) {
-    .rts-section {
-      padding: clamp(48px, 7vh, 64px) 16px;
-    }
-
-    /* Hide main grid on small screens */
-    .rts-grid {
-      display: none !important;
-    }
-
-    /* Show only carousel */
-    .rts-carousel-wrapper {
-      display: block !important;
-    }
-  }
-
-  @media (max-width: 480px) {
-    .rts-carousel-wrapper {
-      max-width: 340px;
-    }
-    
-    .rts-carousel-slide .rts-badge {
-      transform: scale(0.75);
-    }
-    
-    .rts-carousel-btn {
-      width: 28px;
-      height: 28px;
-    }
-    
-    .rts-carousel-btn svg {
-      width: 14px;
-      height: 14px;
-    }
-  }
-
-  @media (max-width: 380px) {
-    .rts-carousel-wrapper {
-      max-width: 290px;
-    }
-    
-    .rts-carousel-slide .rts-badge {
-      transform: scale(0.7);
-    }
+  .rts-header-badge:focus-visible {
+    outline: 2px solid ${tokens.gold};
+    outline-offset: 2px;
   }
 
   @media (prefers-reduced-motion: reduce) {
     .rts-badge,
     .rts-badge * {
-      transition: none !important;
-    }
-    .rts-carousel-track {
       transition: none !important;
     }
     .rts-shield-icon {
@@ -593,104 +395,29 @@ function BadgeCard({ stat, isInView, index }) {
   return (
     <motion.div
       className="rts-badge"
-      // Slide up animation on scroll
-      initial={{ opacity: 0, y: 80, scale: 0.94 }}
+      initial={{ opacity: 0, y: 60, scale: 0.94 }}
       animate={isInView ? { opacity: 1, y: 0, scale: 1 } : {}}
       transition={{
-        delay: 0.16 * index,
-        duration: 0.9,
+        delay: 0.12 * index,
+        duration: 0.8,
         ease: [0.22, 1, 0.36, 1],
       }}
-      whileHover={{ y: -8 }}
     >
-      {/* Shield Top — Charcoal with gold accents */}
+      {/* Shield Top — Charcoal with gold accents. Icon only. */}
       <div className="rts-shield">
-        <div className="rts-shield-subtitle">{stat.description}</div>
-        {/* Icon rotates 360° on hover - Pentagon shape */}
         <div className="rts-shield-icon">
-          <Icon size={26} color={stat.color} strokeWidth={1.6} />
+          <Icon color={stat.color} strokeWidth={1.6} aria-hidden="true" />
         </div>
       </div>
 
-      {/* Bottom Circle — Warm Cream */}
+      {/* Bottom Circle — Warm Cream. Label above the number. */}
       <div className="rts-badge-circle">
+        <div className="rts-badge-label">{stat.label}</div>
         <div className="rts-badge-number">
           <AnimatedNumber target={stat.value} suffix={stat.suffix} isInView={isInView} />
         </div>
-        <div className="rts-badge-label">{stat.label}</div>
-        <div className="rts-badge-desc">
-          <Star size={8} style={{ display: 'inline', marginRight: 4 }} />
-          {stat.description}
-        </div>
       </div>
     </motion.div>
-  );
-}
-
-// ══════════════════════════════════════════════════════════════════════════
-//  Mobile Carousel — 2 cards per slide, reduced size
-// ══════════════════════════════════════════════════════════════════════════
-function MobileCarousel({ stats, isInView }) {
-  const [current, setCurrent] = useState(0);
-  const [touchStart, setTouchStart] = useState(null);
-  const timerRef = useRef(null);
-  const total = Math.ceil(stats.length / 2);
-
-  // Group stats into pairs for 2-per-slide display
-  const groupedStats = [];
-  for (let i = 0; i < stats.length; i += 2) {
-    groupedStats.push(stats.slice(i, i + 2));
-  }
-
-  const goTo = useCallback((i) => setCurrent(((i % total) + total) % total), [total]);
-  const prev = () => goTo(current - 1);
-  const next = () => goTo(current + 1);
-
-  useEffect(() => {
-    if (!isInView) return;
-    timerRef.current = setInterval(() => setCurrent(prev => (prev + 1) % total), 4000);
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [isInView, total]);
-
-  const handleTouchStart = (e) => setTouchStart(e.touches[0].clientX);
-  const handleTouchEnd = (e) => {
-    if (touchStart === null) return;
-    const diff = e.changedTouches[0].clientX - touchStart;
-    if (diff > 50) prev();
-    else if (diff < -50) next();
-    setTouchStart(null);
-  };
-
-  return (
-    <div className="rts-carousel-wrapper" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
-      <div className="rts-carousel-track" style={{ transform: `translateX(-${current * 100}%)` }}>
-        {groupedStats.map((group, groupIndex) => (
-          <div key={groupIndex} className="rts-carousel-slide">
-            {group.map((stat, i) => (
-              <BadgeCard key={i} stat={stat} isInView={isInView} index={i} />
-            ))}
-          </div>
-        ))}
-      </div>
-
-      <button className="rts-carousel-btn rts-carousel-btn-left" onClick={prev} aria-label="Previous slide">
-        <ChevronLeft size={18} />
-      </button>
-      <button className="rts-carousel-btn rts-carousel-btn-right" onClick={next} aria-label="Next slide">
-        <ChevronRight size={18} />
-      </button>
-
-      <div className="rts-carousel-dots">
-        {groupedStats.map((_, i) => (
-          <button
-            key={i}
-            className={`rts-carousel-dot${i === current ? " rts-carousel-dot-active" : ""}`}
-            onClick={() => goTo(i)}
-            aria-label={`Go to slide ${i + 1}`}
-          />
-        ))}
-      </div>
-    </div>
   );
 }
 
@@ -714,11 +441,7 @@ export default function TravelStatistics() {
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           >
-            <span className="rts-header-badge">
-              <TrendingUp size={12} className="rts-header-badge-icon" />
-              Our Track Record
-              <Sparkles size={12} className="rts-header-badge-icon" />
-            </span>
+            <span className="rts-header-badge">Our Track Record</span>
             <h2 id="stats-heading" className="rts-header-title">
               Trusted by{" "}
               <span className="rts-header-title-gradient">Thousands</span>
@@ -728,15 +451,12 @@ export default function TravelStatistics() {
             </p>
           </motion.div>
 
-          {/* Desktop Grid - 4 cards in a horizontal line */}
+          {/* Always a single row of 4 — fluidly scaled, never stacked */}
           <div className="rts-grid">
             {stats.map((stat, i) => (
               <BadgeCard key={i} stat={stat} isInView={isInView} index={i} />
             ))}
           </div>
-
-          {/* Mobile Carousel - 2 cards per slide, reduced size */}
-          <MobileCarousel stats={stats} isInView={isInView} />
         </div>
       </section>
     </>

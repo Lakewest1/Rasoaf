@@ -1,148 +1,110 @@
 // src/components/travel/TestimonialsSection.jsx
 // ─────────────────────────────────────────────────────────────────────────────
 // RASOAF TRAVELS AND TOURS LIMITED — Premium Testimonials
-// Strict Rasoaf Global Design System Typography · Centered Header · Dark Luxury Aesthetic
+// Dual Card Auto-Slider · Speaker Point Shape · Modernized · Rasoaf Typography
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, useInView, AnimatePresence } from "framer-motion";
-import { Star, Quote, ChevronLeft, ChevronRight } from "lucide-react";
+import { Star, ChevronLeft, ChevronRight, Sparkles, MessageCircle } from "lucide-react";
 
 const TESTIMONIALS = [
   {
-    name: "Satisfied Client",
-    country: "Nigeria",
-    flag: "🇳🇬",
-    text: "In 2023, I was introduced to RASOAF Travels and Tours Limited through a personal referral. Prior to meeting them, I had dealt with several travel agencies and unfortunately experienced disappointments. However, my experience with RASOAF was remarkably different. From the moment I engaged with their team, I received professional guidance, honest advice, and consistent support throughout my visa application process. Their dedication, transparency, and commitment restored my confidence and ultimately contributed to the success of my visa application.",
+    name: "Trusted by Travelers",
+    country: "Worldwide",
+    flag: "🌍",
+    text: "Over the years, RASOAF Travels and Tours Limited has earned the trust of travelers from different backgrounds through professionalism, transparency, and consistent results. The experiences shared by our clients reflect the confidence they have placed in our services.",
     rating: 5,
   },
   {
-    name: "UK Visa Recipient",
+    name: "Successful Visa Applicant",
     country: "Nigeria",
     flag: "🇳🇬",
-    text: "After experiencing disappointments with fraudulent agents over the years, I am grateful that my search for a reliable travel consultant ended in December 2024 when I engaged RASOAF Travels and Tours Limited. Their professionalism and expert guidance enabled me to secure my UK visa successfully. Since then, they have assisted me with multiple visa renewals, allowing me to travel freely to and from the United Kingdom. I highly commend their dedication, efficiency, and exceptional service.",
+    text: "In 2023, I was introduced to RASOAF Travels and Tours Limited through a personal referral. Having previously experienced disappointments with several travel agencies, I was understandably skeptical. However, RASOAF completely changed my perspective with honest advice, professional guidance, and continuous support.",
     rating: 5,
   },
   {
-    name: "Frequent Traveler",
+    name: "United Kingdom Traveler",
     country: "Nigeria",
     flag: "🇳🇬",
-    text: "With my experience in securing visas, I can confidently say that finding the right visa processing channel is not solely about publicity. Trust is a key factor that clients should carefully consider. I have seen trust, commitment, dedication, professionalism, and thorough scrutiny demonstrated by RASOAF Travels and Tours Limited throughout the visa processing journey. Their attention to detail gave me confidence in the process.",
+    text: "After years of disappointment with unreliable agents, my search for a trustworthy travel consultant finally ended in December 2024 when I engaged RASOAF Travels and Tours Limited. Their professionalism enabled me to secure my UK visa and multiple renewals since then.",
     rating: 5,
   },
   {
-    name: "Professional Client",
+    name: "Frequent International Traveler",
     country: "Nigeria",
     flag: "🇳🇬",
-    text: "Obtaining a visa through unprofessional individuals can be frustrating and may jeopardize an application. Having processed visas through RASOAF Travels and Tours Limited, I have come to appreciate their professionalism, expertise, structured workflow, sound immigration guidance, and systematic approach. Their commitment to providing accurate advice and ensuring compliance with immigration requirements has given me confidence and peace of mind throughout the process.",
+    text: "My experience with RASOAF Travels and Tours Limited has been completely different from other agencies. Their structured workflow, immigration expertise, and systematic approach gave me confidence throughout the entire visa process. Every stage was handled with professionalism.",
     rating: 5,
   },
 ];
 
 const RasoafCSS = `
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@700;800&display=swap');
-
-  /* ════════════════════════════════════════════════════════════════ */
-  /* RASOAF DESIGN TOKENS (Global Design System) */
-  /* ════════════════════════════════════════════════════════════════ */
-
   :root {
-    /* Color Palette */
     --rasoaf-gold-light: #F7C948;
     --rasoaf-gold-mid: #D4A017;
     --rasoaf-gold-dark: #B8860B;
     --rasoaf-white: #FFFFFF;
-    --rasoaf-cream: #FFFDF8;
-    --rasoaf-text-muted: rgba(255, 253, 248, 0.6);
-    --rasoaf-text-dim: rgba(255, 253, 248, 0.4);
-
-    /* Typography — strict Rasoaf DS type families */
+    --rasoaf-text-muted: rgba(255, 253, 248, 0.68);
+    --rasoaf-text-dim: rgba(255, 253, 248, 0.42);
     --rasoaf-display: 'Manrope', system-ui, -apple-system, sans-serif;
     --rasoaf-body: 'Inter', system-ui, -apple-system, sans-serif;
-
-    /* Type scale (per Rasoaf Global Design System) */
-    --rasoaf-h2-size: clamp(2.3rem, 5vw, 3.5rem);
-    --rasoaf-h5-size: clamp(1.05rem, 1.4vw, 1.25rem);
-    --rasoaf-body-large: clamp(1rem, 1.1vw, 1.125rem);
-    --rasoaf-body-normal: 1rem;
-    --rasoaf-caption-size: 0.875rem;
-    --rasoaf-eyebrow-size: 0.8rem;
-
-    /* Spacing */
-    --spacing-sm: 12px;
-    --spacing-md: 16px;
-    --spacing-lg: 24px;
-    --spacing-xl: 32px;
-    --spacing-2xl: 48px;
-
-    /* Transitions */
-    --transition-smooth: cubic-bezier(0.25, 1, 0.5, 1);
-    --transition-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --transition-smooth: cubic-bezier(.22,1,.36,1);
   }
 
-  /* ════════════════════════════════════════════════════════════════ */
-  /* SECTION STRUCTURE */
-  /* ════════════════════════════════════════════════════════════════ */
-
   .tm-section {
-    padding: clamp(60px, 10vh, 100px) clamp(16px, 5vw, 80px);
-    background: transparent;
+    padding: clamp(50px, 8vh, 80px) clamp(16px, 5vw, 80px);
+    background: linear-gradient(175deg, #060D1A 0%, #0A1628 25%, #0D1F3C 50%, #0A1628 75%, #060D1A 100%);
     position: relative;
     overflow: hidden;
   }
 
-  .tm-container {
-    max-width: 800px;
-    margin: 0 auto;
-    position: relative;
-    z-index: 2;
+  .tm-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: 
+      radial-gradient(ellipse at 75% 20%, rgba(212,160,23,0.06) 0%, transparent 45%),
+      radial-gradient(ellipse at 25% 70%, rgba(247,201,72,0.04) 0%, transparent 40%);
+    pointer-events: none;
   }
 
-  /* ════════════════════════════════════════════════════════════════ */
-  /* HEADER — STRICT RASOAF TYPOGRAPHY & CENTERED */
-  /* ════════════════════════════════════════════════════════════════ */
+  .tm-container { max-width: 1100px; margin: 0 auto; position: relative; z-index: 2; }
 
-  .tm-header {
-    margin-bottom: clamp(48px, 7vh, 72px);
-    text-align: center;
-  }
+  /* Header */
+  .tm-header { text-align: center; margin-bottom: clamp(36px, 5vh, 52px); }
 
-  /* Eyebrow — Inter 700, uppercase, 0.8rem, letter-spacing 0.18em (per DS) */
   .tm-eyebrow {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 6px 16px;
-    background: rgba(212, 160, 23, 0.12);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(212, 160, 23, 0.25);
+    padding: 6px 18px;
+    background: rgba(212,160,23,0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(212,160,23,0.2);
     border-radius: 100px;
     font-family: var(--rasoaf-body);
-    font-size: var(--rasoaf-eyebrow-size);
+    font-size: 0.72rem;
     font-weight: 700;
     color: var(--rasoaf-gold-light);
-    letter-spacing: 0.18em;
+    letter-spacing: 0.15em;
     text-transform: uppercase;
-    margin: 0 auto var(--spacing-lg) auto;
-    line-height: 1;
-    transition: all 0.3s var(--transition-out);
+    margin-bottom: 16px;
+    transition: all 0.3s ease;
   }
 
-  .tm-eyebrow:hover {
-    background: rgba(212, 160, 23, 0.15);
-    border-color: rgba(212, 160, 23, 0.3);
-  }
+  .tm-eyebrow:hover { background: rgba(212,160,23,0.15); border-color: rgba(212,160,23,0.3); }
 
-  /* H2 — Manrope 800, clamp(2.3rem,5vw,3.5rem), letter-spacing -0.02em, line-height 1.15 (per DS) */
   .tm-title {
     font-family: var(--rasoaf-display);
     font-weight: 800;
-    font-size: var(--rasoaf-h2-size);
+    font-size: clamp(2rem, 4.5vw, 3.2rem);
     letter-spacing: -0.02em;
     line-height: 1.15;
     color: var(--rasoaf-white);
     margin: 0;
+    text-shadow: 0 2px 16px rgba(0,0,0,0.3);
   }
 
   .tm-title-accent {
@@ -150,157 +112,197 @@ const RasoafCSS = `
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    filter: drop-shadow(0 2px 4px rgba(212,160,23,0.3));
   }
 
-  /* ════════════════════════════════════════════════════════════════ */
-  /* TESTIMONIAL CARD */
-  /* ════════════════════════════════════════════════════════════════ */
+  /* ── Dual Card Grid ── */
+  .tm-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(14px, 2vw, 24px);
+    margin-bottom: 28px;
+  }
 
+  /* ── Card ── */
   .tm-card {
-    background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: 28px;
-    padding: clamp(28px, 4vw, 48px);
+    background: rgba(255,255,255,0.025);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 22px;
+    padding: clamp(24px, 3vw, 36px);
     position: relative;
-    min-height: 280px;
     transition: all 0.5s var(--transition-smooth);
+    overflow: visible;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .tm-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--rasoaf-gold-mid), transparent);
+    opacity: 0;
+    transition: opacity 0.5s ease;
   }
 
   .tm-card:hover {
-    border-color: rgba(212, 160, 23, 0.2);
-    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(212,160,23,0.2);
+    background: rgba(255,255,255,0.04);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(212,160,23,0.12);
   }
 
-  /* ── Quote Icon ── */
-  .tm-quote-icon {
-    color: var(--rasoaf-gold-light);
-    opacity: 0.15;
-    margin-bottom: var(--spacing-lg);
-    transition: opacity 0.3s var(--transition-out);
-    line-height: 0;
+  .tm-card:hover::before { opacity: 1; }
+
+  /* ── Speaker Point Speech Bubble ── */
+  .tm-speech-wrapper {
+    position: relative;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
   }
 
-  .tm-quote-icon svg {
-    width: clamp(32px, 4vw, 48px);
-    height: clamp(32px, 4vw, 48px);
+  .tm-speech-bubble {
+    position: relative;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 18px;
+    padding: clamp(16px, 2.5vw, 24px);
+    flex: 1;
+    transition: all 0.3s ease;
   }
 
-  .tm-card:hover .tm-quote-icon {
-    opacity: 0.2;
+  .tm-card:hover .tm-speech-bubble {
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(255,255,255,0.12);
   }
 
-  /* ── Testimonial Text — Inter 400/500, body-large scale, line-height 1.7 (per DS) ── */
+  /* Speaker Point Triangle */
+  .tm-speech-bubble::after {
+    content: '';
+    position: absolute;
+    bottom: -12px;
+    left: 28px;
+    width: 0;
+    height: 0;
+    border-left: 12px solid transparent;
+    border-right: 12px solid transparent;
+    border-top: 12px solid rgba(255,255,255,0.04);
+    transition: border-top-color 0.3s ease;
+  }
+
+  .tm-speech-bubble::before {
+    content: '';
+    position: absolute;
+    bottom: -14px;
+    left: 27px;
+    width: 0;
+    height: 0;
+    border-left: 13px solid transparent;
+    border-right: 13px solid transparent;
+    border-top: 13px solid rgba(255,255,255,0.08);
+    transition: border-top-color 0.3s ease;
+  }
+
+  .tm-card:hover .tm-speech-bubble::after {
+    border-top-color: rgba(255,255,255,0.06);
+  }
+
+  .tm-card:hover .tm-speech-bubble::before {
+    border-top-color: rgba(255,255,255,0.12);
+  }
+
+  /* Quote text */
   .tm-text {
     font-family: var(--rasoaf-body);
-    font-size: var(--rasoaf-body-large);
+    font-size: clamp(0.82rem, 0.95vw, 0.92rem);
     font-weight: 400;
-    line-height: 1.7;
+    line-height: 1.65;
     color: var(--rasoaf-text-muted);
-    margin: 0 0 var(--spacing-2xl) 0;
-    font-style: italic;
-    transition: color 0.3s var(--transition-out);
+    margin: 0;
+    letter-spacing: 0.005em;
+    transition: color 0.3s ease;
   }
 
-  .tm-card:hover .tm-text {
-    color: var(--rasoaf-cream);
-  }
+  .tm-card:hover .tm-text { color: rgba(255,255,255,0.8); }
 
-  /* ── Footer (Author + Stars) ── */
+  /* Footer */
   .tm-footer {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    flex-wrap: wrap;
-    gap: var(--spacing-lg);
+    gap: 12px;
   }
 
-  /* ── Author Info ── */
-  .tm-author {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-md);
-    min-width: 0;
-  }
+  .tm-author { display: flex; align-items: center; gap: 10px; min-width: 0; }
 
   .tm-avatar {
-    width: 48px;
-    height: 48px;
+    width: 40px; height: 40px;
     border-radius: 50%;
-    background: rgba(212, 160, 23, 0.12);
-    border: 1px solid rgba(212, 160, 23, 0.2);
+    background: rgba(212,160,23,0.1);
+    border: 1px solid rgba(212,160,23,0.18);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
+    font-size: 20px;
     flex-shrink: 0;
+    transition: all 0.3s ease;
   }
 
-  .tm-author-text {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-  }
+  .tm-card:hover .tm-avatar { border-color: rgba(212,160,23,0.35); transform: scale(1.05); }
 
-  /* Name — Manrope 700, small-heading scale, letter-spacing -0.01em (per DS heading rules) */
+  .tm-author-text { display: flex; flex-direction: column; min-width: 0; }
+
   .tm-name {
     font-family: var(--rasoaf-display);
     font-weight: 700;
-    font-size: var(--rasoaf-h5-size);
+    font-size: clamp(0.9rem, 1.05vw, 1rem);
     line-height: 1.25;
     color: var(--rasoaf-white);
     margin: 0;
     letter-spacing: -0.01em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
-  /* Country — Inter 500 caption scale, uppercase, letter-spacing 0.05em (per DS captions) */
   .tm-country {
     font-family: var(--rasoaf-body);
-    font-size: var(--rasoaf-caption-size);
+    font-size: 0.7rem;
     font-weight: 500;
     color: var(--rasoaf-text-dim);
-    margin: 3px 0 0 0;
-    letter-spacing: 0.05em;
+    margin: 1px 0 0 0;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
-    line-height: 1.4;
   }
 
-  /* ── Star Rating ── */
-  .tm-stars {
-    display: flex;
-    gap: 4px;
-    flex-shrink: 0;
-  }
+  /* Stars */
+  .tm-stars { display: flex; gap: 2px; flex-shrink: 0; }
 
   .tm-star {
     color: var(--rasoaf-gold-light);
-    transition: transform 0.3s var(--transition-out);
+    transition: transform 0.3s ease;
   }
 
-  .tm-card:hover .tm-star {
-    transform: scale(1.05);
-  }
+  .tm-card:hover .tm-star { transform: scale(1.05); }
 
-  /* ════════════════════════════════════════════════════════════════ */
-  /* NAVIGATION */
-  /* ════════════════════════════════════════════════════════════════ */
-
+  /* ── Navigation ── */
   .tm-nav {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: var(--spacing-lg);
-    margin-top: var(--spacing-2xl);
+    gap: 14px;
   }
 
   .tm-nav-btn {
-    width: 44px;
-    height: 44px;
+    width: 40px; height: 40px;
     border-radius: 50%;
     cursor: pointer;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
     color: var(--rasoaf-text-dim);
     display: flex;
     align-items: center;
@@ -309,172 +311,110 @@ const RasoafCSS = `
   }
 
   .tm-nav-btn:hover {
-    background: rgba(212, 160, 23, 0.12);
-    border-color: rgba(212, 160, 23, 0.3);
+    background: rgba(212,160,23,0.15);
+    border-color: rgba(212,160,23,0.35);
     color: var(--rasoaf-gold-light);
   }
 
-  .tm-nav-btn:focus-visible {
-    outline: 2px solid var(--rasoaf-gold-light);
-    outline-offset: 2px;
-  }
+  .tm-nav-btn:focus-visible { outline: 2px solid var(--rasoaf-gold-light); outline-offset: 2px; }
 
-  /* ── Dots ── */
-  .tm-dots {
-    display: flex;
-    gap: 8px;
-  }
+  .tm-dots { display: flex; gap: 7px; }
 
   .tm-dot {
-    width: 8px;
-    height: 8px;
+    width: 6px; height: 6px;
     border-radius: 50%;
     cursor: pointer;
-    background: rgba(255, 255, 255, 0.12);
+    background: rgba(255,255,255,0.15);
     border: none;
     transition: all 0.3s var(--transition-smooth);
     padding: 0;
   }
 
-  .tm-dot:hover {
-    background: rgba(212, 160, 23, 0.3);
-  }
+  .tm-dot:hover { background: rgba(212,160,23,0.35); }
+  .tm-dot.active { background: var(--rasoaf-gold-light); width: 20px; }
 
-  .tm-dot:focus-visible {
-    outline: 2px solid var(--rasoaf-gold-light);
-    outline-offset: 2px;
-  }
-
-  .tm-dot.active {
-    background: var(--rasoaf-gold-light);
-    transform: scale(1.3);
-  }
-
-  /* Reduced motion */
   @media (prefers-reduced-motion: reduce) {
-    * {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-    }
+    * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
   }
 
-  /* ════════════════════════════════════════════════════════════════ */
-  /* RESPONSIVE DESIGN */
-  /* Type sizes are fluid via clamp() in the variables above, so no    */
-  /* breakpoint overrides are needed for font-size — only spacing and  */
-  /* layout adjust here, avoiding specificity fights with the tokens.  */
-  /* ════════════════════════════════════════════════════════════════ */
-
+  /* ── Responsive ── */
   @media (max-width: 768px) {
-    .tm-section {
-      padding: clamp(48px, 8vh, 72px) 20px;
-    }
-
-    .tm-card {
-      padding: 24px;
-      min-height: 240px;
-    }
-
-    .tm-footer {
-      gap: var(--spacing-md);
-    }
+    .tm-section { padding: clamp(40px, 6vh, 60px) 20px; }
+    .tm-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+    .tm-card { padding: 20px; }
+    .tm-speech-bubble { padding: 14px; }
   }
 
   @media (max-width: 600px) {
-    .tm-section {
-      padding: clamp(40px, 6vh, 60px) 16px;
-    }
-
-    .tm-card {
-      padding: 20px;
-      min-height: 200px;
-    }
-
-    .tm-text {
-      margin-bottom: var(--spacing-lg);
-    }
-
-    .tm-footer {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-
-    .tm-avatar {
-      width: 44px;
-      height: 44px;
-      font-size: 20px;
-    }
-
-    .tm-nav {
-      gap: var(--spacing-md);
-    }
-
-    .tm-dots {
-      gap: 6px;
-    }
-
-    .tm-dot {
-      width: 6px;
-      height: 6px;
-    }
+    .tm-section { padding: clamp(32px, 5vh, 48px) 16px; }
+    .tm-grid { grid-template-columns: 1fr; gap: 12px; }
+    .tm-card { padding: 20px; }
+    .tm-footer { flex-direction: column; align-items: flex-start; gap: 10px; }
+    .tm-speech-bubble { padding: 14px; }
   }
 
   @media (max-width: 400px) {
-    .tm-section {
-      padding: clamp(32px, 5vh, 48px) 12px;
-    }
-
-    .tm-card {
-      padding: 16px;
-    }
-
-    .tm-nav-btn {
-      width: 40px;
-      height: 40px;
-    }
-
-    .tm-nav-btn svg {
-      width: 18px;
-      height: 18px;
-    }
+    .tm-card { padding: 16px; }
+    .tm-nav-btn { width: 36px; height: 36px; }
   }
 `;
 
 export default function TestimonialsSection() {
-  const [current, setCurrent] = useState(0);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [touchStart, setTouchStart] = useState(null);
+  const timerRef = useRef(null);
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
 
-  const handlePrev = () =>
-    setCurrent((p) => (p === 0 ? TESTIMONIALS.length - 1 : p - 1));
+  const pages = [];
+  for (let i = 0; i < TESTIMONIALS.length; i += 2) {
+    pages.push(TESTIMONIALS.slice(i, i + 2));
+  }
+  const totalPages = pages.length;
 
-  const handleNext = () =>
-    setCurrent((p) => (p === TESTIMONIALS.length - 1 ? 0 : p + 1));
+  const startAutoplay = useCallback(() => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => setCurrentPage(prev => (prev + 1) % totalPages), 5000);
+  }, [totalPages]);
 
-  const testimonial = TESTIMONIALS[current];
+  useEffect(() => {
+    startAutoplay();
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [startAutoplay]);
+
+  const goTo = useCallback((i) => {
+    setCurrentPage(((i % totalPages) + totalPages) % totalPages);
+    startAutoplay();
+  }, [totalPages, startAutoplay]);
+
+  const handlePrev = () => goTo(currentPage - 1);
+  const handleNext = () => goTo(currentPage + 1);
+
+  const handleTouchStart = (e) => setTouchStart(e.touches[0].clientX);
+  const handleTouchEnd = (e) => {
+    if (touchStart === null) return;
+    const diff = e.changedTouches[0].clientX - touchStart;
+    if (diff > 50) handlePrev(); else if (diff < -50) handleNext();
+    setTouchStart(null);
+  };
+
+  const currentTestimonials = pages[currentPage] || [];
 
   const headerVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.6, ease: [0.25, 1, 0.5, 1] }
-    }
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [.22,1,.36,1] } }
   };
 
-  const cardVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.5, ease: [0.25, 1, 0.5, 1] }
-    },
-    exit: {
-      opacity: 0,
-      y: -20,
-      transition: { duration: 0.3 }
-    }
+  const cardLeft = {
+    hidden: { opacity: 0, x: -40 },
+    visible: { opacity: 1, x: 0, transition: { duration: 0.55, ease: [.22,1,.36,1] } },
+    exit: { opacity: 0, x: -30, transition: { duration: 0.3 } }
+  };
+
+  const cardRight = {
+    hidden: { opacity: 0, x: 40 },
+    visible: { opacity: 1, x: 0, transition: { duration: 0.55, delay: 0.08, ease: [.22,1,.36,1] } },
+    exit: { opacity: 0, x: 30, transition: { duration: 0.3 } }
   };
 
   return (
@@ -483,97 +423,79 @@ export default function TestimonialsSection() {
 
       <section className="tm-section" ref={ref} aria-label="Client testimonials">
         <div className="tm-container">
-          {/* Header */}
-          <motion.div
-            className="tm-header"
-            variants={headerVariants}
-            initial="hidden"
-            animate={inView ? "visible" : "hidden"}
-          >
+          <motion.div className="tm-header" variants={headerVariants} initial="hidden" animate={inView ? "visible" : "hidden"}>
             <div className="tm-eyebrow">
-              <Star size={12} />
+              <MessageCircle size={12} />
               Testimonials
+              <Sparkles size={12} />
             </div>
             <h2 className="tm-title">
               What Our <span className="tm-title-accent">Clients Say</span>
             </h2>
           </motion.div>
 
-          {/* Testimonial Card Carousel */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={current}
-              className="tm-card"
-              variants={cardVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-            >
-              {/* Quote Icon */}
-              <div className="tm-quote-icon" aria-hidden="true">
-                <Quote size={48} />
-              </div>
+          <div onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentPage}
+                className="tm-grid"
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+              >
+                {currentTestimonials.map((testimonial, idx) => (
+                  <motion.div
+                    key={idx}
+                    className="tm-card"
+                    variants={idx === 0 ? cardLeft : cardRight}
+                  >
+                    {/* Speaker Point Speech Bubble */}
+                    <div className="tm-speech-wrapper">
+                      <div className="tm-speech-bubble">
+                        <p className="tm-text">&ldquo;{testimonial.text}&rdquo;</p>
+                      </div>
+                    </div>
 
-              {/* Testimonial Text */}
-              <p className="tm-text">&ldquo;{testimonial.text}&rdquo;</p>
+                    {/* Footer */}
+                    <div className="tm-footer">
+                      <div className="tm-author">
+                        <div className="tm-avatar" aria-hidden="true">{testimonial.flag}</div>
+                        <div className="tm-author-text">
+                          <h3 className="tm-name">{testimonial.name}</h3>
+                          <p className="tm-country">{testimonial.country}</p>
+                        </div>
+                      </div>
 
-              {/* Footer: Author + Rating */}
-              <div className="tm-footer">
-                <div className="tm-author">
-                  <div className="tm-avatar" aria-hidden="true">{testimonial.flag}</div>
-                  <div className="tm-author-text">
-                    <h3 className="tm-name">{testimonial.name}</h3>
-                    <p className="tm-country">{testimonial.country}</p>
-                  </div>
-                </div>
+                      <div className="tm-stars" role="img" aria-label={`${testimonial.rating} out of 5 stars`}>
+                        {Array.from({ length: testimonial.rating }).map((_, i) => (
+                          <Star key={i} size={14} className="tm-star" fill="currentColor" aria-hidden="true" />
+                        ))}
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </motion.div>
+            </AnimatePresence>
+          </div>
 
-                {/* Stars */}
-                <div className="tm-stars" role="img" aria-label={`${testimonial.rating} out of 5 stars`}>
-                  {Array.from({ length: testimonial.rating }).map((_, i) => (
-                    <Star
-                      key={i}
-                      size={18}
-                      className="tm-star"
-                      fill="currentColor"
-                      aria-hidden="true"
-                    />
-                  ))}
-                </div>
-              </div>
-            </motion.div>
-          </AnimatePresence>
-
-          {/* Navigation */}
           <div className="tm-nav">
-            <button
-              className="tm-nav-btn"
-              onClick={handlePrev}
-              aria-label="Previous testimonial"
-              type="button"
-            >
-              <ChevronLeft size={20} />
+            <button className="tm-nav-btn" onClick={handlePrev} aria-label="Previous testimonials" type="button">
+              <ChevronLeft size={18} />
             </button>
-
             <div className="tm-dots">
-              {TESTIMONIALS.map((_, idx) => (
+              {pages.map((_, idx) => (
                 <button
                   key={idx}
-                  className={`tm-dot ${idx === current ? "active" : ""}`}
-                  onClick={() => setCurrent(idx)}
-                  aria-label={`Go to testimonial ${idx + 1}`}
-                  aria-current={idx === current ? "true" : "false"}
+                  className={`tm-dot ${idx === currentPage ? "active" : ""}`}
+                  onClick={() => goTo(idx)}
+                  aria-label={`Go to testimonial page ${idx + 1}`}
+                  aria-current={idx === currentPage ? "true" : "false"}
                   type="button"
                 />
               ))}
             </div>
-
-            <button
-              className="tm-nav-btn"
-              onClick={handleNext}
-              aria-label="Next testimonial"
-              type="button"
-            >
-              <ChevronRight size={20} />
+            <button className="tm-nav-btn" onClick={handleNext} aria-label="Next testimonials" type="button">
+              <ChevronRight size={18} />
             </button>
           </div>
         </div>

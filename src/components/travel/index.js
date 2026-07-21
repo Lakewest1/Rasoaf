@@ -18,3 +18,4 @@ export { default as CTASection } from "./CTASection";
 // Add this line:
 export { default as VisaSlider } from "./VisaSlider";
 export { default as AboutRasoaf } from "./AboutRasoaf";
+export { default as Training } from "./Training";
