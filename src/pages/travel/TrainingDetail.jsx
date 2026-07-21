@@ -2,17 +2,17 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // RASOAF TRAVELS AND TOURS LIMITED — Premium Training Detail Page
 // 2026 Luxury · Cinematic Hero · Glass Cards · Editorial Layout · Sticky Sidebar
+// Strict Rasoaf Global Design System Typography
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useParams, useNavigate } from "react-router-dom";
-import { useState, useEffect, useRef } from "react";
-import { motion, useInView, AnimatePresence } from "framer-motion";
-import { 
+import { useState, useRef } from "react";
+import { motion, useInView } from "framer-motion";
+import {
   ArrowLeft, Clock, Users, Award, CheckCircle, Sparkles,
-  BookOpen, Globe, Briefcase, Stethoscope, PenTool,
-  ChevronRight, Calendar, MapPin, Star, Share2, Download,
-  Phone, MessageCircle, Send, Quote, Zap, Shield, Target,
-  Layers, FileText, BarChart3
+  BookOpen, Globe, PenTool, Stethoscope,
+  Star, Share2, Download,
+  Phone, MessageCircle, Send, Target, Shield, Layers,
 } from "lucide-react";
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -280,8 +280,11 @@ const t = {
   cream: "#FFF8E6",
   white: "#FFFFFF",
   textPrimary: "#0B0F17",
-  textSecondary: "#525252",
-  textMuted: "#737373",
+  // Currently unreferenced within this file's own rules (the page is dark
+  // and uses rgba(255,255,255,x) directly), kept aligned to the DS muted
+  // token in case a light-surface variant reuses these later.
+  textSecondary: "#5F5F5F",
+  textMuted: "#8B8B8B",
   glassBg: "rgba(255,255,255,0.04)",
   glassBorder: "rgba(255,255,255,0.08)",
   shadowLg: "0 24px 60px rgba(0,0,0,0.12)",
@@ -296,13 +299,11 @@ function AnimatedStat({ icon: Icon, value, label, delay = 0, isInView }) {
     <motion.div
       initial={{ opacity: 0, y: 30 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ delay, duration: 0.6, ease: [0.22,1,0.36,1] }}
+      transition={{ delay, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
       whileHover={{ y: -6, scale: 1.03 }}
       style={{
-        background: "rgba(255,255,255,0.03)",
-        backdropFilter: "blur(16px)",
-        WebkitBackdropFilter: "blur(16px)",
-        border: "1px solid rgba(255,255,255,0.08)",
+        background: t.cream,
+        border: "1px solid rgba(212,160,23,0.15)",
         borderRadius: 20,
         padding: "clamp(20px, 2.5vw, 28px)",
         textAlign: "center",
@@ -312,21 +313,23 @@ function AnimatedStat({ icon: Icon, value, label, delay = 0, isInView }) {
     >
       <div style={{
         width: 48, height: 48, borderRadius: 14,
-        background: "rgba(212,160,23,0.1)",
-        border: "1px solid rgba(212,160,23,0.2)",
+        background: "rgba(212,160,23,0.12)",
+        border: "1px solid rgba(212,160,23,0.25)",
         display: "flex", alignItems: "center", justifyContent: "center",
         margin: "0 auto 12px",
       }}>
-        <Icon size={22} color={t.gold} strokeWidth={1.8} />
+        <Icon size={22} color={t.goldDark} strokeWidth={1.8} aria-hidden="true" />
       </div>
       <div style={{
         fontFamily: t.display, fontWeight: 800,
         fontSize: "clamp(1.1rem, 1.4vw, 1.3rem)",
-        color: t.gold, letterSpacing: "-0.01em",
+        color: t.goldDark, letterSpacing: "-0.01em",
       }}>{value}</div>
+      {/* Micro-label — intentionally below the DS caption floor (0.875rem)
+          since it sits in a tight 4-up stat row; deliberate exception. */}
       <div style={{
-        fontFamily: t.body, fontSize: "0.72rem",
-        fontWeight: 500, color: "rgba(255,255,255,0.5)",
+        fontFamily: t.body, fontSize: "0.75rem",
+        fontWeight: 600, color: t.textSecondary,
         marginTop: 4, letterSpacing: "0.03em", textTransform: "uppercase",
       }}>{label}</div>
     </motion.div>
@@ -341,7 +344,7 @@ function SectionHeading({ icon: Icon, title, subtitle, isInView, delay = 0 }) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ delay, duration: 0.6, ease: [0.22,1,0.36,1] }}
+      transition={{ delay, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
       style={{ marginBottom: 28 }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
@@ -351,19 +354,22 @@ function SectionHeading({ icon: Icon, title, subtitle, isInView, delay = 0 }) {
           border: "1px solid rgba(212,160,23,0.15)",
           display: "flex", alignItems: "center", justifyContent: "center",
         }}>
-          <Icon size={18} color={t.gold} strokeWidth={1.8} />
+          <Icon size={18} color={t.gold} strokeWidth={1.8} aria-hidden="true" />
         </div>
+        {/* H4/H5 tier per DS (Manrope 700–800, -0.02em tracking) */}
         <h2 style={{
           fontFamily: t.display, fontWeight: 800,
           fontSize: "clamp(1.3rem, 1.8vw, 1.6rem)",
-          color: t.white, margin: 0, letterSpacing: "-0.02em",
+          color: t.textPrimary, margin: 0, letterSpacing: "-0.02em",
+          lineHeight: 1.15,
         }}>{title}</h2>
       </div>
       {subtitle && (
+        // Body-normal per DS (1rem), line-height 1.7
         <p style={{
-          fontFamily: t.body, fontSize: "0.9rem",
-          color: "rgba(255,255,255,0.5)", margin: 0,
-          lineHeight: 1.6, letterSpacing: "0.005em",
+          fontFamily: t.body, fontSize: "1rem",
+          color: t.textSecondary, margin: 0,
+          lineHeight: 1.7,
         }}>{subtitle}</p>
       )}
     </motion.div>
@@ -374,8 +380,10 @@ function SectionHeading({ icon: Icon, title, subtitle, isInView, delay = 0 }) {
 //  PREMIUM CSS
 // ══════════════════════════════════════════════════════════════════════════
 const DetailCSS = `
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@700;800&display=swap');
+
   .td-page {
-    background: linear-gradient(175deg, #060D1A 0%, #0A1628 25%, #0D1F3C 50%, #0A1628 75%, #060D1A 100%);
+    background: #FFFFFF;
     min-height: 100vh;
     font-family: ${t.body};
     position: relative;
@@ -387,8 +395,8 @@ const DetailCSS = `
     position: fixed;
     inset: 0;
     background: 
-      radial-gradient(ellipse at 70% 30%, rgba(212,160,23,0.06) 0%, transparent 50%),
-      radial-gradient(ellipse at 30% 70%, rgba(247,201,72,0.04) 0%, transparent 40%);
+      radial-gradient(ellipse at 70% 20%, rgba(212,160,23,0.05) 0%, transparent 50%),
+      radial-gradient(ellipse at 20% 80%, rgba(247,201,72,0.04) 0%, transparent 45%);
     pointer-events: none;
     z-index: 0;
   }
@@ -429,7 +437,7 @@ const DetailCSS = `
     border-radius: 100px;
     color: rgba(255,255,255,0.7);
     font-family: ${t.body};
-    font-size: 0.78rem; font-weight: 500;
+    font-size: 0.875rem; font-weight: 500;
     cursor: pointer;
     transition: all 0.3s ease;
     margin-bottom: 16px;
@@ -443,6 +451,14 @@ const DetailCSS = `
     transform: translateX(-3px);
   }
 
+  .td-hero-breadcrumb:focus-visible,
+  .td-btn-gold:focus-visible,
+  .td-btn-ghost:focus-visible {
+    outline: 2px solid ${t.gold};
+    outline-offset: 3px;
+  }
+
+  /* Eyebrow — Inter 700, uppercase, 0.8rem, letter-spacing 0.18em (per DS) */
   .td-hero-badge {
     display: inline-flex; align-items: center; gap: 6px;
     padding: 5px 14px;
@@ -451,30 +467,32 @@ const DetailCSS = `
     border-radius: 100px;
     color: ${t.goldLight};
     font-family: ${t.body};
-    font-size: 0.7rem; font-weight: 700;
-    letter-spacing: 0.1em; text-transform: uppercase;
+    font-size: 0.8rem; font-weight: 700;
+    letter-spacing: 0.18em; text-transform: uppercase;
     margin-bottom: 14px;
+    line-height: 1;
   }
 
+  /* H1 — Manrope 800, clamp(3rem,6vw,4.75rem), letter-spacing -0.02em (per DS) */
   .td-hero-title {
     font-family: ${t.display};
     font-weight: 800;
-    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-size: clamp(3rem, 6vw, 4.75rem);
     color: #FFFFFF;
     margin: 0 0 10px 0;
-    letter-spacing: -0.03em;
-    line-height: 1.1;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
     text-shadow: 0 4px 24px rgba(0,0,0,0.4);
   }
 
+  /* Lead paragraph — DS body-large scale, line-height 1.7 */
   .td-hero-desc {
     font-family: ${t.body};
-    font-size: clamp(0.9rem, 1.1vw, 1.05rem);
+    font-size: clamp(1rem, 1.1vw, 1.125rem);
     font-weight: 400;
     color: rgba(255,255,255,0.7);
     max-width: 560px;
-    line-height: 1.6;
-    letter-spacing: 0.005em;
+    line-height: 1.7;
   }
 
   /* ── Main Layout ── */
@@ -497,40 +515,42 @@ const DetailCSS = `
 
   /* ── Glass Card ── */
   .td-glass-card {
-    background: rgba(255,255,255,0.03);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255,255,255,0.06);
+    background: #FFFFFF;
+    border: 1px solid rgba(11,15,23,0.06);
     border-radius: 24px;
     padding: clamp(28px, 3.5vw, 40px);
+    box-shadow: 0 4px 20px rgba(11,15,23,0.05);
     transition: all ${t.transition};
   }
 
   .td-glass-card:hover {
-    border-color: rgba(212,160,23,0.15);
-    box-shadow: 0 16px 48px rgba(0,0,0,0.3), 0 0 0 1px rgba(212,160,23,0.08);
+    border-color: rgba(212,160,23,0.25);
+    box-shadow: 0 16px 48px rgba(11,15,23,0.08), 0 0 0 1px rgba(212,160,23,0.1);
   }
 
-  /* ── Description ── */
+  /* ── Description — DS body-normal (1rem), line-height 1.7 ── */
   .td-description {
     font-family: ${t.body};
-    font-size: clamp(0.9rem, 1.05vw, 1rem);
-    line-height: 1.8;
-    color: rgba(255,255,255,0.72);
-    letter-spacing: 0.005em;
+    font-size: 1rem;
+    line-height: 1.7;
+    color: ${t.textSecondary};
   }
 
   .td-description p { margin: 0 0 16px; }
   .td-description p:last-child { margin-bottom: 0; }
 
+  /* H6 tier per DS (1.125rem) for inline section headers within the
+     rich-text description (e.g. "International Uses of TOEFL") */
   .td-description h3 {
     font-family: ${t.display};
     font-weight: 700;
-    font-size: 1.1rem;
-    color: ${t.goldLight};
+    font-size: 1.125rem;
+    color: ${t.goldDark};
     margin: 28px 0 12px;
     letter-spacing: -0.01em;
   }
+
+  .td-description h3:first-child { margin-top: 0; }
 
   .td-description ul { list-style: none; padding: 0; margin: 0 0 16px; }
   .td-description li {
@@ -555,19 +575,19 @@ const DetailCSS = `
   .td-feature-item {
     display: flex; align-items: flex-start; gap: 10px;
     padding: 14px 16px;
-    background: rgba(255,255,255,0.025);
-    border: 1px solid rgba(255,255,255,0.05);
+    background: ${t.cream};
+    border: 1px solid rgba(212,160,23,0.1);
     border-radius: 14px;
     font-family: ${t.body};
-    font-size: 0.85rem;
-    color: rgba(255,255,255,0.65);
+    font-size: 0.875rem;
+    color: ${t.textSecondary};
     transition: all ${t.transition};
     line-height: 1.5;
   }
 
   .td-feature-item:hover {
-    background: rgba(212,160,23,0.04);
-    border-color: rgba(212,160,23,0.15);
+    background: rgba(212,160,23,0.08);
+    border-color: rgba(212,160,23,0.25);
     transform: translateX(3px);
   }
 
@@ -583,18 +603,18 @@ const DetailCSS = `
   .td-module-item {
     display: flex; align-items: center; gap: 10px;
     padding: 14px 16px;
-    background: rgba(255,255,255,0.025);
-    border: 1px solid rgba(255,255,255,0.05);
+    background: ${t.cream};
+    border: 1px solid rgba(212,160,23,0.1);
     border-radius: 14px;
     font-family: ${t.body};
-    font-size: 0.85rem;
-    color: rgba(255,255,255,0.65);
+    font-size: 0.875rem;
+    color: ${t.textSecondary};
     transition: all ${t.transition};
   }
 
   .td-module-item:hover {
-    background: rgba(212,160,23,0.04);
-    border-color: rgba(212,160,23,0.15);
+    background: rgba(212,160,23,0.08);
+    border-color: rgba(212,160,23,0.25);
     transform: translateX(3px);
   }
 
@@ -605,19 +625,19 @@ const DetailCSS = `
   }
 
   .td-sidebar-card {
-    background: rgba(255,255,255,0.04);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255,255,255,0.08);
+    background: #FFFFFF;
+    border: 1px solid rgba(11,15,23,0.06);
     border-radius: 20px;
     padding: clamp(20px, 2.5vw, 28px);
+    box-shadow: 0 4px 20px rgba(11,15,23,0.05);
   }
 
+  /* H6 tier per DS (1.125rem) */
   .td-sidebar-title {
     font-family: ${t.display};
     font-weight: 700;
-    font-size: 1rem;
-    color: #FFFFFF;
+    font-size: 1.125rem;
+    color: ${t.textPrimary};
     margin: 0 0 16px;
     letter-spacing: -0.01em;
   }
@@ -625,16 +645,17 @@ const DetailCSS = `
   .td-sidebar-row {
     display: flex; align-items: center; gap: 10px;
     padding: 10px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
+    border-bottom: 1px solid rgba(11,15,23,0.06);
     font-family: ${t.body};
-    font-size: 0.82rem;
-    color: rgba(255,255,255,0.6);
+    font-size: 0.875rem;
+    color: ${t.textSecondary};
   }
 
   .td-sidebar-row:last-child { border-bottom: none; }
 
   .td-sidebar-row svg { color: ${t.gold}; flex-shrink: 0; }
 
+  /* Buttons — Inter 600, 0.95rem, letter-spacing 0.01em (per DS) */
   .td-btn-gold {
     display: inline-flex; align-items: center; justify-content: center; gap: 8px;
     padding: 13px 24px;
@@ -643,7 +664,7 @@ const DetailCSS = `
     background: linear-gradient(135deg, ${t.goldLight}, ${t.gold});
     color: ${t.charcoal};
     font-family: ${t.body};
-    font-size: 0.88rem; font-weight: 700;
+    font-size: 0.95rem; font-weight: 600; letter-spacing: 0.01em;
     cursor: pointer;
     width: 100%;
     transition: all ${t.transition};
@@ -659,11 +680,11 @@ const DetailCSS = `
     display: inline-flex; align-items: center; justify-content: center; gap: 8px;
     padding: 13px 24px;
     border-radius: 14px;
-    border: 1px solid rgba(255,255,255,0.15);
+    border: 1px solid rgba(11,15,23,0.15);
     background: transparent;
-    color: rgba(255,255,255,0.8);
+    color: ${t.textPrimary};
     font-family: ${t.body};
-    font-size: 0.88rem; font-weight: 600;
+    font-size: 0.95rem; font-weight: 600; letter-spacing: 0.01em;
     cursor: pointer;
     width: 100%;
     transition: all ${t.transition};
@@ -671,14 +692,14 @@ const DetailCSS = `
 
   .td-btn-ghost:hover {
     border-color: ${t.gold};
-    color: ${t.goldLight};
+    color: ${t.goldDark};
     background: rgba(212,160,23,0.06);
   }
 
   /* ── CTA Section ── */
   .td-cta-section {
-    background: linear-gradient(135deg, rgba(212,160,23,0.08), rgba(247,201,72,0.04));
-    border: 1px solid rgba(212,160,23,0.15);
+    background: linear-gradient(135deg, rgba(212,160,23,0.1), rgba(247,201,72,0.06));
+    border: 1px solid rgba(212,160,23,0.2);
     border-radius: 28px;
     padding: clamp(32px, 4vw, 48px);
     text-align: center;
@@ -689,7 +710,7 @@ const DetailCSS = `
   .td-cta-section::before {
     content: ''; position: absolute;
     top: -50%; left: -50%; width: 200%; height: 200%;
-    background: radial-gradient(circle at center, rgba(212,160,23,0.06) 0%, transparent 60%);
+    background: radial-gradient(circle at center, rgba(212,160,23,0.08) 0%, transparent 60%);
     animation: td-cta-glow 4s ease-in-out infinite;
     pointer-events: none;
   }
@@ -699,20 +720,26 @@ const DetailCSS = `
     50% { opacity: 1; transform: scale(1.05); }
   }
 
+  /* H3 tier per DS (clamp(1.75rem,3vw,2.25rem)) */
   .td-cta-title {
     font-family: ${t.display};
     font-weight: 800;
-    font-size: clamp(1.5rem, 2.5vw, 2rem);
-    color: #FFFFFF;
+    font-size: clamp(1.75rem, 3vw, 2.25rem);
+    color: ${t.textPrimary};
     margin: 0 0 8px;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
     position: relative;
     z-index: 1;
   }
 
+  /* Body-large per DS, matching the subtitle treatment used across every
+     other CTA section on the site */
   .td-cta-subtitle {
     font-family: ${t.body};
-    font-size: 0.95rem;
-    color: rgba(255,255,255,0.55);
+    font-size: clamp(1rem, 1.1vw, 1.125rem);
+    color: ${t.textSecondary};
+    line-height: 1.7;
     margin: 0 0 24px;
     position: relative;
     z-index: 1;
@@ -737,7 +764,7 @@ const DetailCSS = `
 
   @media (max-width: 480px) {
     .td-hero { height: 280px; }
-    .td-hero-title { font-size: 1.5rem; }
+    .td-hero-title { font-size: 2rem; }
     .td-glass-card { padding: 20px; }
     .td-cta-buttons { flex-direction: column; }
   }
@@ -749,25 +776,51 @@ const DetailCSS = `
 
 // ══════════════════════════════════════════════════════════════════════════
 //  PARSE DESCRIPTION INTO SECTIONS
+//
+//  Fix 1: the original heading test only matched lines ending in a colon
+//  (e.g. "Something:"). None of the real data uses that pattern — actual
+//  section headers look like "International Uses of TOEFL" or
+//  "Why Choose OET?", with no trailing colon. That meant every section
+//  header in the TOEFL/PTE/OET content was silently rendering as a plain
+//  paragraph instead of the intended gold heading. Broadened the test to
+//  match any short line that doesn't end in sentence punctuation and
+//  doesn't start with a digit/bullet — which reliably catches this
+//  dataset's real headers without misclassifying ordinary prose (every
+//  paragraph sentence in this data ends in '.', so nothing here collides).
+//
+//  Fix 2: numbered points + their indented sub-bullet were being split
+//  into a new <ul> every time a blank line appeared, fragmenting one
+//  logical list (e.g. all 7 "International Uses" points) into 7 separate
+//  lists with their own margins. A post-process merge pass now combines
+//  adjacent list sections that aren't separated by a real heading.
 // ══════════════════════════════════════════════════════════════════════════
 function parseDescription(text) {
   const lines = text.split('\n');
-  const sections = [];
+  const rawSections = [];
   let currentSection = { type: 'paragraphs', content: [] };
 
-  lines.forEach(line => {
+  const looksLikeHeading = (line) =>
+    line.length > 0 &&
+    line.length < 60 &&
+    /^[A-Z]/.test(line) &&
+    !/[.,;]$/.test(line) &&
+    !/^\d+\./.test(line) &&
+    !line.startsWith('-') &&
+    !line.startsWith('•');
+
+  lines.forEach((line) => {
     const trimmed = line.trim();
     if (!trimmed) {
       if (currentSection.content.length > 0) {
-        sections.push({ ...currentSection });
+        rawSections.push({ ...currentSection });
         currentSection = { type: 'paragraphs', content: [] };
       }
       return;
     }
 
-    if (/^[A-Z][A-Za-z\s]+:$/.test(trimmed) && trimmed.length < 60) {
-      if (currentSection.content.length > 0) sections.push({ ...currentSection });
-      sections.push({ type: 'heading', content: trimmed });
+    if (looksLikeHeading(trimmed)) {
+      if (currentSection.content.length > 0) rawSections.push({ ...currentSection });
+      rawSections.push({ type: 'heading', content: trimmed });
       currentSection = { type: 'paragraphs', content: [] };
       return;
     }
@@ -788,8 +841,21 @@ function parseDescription(text) {
     currentSection.content.push(trimmed);
   });
 
-  if (currentSection.content.length > 0) sections.push({ ...currentSection });
-  return sections;
+  if (currentSection.content.length > 0) rawSections.push({ ...currentSection });
+
+  // Merge consecutive list sections (only separated by blank lines, not
+  // by an actual heading) into one continuous list.
+  const merged = [];
+  rawSections.forEach((section) => {
+    const last = merged[merged.length - 1];
+    if (section.type === 'list' && last && last.type === 'list') {
+      last.content = last.content.concat(section.content);
+    } else {
+      merged.push({ ...section });
+    }
+  });
+
+  return merged;
 }
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -801,17 +867,62 @@ export default function TrainingDetail() {
   const data = trainingData[id];
   const sectionRef = useRef(null);
   const isInView = useInView(sectionRef, { once: true, margin: "-60px" });
+  const [shareStatus, setShareStatus] = useState(null); // null | "copied"
+
+  const whatsappBase = "https://wa.me/2348022352362";
+
+  const handleShareCourse = async () => {
+    const shareData = {
+      title: data ? data.title : "RASOAF Training",
+      text: data ? data.description : "",
+      url: window.location.href,
+    };
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        // AbortError just means the user closed the share sheet — not a failure.
+        if (err && err.name !== "AbortError") {
+          console.error("Share failed:", err);
+        }
+      }
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(shareData.url);
+      setShareStatus("copied");
+      setTimeout(() => setShareStatus(null), 2000);
+    } catch (err) {
+      console.error("Clipboard copy failed:", err);
+    }
+  };
+
+  const handleRequestBrochure = () => {
+    // No brochure asset exists yet — routing to the real WhatsApp contact
+    // channel with a pre-filled request rather than linking a fake/broken
+    // file path.
+    const message = `Hi, I'd like to request the brochure for ${data ? data.title : "your training programs"}.`;
+    window.open(`${whatsappBase}?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
+  };
 
   if (!data) {
     return (
-      <div className="td-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '120px 20px', textAlign: 'center' }}>
-        <div>
-          <h2 style={{ fontFamily: t.display, color: '#FFF', marginBottom: 16 }}>Training not found</h2>
-          <button onClick={() => navigate('/travel/training')} className="td-btn-gold" style={{ width: 'auto', padding: '12px 28px' }}>
-            <ArrowLeft size={16} /> Back to Training
-          </button>
+      <>
+        <style>{DetailCSS}</style>
+        <div className="td-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '120px 20px', textAlign: 'center' }}>
+          <div>
+            <h2 style={{ fontFamily: t.display, fontWeight: 800, fontSize: "1.5rem", color: t.textPrimary, marginBottom: 16 }}>Training not found</h2>
+            <button
+              onClick={() => navigate('/travel/training')}
+              className="td-btn-gold"
+              style={{ width: 'auto', padding: '12px 28px' }}
+              type="button"
+            >
+              <ArrowLeft size={16} aria-hidden="true" /> Back to Training
+            </button>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
@@ -832,14 +943,14 @@ export default function TrainingDetail() {
             className="td-hero-content"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: [0.22,1,0.36,1] }}
+            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           >
-            <button className="td-hero-breadcrumb" onClick={() => navigate('/travel/training')}>
-              <ArrowLeft size={14} /> Training
+            <button className="td-hero-breadcrumb" onClick={() => navigate('/travel/training')} type="button">
+              <ArrowLeft size={14} aria-hidden="true" /> Training
             </button>
 
             <div className="td-hero-badge">
-              <Sparkles size={12} /> Premium Training
+              <Sparkles size={12} aria-hidden="true" /> Premium Training
             </div>
 
             <h1 className="td-hero-title">{data.title}</h1>
@@ -855,7 +966,7 @@ export default function TrainingDetail() {
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: 0.1, ease: [0.22,1,0.36,1] }}
+              transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
               style={{
                 display: "grid",
                 gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))",
@@ -873,7 +984,7 @@ export default function TrainingDetail() {
               className="td-glass-card"
               initial={{ opacity: 0, y: 30 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: 0.2, ease: [0.22,1,0.36,1] }}
+              transition={{ duration: 0.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
             >
               <SectionHeading icon={BookOpen} title="Overview" isInView={isInView} delay={0.2} />
               <div className="td-description">
@@ -898,7 +1009,7 @@ export default function TrainingDetail() {
               className="td-glass-card"
               initial={{ opacity: 0, y: 30 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: 0.3, ease: [0.22,1,0.36,1] }}
+              transition={{ duration: 0.6, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
             >
               <SectionHeading icon={Target} title="Key Features" isInView={isInView} delay={0.3} />
               <div className="td-feature-grid">
@@ -911,7 +1022,7 @@ export default function TrainingDetail() {
                     transition={{ delay: 0.35 + idx * 0.06, duration: 0.4 }}
                     whileHover={{ x: 4 }}
                   >
-                    <CheckCircle size={16} />
+                    <CheckCircle size={16} aria-hidden="true" />
                     {point}
                   </motion.div>
                 ))}
@@ -923,7 +1034,7 @@ export default function TrainingDetail() {
               className="td-glass-card"
               initial={{ opacity: 0, y: 30 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: 0.4, ease: [0.22,1,0.36,1] }}
+              transition={{ duration: 0.6, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
             >
               <SectionHeading icon={Shield} title="Requirements" isInView={isInView} delay={0.4} />
               <div className="td-feature-grid">
@@ -936,7 +1047,7 @@ export default function TrainingDetail() {
                     transition={{ delay: 0.45 + idx * 0.06, duration: 0.4 }}
                     whileHover={{ x: 4 }}
                   >
-                    <CheckCircle size={16} />
+                    <CheckCircle size={16} aria-hidden="true" />
                     {req}
                   </motion.div>
                 ))}
@@ -949,7 +1060,7 @@ export default function TrainingDetail() {
                 className="td-glass-card"
                 initial={{ opacity: 0, y: 30 }}
                 animate={isInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.6, delay: 0.5, ease: [0.22,1,0.36,1] }}
+                transition={{ duration: 0.6, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
               >
                 <SectionHeading icon={Layers} title="Test Modules" isInView={isInView} delay={0.5} />
                 <div className="td-module-grid">
@@ -962,7 +1073,7 @@ export default function TrainingDetail() {
                       transition={{ delay: 0.55 + idx * 0.06, duration: 0.4 }}
                       whileHover={{ x: 4 }}
                     >
-                      <CheckCircle size={16} />
+                      <CheckCircle size={16} aria-hidden="true" />
                       {module}
                     </motion.div>
                   ))}
@@ -975,16 +1086,16 @@ export default function TrainingDetail() {
               className="td-cta-section"
               initial={{ opacity: 0, y: 30 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: 0.6, ease: [0.22,1,0.36,1] }}
+              transition={{ duration: 0.6, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
             >
               <h2 className="td-cta-title">Ready to Get Started?</h2>
               <p className="td-cta-subtitle">Enroll now and take the first step toward your goals.</p>
               <div className="td-cta-buttons">
-                <button className="td-btn-gold" style={{ width: 'auto', padding: '14px 32px' }} onClick={() => navigate('/travel/contact')}>
-                  <Send size={16} /> Enroll Now
+                <button className="td-btn-gold" style={{ width: 'auto', padding: '14px 32px' }} onClick={() => navigate('/travel/contact')} type="button">
+                  <Send size={16} aria-hidden="true" /> Enroll Now
                 </button>
-                <button className="td-btn-ghost" style={{ width: 'auto', padding: '14px 32px' }} onClick={() => navigate('/travel/training')}>
-                  <BookOpen size={16} /> Browse All Training
+                <button className="td-btn-ghost" style={{ width: 'auto', padding: '14px 32px' }} onClick={() => navigate('/travel/training')} type="button">
+                  <BookOpen size={16} aria-hidden="true" /> Browse All Training
                 </button>
               </div>
             </motion.div>
@@ -995,39 +1106,43 @@ export default function TrainingDetail() {
             className="td-sidebar"
             initial={{ opacity: 0, x: 30 }}
             animate={isInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.6, delay: 0.3, ease: [0.22,1,0.36,1] }}
+            transition={{ duration: 0.6, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
           >
             {/* Course Summary */}
             <div className="td-sidebar-card">
               <h3 className="td-sidebar-title">Course Summary</h3>
-              <div className="td-sidebar-row"><Clock size={16} /><span>{details.duration}</span></div>
-              <div className="td-sidebar-row"><Users size={16} /><span>{details.format}</span></div>
-              <div className="td-sidebar-row"><Star size={16} /><span>{details.rating} Rating</span></div>
-              <div className="td-sidebar-row"><Award size={16} /><span>Certification</span></div>
+              <div className="td-sidebar-row"><Clock size={16} aria-hidden="true" /><span>{details.duration}</span></div>
+              <div className="td-sidebar-row"><Users size={16} aria-hidden="true" /><span>{details.format}</span></div>
+              <div className="td-sidebar-row"><Star size={16} aria-hidden="true" /><span>{details.rating} Rating</span></div>
+              <div className="td-sidebar-row"><Award size={16} aria-hidden="true" /><span>Certification</span></div>
             </div>
 
             {/* Quick Actions */}
             <div className="td-sidebar-card" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <button className="td-btn-gold" onClick={() => navigate('/travel/contact')}>
-                <Send size={16} /> Enroll Now
+              <button className="td-btn-gold" onClick={() => navigate('/travel/contact')} type="button">
+                <Send size={16} aria-hidden="true" /> Enroll Now
               </button>
-              <button className="td-btn-ghost" onClick={() => window.open('https://wa.me/2348022352362', '_blank')}>
-                <MessageCircle size={16} /> Speak with an Advisor
+              <button
+                className="td-btn-ghost"
+                onClick={() => window.open(whatsappBase, '_blank', 'noopener,noreferrer')}
+                type="button"
+              >
+                <MessageCircle size={16} aria-hidden="true" /> Speak with an Advisor
               </button>
-              <button className="td-btn-ghost">
-                <Download size={16} /> Download Brochure
+              <button className="td-btn-ghost" onClick={handleRequestBrochure} type="button">
+                <Download size={16} aria-hidden="true" /> Request Brochure
               </button>
-              <button className="td-btn-ghost">
-                <Share2 size={16} /> Share Course
+              <button className="td-btn-ghost" onClick={handleShareCourse} type="button">
+                <Share2 size={16} aria-hidden="true" /> {shareStatus === "copied" ? "Link Copied!" : "Share Course"}
               </button>
             </div>
 
             {/* Contact */}
             <div className="td-sidebar-card">
               <h3 className="td-sidebar-title">Need Help?</h3>
-              <div className="td-sidebar-row"><Phone size={16} /><span>+234 802 235 2362</span></div>
-              <div className="td-sidebar-row"><MessageCircle size={16} /><span>WhatsApp Us</span></div>
-              <div className="td-sidebar-row"><Send size={16} /><span>info@rasoaf.com</span></div>
+              <div className="td-sidebar-row"><Phone size={16} aria-hidden="true" /><span>+234 802 235 2362</span></div>
+              <div className="td-sidebar-row"><MessageCircle size={16} aria-hidden="true" /><span>WhatsApp Us</span></div>
+              <div className="td-sidebar-row"><Send size={16} aria-hidden="true" /><span>info@rasoaf.com</span></div>
             </div>
           </motion.div>
         </div>

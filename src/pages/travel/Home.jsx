@@ -1,6 +1,7 @@
 // src/pages/travel/Home.jsx
 // ─────────────────────────────────────────────────────────────────────────────
 // RASOAF TRAVELS AND TOURS LIMITED — Travel Home Page
+// Premium Layout · Optimized Component Order
 // ─────────────────────────────────────────────────────────────────────────────
 
 import {
@@ -8,7 +9,6 @@ import {
   CountryTicker,
   VisaServicesGrid,
   FeaturedDestinations,
-  TravelServices,
   TravelExperience,
   WhyChooseRasoaf,
   VisaSupport,
@@ -16,10 +16,11 @@ import {
   TravelStatistics,
   TestimonialsSection,
   FAQSection,
-  FinalCTA,
   VisaSlider,
   AboutRasoaf,
   Training,
+  OfficeLocations,
+  ContactNewsletter,
 } from "../../components/travel";
 
 export default function TravelHome() {
@@ -42,82 +43,76 @@ export default function TravelHome() {
       <CountryTicker />
 
       {/* ═══════════════════════════════════════════════════════════
-          VISA CTA SLIDER — Wrapped in a container that forces it
-          ABOVE the Three.js Canvas by creating a new stacking context
-          with position: relative and a HIGH z-index
+          3. VISA CTA SLIDER — "Core CTA"
       ═══════════════════════════════════════════════════════════ */}
-      <div style={{ 
-        position: "relative", 
-        zIndex: 9999,
-        background: "transparent",
-      }}>
+      <div style={{ position: "relative", zIndex: 50 }}>
         <VisaSlider />
       </div>
 
       {/* ═══════════════════════════════════════════════════════════
-          ABOUT RASOAF
+          4. ABOUT RASOAF — "Build trust"
       ═══════════════════════════════════════════════════════════ */}
       <AboutRasoaf />
 
       {/* ═══════════════════════════════════════════════════════════
-          3. VISA SERVICES GRID — "Core offerings"
+          5. VISA SERVICES GRID — "Core offerings"
       ═══════════════════════════════════════════════════════════ */}
       <VisaServicesGrid />
 
       {/* ═══════════════════════════════════════════════════════════
-          4. FEATURED DESTINATIONS — "Sell the dream"
-      ═══════════════════════════════════════════════════════════ */}
-      <FeaturedDestinations />
-
-      {/* ═══════════════════════════════════════════════════════════
-          5. TRAINING SERVICES — "Educational offerings"
-      ═══════════════════════════════════════════════════════════ */}
-      <Training />
-
-      {/* ═══════════════════════════════════════════════════════════
-          6. TRAVEL SERVICES — "Additional offerings"
-      ═══════════════════════════════════════════════════════════ */}
-      <TravelServices />
-
-      {/* ═══════════════════════════════════════════════════════════
-          7. TRAVEL EXPERIENCES — "Why people travel"
-      ═══════════════════════════════════════════════════════════ */}
-      <TravelExperience />
-
-      {/* ═══════════════════════════════════════════════════════════
-          8. WHY CHOOSE US — "Build trust"
-      ═══════════════════════════════════════════════════════════ */}
-      <WhyChooseRasoaf />
-
-      {/* ═══════════════════════════════════════════════════════════
-          9. VISA SUPPORT — "Reduce anxiety"
-      ═══════════════════════════════════════════════════════════ */}
-      <VisaSupport />
-
-      {/* ═══════════════════════════════════════════════════════════
-          10. TRAVEL PROCESS — "Simple journey"
+          6. TRAVEL PROCESS — "How it works"
       ═══════════════════════════════════════════════════════════ */}
       <TravelProcess />
 
       {/* ═══════════════════════════════════════════════════════════
-          11. STATISTICS — "Show authority"
+          7. WHY CHOOSE US — "Differentiators"
+      ═══════════════════════════════════════════════════════════ */}
+      <WhyChooseRasoaf />
+
+      {/* ═══════════════════════════════════════════════════════════
+          8. TRAVEL EXPERIENCES — "Emotional connection"
+      ═══════════════════════════════════════════════════════════ */}
+      <TravelExperience />
+
+      {/* ═══════════════════════════════════════════════════════════
+          9. FEATURED DESTINATIONS — "Sell the dream"
+      ═══════════════════════════════════════════════════════════ */}
+      <FeaturedDestinations />
+
+      {/* ═══════════════════════════════════════════════════════════
+          10. TRAINING — "Education services"
+      ═══════════════════════════════════════════════════════════ */}
+      <Training />
+
+      {/* ═══════════════════════════════════════════════════════════
+          11. VISA SUPPORT — "Reduce anxiety"
+      ═══════════════════════════════════════════════════════════ */}
+      <VisaSupport />
+
+      {/* ═══════════════════════════════════════════════════════════
+          12. STATISTICS — "Show authority"
       ═══════════════════════════════════════════════════════════ */}
       <TravelStatistics />
 
       {/* ═══════════════════════════════════════════════════════════
-          12. TESTIMONIALS — "Social proof"
+          13. TESTIMONIALS — "Social proof"
       ═══════════════════════════════════════════════════════════ */}
       <TestimonialsSection />
 
       {/* ═══════════════════════════════════════════════════════════
-          13. FAQ — "Address concerns"
+          14. FAQ — "Address concerns"
       ═══════════════════════════════════════════════════════════ */}
       <FAQSection />
 
       {/* ═══════════════════════════════════════════════════════════
-          14. FINAL CTA — "Strong closing"
+          15. OFFICE LOCATIONS — "Global presence"
       ═══════════════════════════════════════════════════════════ */}
-      <FinalCTA />
+      <OfficeLocations />
+
+      {/* ═══════════════════════════════════════════════════════════
+          16. CONTACT / NEWSLETTER — "Stay connected"
+      ═══════════════════════════════════════════════════════════ */}
+      <ContactNewsletter />
     </div>
   );
 }

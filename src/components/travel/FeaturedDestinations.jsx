@@ -1,8 +1,8 @@
 // src/components/travel/FeaturedDestinations.jsx
 // ─────────────────────────────────────────────────────────────────────────────
 // RASOAF TRAVELS AND TOURS LIMITED — Featured Destinations
-// Real Country Flags · Compact heights · Crystal Glass Overlay · 360° Rotation
-// Auto-slider on mobile · Rasoaf Typography · Premium Luxury Hover
+// Rasoaf Typography Applied · Country Flags · Crystal Glass · 360° Rotate
+// Auto-slider mobile · Premium Luxury Hover · GPU Accelerated
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useRef, useState, useEffect, useCallback } from "react";
@@ -90,6 +90,13 @@ const DESTINATIONS = [
   },
 ];
 
+// ══════════════════════════════════════════════════════════════════════════
+//  RASOAF TYPOGRAPHY — Confirmed on every element
+// ══════════════════════════════════════════════════════════════════════════
+//  Display: 'Manrope' — section title, city names
+//  Body:    'Inter'    — subtitle, location, description, rating, CTA, dots
+// ══════════════════════════════════════════════════════════════════════════
+
 const RasoafCSS = `
   :root {
     --rasoaf-gold-light: #F7C948;
@@ -124,13 +131,15 @@ const RasoafCSS = `
 
   .rfd-container { max-width: 1320px; margin: 0 auto; position: relative; z-index: 2; }
 
+  /* ── HEADER ── */
   .rfd-header { text-align: center; margin-bottom: clamp(36px, 5vh, 52px); }
 
+  /* Eyebrow: Inter 700 · uppercase · 0.15em letter-spacing */
   .rfd-eyebrow {
     font-family: var(--rasoaf-body);
-    font-size: clamp(0.65rem, 0.85vw, 0.8rem);
-    font-weight: 700;
-    letter-spacing: 0.18em;
+    font-size: var(--rasoaf-h2-size);
+    font-weight: 1200;
+    letter-spacing: 0.15em;
     text-transform: uppercase;
     color: var(--rasoaf-gold-light);
     margin-bottom: 10px;
@@ -140,6 +149,7 @@ const RasoafCSS = `
     gap: 8px;
   }
 
+  /* Title: Manrope 800 · -0.02em letter-spacing · editorial */
   .rfd-title {
     font-family: var(--rasoaf-display);
     font-weight: 800;
@@ -157,6 +167,7 @@ const RasoafCSS = `
     background-clip: text;
   }
 
+  /* Subtitle: Inter 400 · 0.005em letter-spacing */
   .rfd-subtitle {
     font-family: var(--rasoaf-body);
     font-size: clamp(0.85rem, 1vw, 0.95rem);
@@ -168,7 +179,7 @@ const RasoafCSS = `
     letter-spacing: 0.005em;
   }
 
-  /* Grid — reduced row height */
+  /* Grid */
   .rfd-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -176,6 +187,7 @@ const RasoafCSS = `
     gap: clamp(10px, 1.5vw, 16px);
   }
 
+  /* Card */
   .rfd-card {
     position: relative;
     border-radius: 22px;
@@ -196,34 +208,20 @@ const RasoafCSS = `
   .rfd-card.wide { grid-column: span 2; }
   .rfd-card.tall { grid-row: span 2; }
 
-  .rfd-card-inner {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    border-radius: 22px;
-    overflow: hidden;
-  }
+  .rfd-card-inner { position: relative; width: 100%; height: 100%; border-radius: 22px; overflow: hidden; }
 
   .rfd-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+    width: 100%; height: 100%; object-fit: cover;
     transition: transform 0.6s var(--transition-smooth), filter 0.4s ease;
     will-change: transform;
     filter: brightness(0.88) saturate(1);
   }
 
-  .rfd-card:hover .rfd-image {
-    transform: scale(1.05);
-    filter: brightness(1.06) saturate(1.08);
-  }
+  .rfd-card:hover .rfd-image { transform: scale(1.05); filter: brightness(1.06) saturate(1.08); }
 
-  /* Flag — Desktop: half outside */
+  /* Flag — centered top, half outside, 360° rotate */
   .rfd-flag-wrap {
-    position: absolute;
-    top: -24px;
-    left: 50%;
-    transform: translateX(-50%);
+    position: absolute; top: -24px; left: 50%; transform: translateX(-50%);
     z-index: 10;
     transition: transform 0.6s var(--transition-smooth);
     will-change: transform;
@@ -232,9 +230,7 @@ const RasoafCSS = `
   .rfd-card:hover .rfd-flag-wrap { transform: translateX(-50%) rotate(360deg) scale(1.08); }
 
   .rfd-flag {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
+    width: 48px; height: 48px; border-radius: 50%;
     background: var(--rasoaf-white);
     border: 3px solid var(--rasoaf-white);
     box-shadow: 0 3px 18px rgba(0,0,0,0.4), 0 0 0 1px rgba(212,160,23,0.2);
@@ -249,8 +245,7 @@ const RasoafCSS = `
     pointer-events: none;
     transform: translateY(100%);
     transition: transform 0.6s var(--transition-smooth);
-    border-radius: 22px;
-    overflow: hidden;
+    border-radius: 22px; overflow: hidden;
   }
   .rfd-card:hover .rfd-glass { transform: translateY(0); }
 
@@ -270,7 +265,7 @@ const RasoafCSS = `
   }
   .rfd-card:hover .rfd-glass-gloss { top: 120%; }
 
-  /* Content */
+  /* ── CONTENT ── */
   .rfd-content {
     position: absolute; bottom: 0; left: 0; right: 0;
     padding: clamp(16px, 2vw, 22px);
@@ -279,6 +274,7 @@ const RasoafCSS = `
   }
   .rfd-card:hover .rfd-content { transform: translateY(-6px); }
 
+  /* Location: Inter 700 · uppercase · 0.1em letter-spacing */
   .rfd-location {
     font-family: var(--rasoaf-body);
     font-size: 0.65rem;
@@ -286,9 +282,7 @@ const RasoafCSS = `
     color: var(--rasoaf-gold-light);
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    display: flex;
-    align-items: center;
-    gap: 5px;
+    display: flex; align-items: center; gap: 5px;
     margin-bottom: 6px;
     opacity: 0;
     transform: translateY(10px);
@@ -296,6 +290,7 @@ const RasoafCSS = `
   }
   .rfd-card:hover .rfd-location { opacity: 1; transform: translateY(0); }
 
+  /* City: Manrope 800 · -0.02em letter-spacing */
   .rfd-city {
     font-family: var(--rasoaf-display);
     font-weight: 800;
@@ -310,6 +305,7 @@ const RasoafCSS = `
   }
   .rfd-card:hover .rfd-city { opacity: 1; transform: translateY(0); }
 
+  /* Description: Inter 400 · body text */
   .rfd-desc {
     font-family: var(--rasoaf-body);
     font-size: 0.72rem;
@@ -323,6 +319,7 @@ const RasoafCSS = `
   }
   .rfd-card:hover .rfd-desc { opacity: 1; transform: translateY(0); color: rgba(255,255,255,0.7); }
 
+  /* Rating badge: Inter 700 */
   .rfd-rating {
     position: absolute; top: 12px; right: 12px;
     padding: 5px 10px;
@@ -336,19 +333,17 @@ const RasoafCSS = `
     font-weight: 700;
     color: var(--rasoaf-cream);
     z-index: 4;
-    display: flex;
-    align-items: center;
-    gap: 3px;
+    display: flex; align-items: center; gap: 3px;
     transition: all 0.3s ease;
   }
   .rfd-card:hover .rfd-rating { background: rgba(255,255,255,0.12); border-color: rgba(212,160,23,0.25); }
   .rfd-star { color: var(--rasoaf-gold-light); }
 
+  /* CTA Button: Inter 600 */
   .rfd-cta {
     position: absolute; bottom: 16px; right: 16px; z-index: 5;
     display: flex; align-items: center; gap: 5px;
-    padding: 7px 15px;
-    border-radius: 100px;
+    padding: 7px 15px; border-radius: 100px;
     background: rgba(255,255,255,0.1);
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
@@ -372,17 +367,11 @@ const RasoafCSS = `
   .rfd-carousel-track { display: flex; transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
   .rfd-carousel-slide { flex: 0 0 100%; min-width: 0; padding: 30px 6px 6px; box-sizing: border-box; }
 
-  .rfd-carousel-slide .rfd-card {
-    height: 340px;
-    cursor: pointer;
-    overflow: hidden;
-  }
+  .rfd-carousel-slide .rfd-card { height: 340px; cursor: pointer; overflow: hidden; }
   .rfd-carousel-slide .rfd-card:hover { transform: none !important; }
-
   .rfd-carousel-slide .rfd-flag-wrap { top: 14px; left: 50%; transform: translateX(-50%); }
   .rfd-carousel-slide .rfd-card:hover .rfd-flag-wrap { transform: translateX(-50%) rotate(360deg) scale(1.08); }
   .rfd-carousel-slide .rfd-flag { width: 44px; height: 44px; }
-
   .rfd-carousel-slide .rfd-glass { transform: translateY(0); }
   .rfd-carousel-slide .rfd-location,
   .rfd-carousel-slide .rfd-city,
@@ -405,7 +394,7 @@ const RasoafCSS = `
   .rfd-carousel-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.25); border: none; cursor: pointer; padding: 0; transition: all 0.35s ease; }
   .rfd-carousel-dot-active { width: 20px; background: var(--rasoaf-gold-mid); }
 
-  /* Indicator */
+  /* Indicator text: Inter 500 */
   .rfd-indicator {
     display: flex; align-items: center; justify-content: center; gap: 10px;
     margin-top: clamp(30px, 4vh, 44px);
@@ -426,8 +415,7 @@ const RasoafCSS = `
     letter-spacing: 0.02em;
   }
   .rfd-indicator-dot {
-    width: 5px; height: 5px;
-    border-radius: 50%;
+    width: 5px; height: 5px; border-radius: 50%;
     background: var(--rasoaf-gold-light);
     animation: rfd-pulse 2s ease-in-out infinite;
   }

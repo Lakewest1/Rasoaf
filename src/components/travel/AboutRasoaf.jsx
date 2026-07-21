@@ -4,16 +4,17 @@
 // Luxury · Cinematic · Glassmorphism · Floating travel objects · White bg
 // Slow slide animations from left and right
 // FULLY RESPONSIVE — All design elements preserved at all screen sizes
+// Strict Rasoaf Global Design System Typography
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import {
-  Phone, CheckCircle, Star, Sparkles, Shield, Globe,
-  GraduationCap, FileCheck, Plane, Building2, Award,
-  Clock, Users, Briefcase, MapPin, Compass, ArrowRight,
-  MessageCircle, Ticket, BookOpen, FileText, Stamp, Luggage,
-  Umbrella, Navigation, CreditCard, BadgeCheck, ChevronRight,
+  Phone, Star, Sparkles, Shield, Globe,
+  GraduationCap, FileCheck, Award,
+  Compass, ArrowRight,
+  MessageCircle, Ticket, BookOpen, Stamp, Luggage,
+  Umbrella,
 } from "lucide-react";
 
 // ── Rasoaf Design Tokens ────────────────────────────────────────────────
@@ -27,9 +28,11 @@ const t = {
   white: "#FFFFFF",
   charcoal: "#0B0F17",
   textPrimary: "#0B0F17",
-  textSecondary: "#525252",
-  textMuted: "#737373",
-  textSubtle: "#A3A3A3",
+  // Aligned to the DS muted token — used for primary secondary-text.
+  textSecondary: "#5F5F5F",
+  // A step lighter than DS muted, reserved for tertiary/micro text
+  // (feature descriptions, tiny labels) to keep a two-tier hierarchy.
+  textMuted: "#7A7A7A",
   cardBg: "#FFFFFF",
   cardBgAlt: "#FFFDF8",
   cardBorder: "rgba(212, 160, 23, 0.12)",
@@ -45,14 +48,14 @@ const t = {
 
 // ── Slow Slide Animation Variants ───────────────────────────────────────
 const slideFromLeft = {
-  hidden: { 
-    opacity: 0, 
+  hidden: {
+    opacity: 0,
     x: -120,
   },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     x: 0,
-    transition: { 
+    transition: {
       duration: 1.4,
       ease: [0.16, 1, 0.3, 1],
     }
@@ -60,14 +63,14 @@ const slideFromLeft = {
 };
 
 const slideFromRight = {
-  hidden: { 
-    opacity: 0, 
+  hidden: {
+    opacity: 0,
     x: 120,
   },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     x: 0,
-    transition: { 
+    transition: {
       duration: 1.4,
       ease: [0.16, 1, 0.3, 1],
     }
@@ -153,6 +156,17 @@ const floatingObjects = [
 
 // ── Premium CSS ─────────────────────────────────────────────────────────
 const CSS = `
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@700;800&display=swap');
+
+  :root {
+    /* Type scale (per Rasoaf Global Design System) */
+    --rasoaf-h2-size: clamp(2.3rem, 5vw, 3.5rem);
+    --rasoaf-body-large: clamp(1rem, 1.05vw, 1.125rem);
+    --rasoaf-caption-size: 0.875rem;
+    --rasoaf-eyebrow-size: 0.8rem;
+    --rasoaf-button-size: 0.95rem;
+  }
+
   .rab-section {
     position: relative;
     z-index: 10;
@@ -316,6 +330,8 @@ const CSS = `
     border: 1px solid rgba(212, 160, 23, 0.15);
   }
 
+  /* Micro-label — intentionally below the DS caption floor since it's a
+     decorative floating chip; deliberate exception, kept in Inter 600. */
   .rab-floating-label {
     font-family: ${t.body};
     font-size: clamp(9px, 0.75vw, 11px);
@@ -341,6 +357,17 @@ const CSS = `
     gap: clamp(18px, 2.2vw, 26px);
   }
 
+  /* Wraps the badge + heading so they can be centered independently of
+     the rest of the (left-aligned) content column below them. */
+  .rab-header-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: clamp(14px, 1.8vw, 20px);
+  }
+
+  /* Eyebrow — Inter 700, uppercase, 0.8rem, letter-spacing 0.18em (per DS) */
   .rab-badge {
     display: inline-flex;
     align-items: center;
@@ -353,19 +380,21 @@ const CSS = `
     border-radius: 100px;
     width: fit-content;
     font-family: ${t.body};
-    font-size: clamp(10px, 0.78vw, 11.5px);
+    font-size: var(--rasoaf-eyebrow-size);
     font-weight: 700;
-    letter-spacing: 0.13em;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
     color: ${t.goldDark};
+    line-height: 1;
   }
 
+  /* H2 — Manrope 800, clamp(2.3rem,5vw,3.5rem), letter-spacing -0.02em, line-height 1.15 (per DS) */
   .rab-heading {
     font-family: ${t.display};
     font-weight: 800;
-    font-size: clamp(28px, 4.2vw, 50px);
-    line-height: 1.1;
-    letter-spacing: -0.03em;
+    font-size: var(--rasoaf-h2-size);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
     color: ${t.textPrimary};
     margin: 0;
   }
@@ -377,12 +406,12 @@ const CSS = `
     background-clip: text;
   }
 
+  /* Paragraph — DS body-large scale, line-height 1.7 */
   .rab-paragraph {
     font-family: ${t.body};
-    font-size: clamp(13px, 1.05vw, 15px);
+    font-size: var(--rasoaf-body-large);
     font-weight: 400;
-    line-height: 1.72;
-    letter-spacing: 0.005em;
+    line-height: 1.7;
     color: ${t.textSecondary};
     margin: 0;
     max-width: 620px;
@@ -456,18 +485,23 @@ const CSS = `
     box-shadow: 0 4px 16px rgba(212, 160, 23, 0.1);
   }
 
+  /* Card title — a compact heading tier reaching DS H6 (1.125rem) at its
+     max; floors slightly under for the tight 2-up desktop grid. */
   .rab-feature-title {
     font-family: ${t.display};
     font-weight: 700;
-    font-size: clamp(13px, 1vw, 15.5px);
+    font-size: clamp(0.95rem, 1.1vw, 1.125rem);
     color: ${t.textPrimary};
     margin-bottom: 3px;
     letter-spacing: -0.01em;
+    line-height: 1.25;
   }
 
+  /* Card description — micro-exception below DS caption floor, same
+     rationale as the floating labels: dense 2-up card grid. */
   .rab-feature-desc {
     font-family: ${t.body};
-    font-size: clamp(11px, 0.82vw, 12.5px);
+    font-size: clamp(0.75rem, 0.85vw, 0.8125rem);
     color: ${t.textMuted};
     line-height: 1.45;
     transition: color ${t.transition};
@@ -545,10 +579,12 @@ const CSS = `
     box-shadow: 0 4px 20px rgba(212, 160, 23, 0.15);
   }
 
+  /* Hero stat number — snapped to a DS-aligned scale, matching the same
+     treatment used for stat numbers across the site. */
   .rab-exp-number {
     font-family: ${t.display};
     font-weight: 800;
-    font-size: clamp(38px, 4.5vw, 52px);
+    font-size: clamp(2.25rem, 4.5vw, 3.25rem);
     background: linear-gradient(135deg, ${t.goldDark}, ${t.gold});
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -608,9 +644,10 @@ const CSS = `
     transform: scale(1.15);
   }
 
+  /* Benefit text — reaches DS caption (0.875rem) at its max */
   .rab-benefit-text {
     font-family: ${t.body};
-    font-size: clamp(11px, 0.88vw, 13px);
+    font-size: clamp(0.75rem, 0.88vw, 0.875rem);
     font-weight: 500;
     color: ${t.textSecondary};
     letter-spacing: 0.01em;
@@ -672,10 +709,11 @@ const CSS = `
     line-height: 1.3;
   }
 
+  /* Phone number — small heading tier, close to DS body-large */
   .rab-contact-phone {
     font-family: ${t.display};
     font-weight: 700;
-    font-size: clamp(15px, 1.1vw, 18px);
+    font-size: clamp(1rem, 1.1vw, 1.125rem);
     color: ${t.textPrimary};
     letter-spacing: -0.01em;
   }
@@ -686,6 +724,7 @@ const CSS = `
     flex-wrap: wrap;
   }
 
+  /* Buttons — Inter 600, 0.95rem, letter-spacing 0.01em (per DS) */
   .rab-btn-gold {
     display: inline-flex;
     align-items: center;
@@ -696,8 +735,9 @@ const CSS = `
     background: linear-gradient(135deg, ${t.goldLight}, ${t.gold});
     color: ${t.charcoal};
     font-family: ${t.body};
-    font-size: clamp(12.5px, 0.9vw, 14px);
-    font-weight: 700;
+    font-size: var(--rasoaf-button-size);
+    font-weight: 600;
+    letter-spacing: 0.01em;
     cursor: pointer;
     text-decoration: none;
     transition: all ${t.transition};
@@ -711,6 +751,12 @@ const CSS = `
     background: linear-gradient(135deg, #FFE082, ${t.gold});
   }
 
+  .rab-btn-gold:focus-visible,
+  .rab-btn-ghost:focus-visible {
+    outline: 2px solid ${t.gold};
+    outline-offset: 3px;
+  }
+
   .rab-btn-ghost {
     display: inline-flex;
     align-items: center;
@@ -721,8 +767,9 @@ const CSS = `
     background: ${t.white};
     color: ${t.goldDark};
     font-family: ${t.body};
-    font-size: clamp(12.5px, 0.9vw, 14px);
+    font-size: var(--rasoaf-button-size);
     font-weight: 600;
+    letter-spacing: 0.01em;
     cursor: pointer;
     text-decoration: none;
     transition: all ${t.transition};
@@ -800,11 +847,11 @@ const CSS = `
     }
 
     .rab-heading {
-      font-size: clamp(26px, 4.5vw, 34px);
+      font-size: clamp(1.7rem, 4.5vw, 2.2rem);
     }
 
     .rab-paragraph {
-      font-size: 14px;
+      font-size: 0.95rem;
       max-width: 100%;
     }
 
@@ -833,7 +880,7 @@ const CSS = `
     }
 
     .rab-exp-number {
-      font-size: clamp(34px, 5vw, 42px);
+      font-size: clamp(2.1rem, 5vw, 2.6rem);
     }
 
     .rab-exp-label {
@@ -906,11 +953,11 @@ const CSS = `
     }
 
     .rab-heading {
-      font-size: clamp(24px, 6vw, 30px);
+      font-size: clamp(1.5rem, 6vw, 1.9rem);
     }
 
     .rab-paragraph {
-      font-size: 13.5px;
+      font-size: 0.9rem;
       line-height: 1.65;
     }
 
@@ -932,11 +979,11 @@ const CSS = `
     }
 
     .rab-feature-title {
-      font-size: 14px;
+      font-size: 1rem;
     }
 
     .rab-feature-desc {
-      font-size: 12px;
+      font-size: 0.8rem;
     }
 
     .rab-bottom-row {
@@ -959,7 +1006,7 @@ const CSS = `
     }
 
     .rab-exp-number {
-      font-size: clamp(30px, 7vw, 38px);
+      font-size: clamp(1.9rem, 7vw, 2.4rem);
     }
 
     .rab-exp-label {
@@ -979,7 +1026,7 @@ const CSS = `
     }
 
     .rab-benefit-text {
-      font-size: 12px;
+      font-size: 0.8rem;
     }
 
     .rab-contact-card {
@@ -1008,7 +1055,7 @@ const CSS = `
     }
 
     .rab-contact-phone {
-      font-size: 16px;
+      font-size: 1rem;
     }
 
     .rab-contact-buttons {
@@ -1022,14 +1069,14 @@ const CSS = `
     .rab-btn-ghost {
       justify-content: center;
       padding: 12px 20px;
-      font-size: 13.5px;
+      font-size: 0.875rem;
       border-radius: 12px;
       width: 100%;
       white-space: normal;
     }
 
     .rab-badge {
-      font-size: 9px;
+      font-size: 0.7rem;
       padding: 5px 14px;
       gap: 6px;
     }
@@ -1078,11 +1125,11 @@ const CSS = `
     }
 
     .rab-heading {
-      font-size: 22px;
+      font-size: 1.4rem;
     }
 
     .rab-paragraph {
-      font-size: 12.5px;
+      font-size: 0.85rem;
     }
 
     .rab-features-grid {
@@ -1107,11 +1154,11 @@ const CSS = `
     }
 
     .rab-feature-title {
-      font-size: 13px;
+      font-size: 0.9rem;
     }
 
     .rab-feature-desc {
-      font-size: 11px;
+      font-size: 0.75rem;
     }
 
     .rab-experience-card {
@@ -1132,7 +1179,7 @@ const CSS = `
     }
 
     .rab-exp-number {
-      font-size: clamp(26px, 8vw, 32px);
+      font-size: clamp(1.6rem, 8vw, 2rem);
     }
 
     .rab-exp-label {
@@ -1160,7 +1207,7 @@ const CSS = `
     }
 
     .rab-benefit-text {
-      font-size: 11px;
+      font-size: 0.75rem;
     }
 
     .rab-contact-card {
@@ -1180,7 +1227,7 @@ const CSS = `
     }
 
     .rab-contact-phone {
-      font-size: 14px;
+      font-size: 0.9rem;
     }
 
     .rab-contact-label {
@@ -1190,7 +1237,7 @@ const CSS = `
     .rab-btn-gold,
     .rab-btn-ghost {
       padding: 10px 16px;
-      font-size: 12px;
+      font-size: 0.8rem;
       border-radius: 10px;
       gap: 6px;
     }
@@ -1202,7 +1249,7 @@ const CSS = `
     }
 
     .rab-badge {
-      font-size: 8px;
+      font-size: 0.65rem;
       padding: 4px 12px;
       gap: 5px;
     }
@@ -1232,6 +1279,13 @@ const CSS = `
 
     .rab-floating-label {
       font-size: 5.5px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rab-section::before,
+    .rab-floating-obj {
+      animation: none !important;
     }
   }
 `;
@@ -1268,7 +1322,7 @@ const MemoizedFloatingObj = ({ item, isInView, index }) => {
       }}
     >
       <div className="rab-floating-icon">
-        <Icon size={15} color={t.goldDark} />
+        <Icon size={15} color={t.goldDark} aria-hidden="true" />
       </div>
       <span className="rab-floating-label">{item.label}</span>
     </motion.div>
@@ -1287,7 +1341,7 @@ const MemoizedFeatureCard = ({ feature, isInView, index }) => {
       whileHover={{ y: -3 }}
     >
       <div className="rab-feature-icon">
-        <Icon size={19} color={t.gold} strokeWidth={1.8} />
+        <Icon size={19} color={t.gold} strokeWidth={1.8} aria-hidden="true" />
       </div>
       <div>
         <div className="rab-feature-title">{feature.title}</div>
@@ -1308,7 +1362,7 @@ const MemoizedBenefitItem = ({ benefit, isInView, index }) => {
       whileHover={{ x: 5 }}
     >
       <div className="rab-benefit-icon">
-        <Icon size={13} color={t.goldDark} strokeWidth={2} />
+        <Icon size={13} color={t.goldDark} strokeWidth={2} aria-hidden="true" />
       </div>
       <span className="rab-benefit-text">{benefit.text}</span>
     </motion.div>
@@ -1383,33 +1437,34 @@ export default function AboutRasoaf() {
               initial="hidden"
               animate={isInView ? "visible" : "hidden"}
             >
-              {/* Badge — fades up with delay */}
-              <motion.div
-                className="rab-badge"
-                initial={{ opacity: 0, y: 20 }}
-                animate={isInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.7, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
-              >
-                <Sparkles size={12} color={t.gold} />
-                About RASOAF
-                <Sparkles size={12} color={t.gold} />
-              </motion.div>
+              {/* Badge + Heading — centered as a block */}
+              <div className="rab-header-block">
+                <motion.div
+                  className="rab-badge"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={isInView ? { opacity: 1, y: 0 } : {}}
+                  transition={{ duration: 0.7, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <Sparkles size={12} color={t.gold} aria-hidden="true" />
+                  About RASOAF
+                  <Sparkles size={12} color={t.gold} aria-hidden="true" />
+                </motion.div>
 
-              {/* Heading — fades up */}
-              <motion.h2
-                id="about-heading"
-                className="rab-heading"
-                initial={{ opacity: 0, y: 25 }}
-                animate={isInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.8, delay: 0.65, ease: [0.16, 1, 0.3, 1] }}
-              >
-                About{" "}
-                <span className="rab-heading-gold">RASOAF</span>
-                <br />
-                Travels & Tours
-                <br />
-                Limited
-              </motion.h2>
+                <motion.h2
+                  id="about-heading"
+                  className="rab-heading"
+                  initial={{ opacity: 0, y: 25 }}
+                  animate={isInView ? { opacity: 1, y: 0 } : {}}
+                  transition={{ duration: 0.8, delay: 0.65, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  About{" "}
+                  <span className="rab-heading-gold">RASOAF</span>
+                  <br />
+                  Travels & Tours
+                  <br />
+                  Limited
+                </motion.h2>
+              </div>
 
               {/* Paragraphs — staggered fade up */}
               <motion.p
@@ -1447,7 +1502,7 @@ export default function AboutRasoaf() {
                   whileHover={{ y: -4 }}
                 >
                   <div className="rab-exp-icon">
-                    <Award size={24} color={t.gold} strokeWidth={1.8} />
+                    <Award size={24} color={t.gold} strokeWidth={1.8} aria-hidden="true" />
                   </div>
                   <div className="rab-exp-number">
                     <AnimatedCounter target={20} suffix="+" isInView={isInView} />
@@ -1475,7 +1530,7 @@ export default function AboutRasoaf() {
               >
                 <div className="rab-contact-info">
                   <div className="rab-contact-icon">
-                    <Phone size={22} color={t.gold} strokeWidth={1.8} />
+                    <Phone size={22} color={t.gold} strokeWidth={1.8} aria-hidden="true" />
                   </div>
                   <div>
                     <div className="rab-contact-label">Need Travel Advice? Free Consultation</div>
@@ -1485,12 +1540,12 @@ export default function AboutRasoaf() {
                 </div>
                 <div className="rab-contact-buttons">
                   <a href="tel:+2347031899529" className="rab-btn-gold" aria-label="Call RASOAF">
-                    <Phone size={16} />
+                    <Phone size={16} aria-hidden="true" />
                     Call Now
-                    <ArrowRight size={16} />
+                    <ArrowRight size={16} aria-hidden="true" />
                   </a>
                   <a href="https://wa.me/2347031899529" className="rab-btn-ghost" target="_blank" rel="noopener noreferrer" aria-label="Chat on WhatsApp">
-                    <MessageCircle size={16} />
+                    <MessageCircle size={16} aria-hidden="true" />
                     WhatsApp
                   </a>
                 </div>

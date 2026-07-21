@@ -2,6 +2,7 @@
 import { lazy, Suspense } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
+import { EarthProvider } from "./context/EarthContext"; // ← ADD THIS IMPORT
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
 import FloatingWhatsApp from "./components/layout/FloatingWhatsApp";
@@ -40,39 +41,41 @@ const PageLoader = () => (
 
 export default function App() {
   return (
-    <Router>
-      <Navbar />
-      <main style={{ minHeight: "100vh" }}>
-        <AnimatePresence mode="wait">
-          <Suspense fallback={<PageLoader />}>
-            <Routes>
-              <Route path="/" element={<Gateway />} />
-              <Route path="/hajj" element={<HajjHome />} />
-              <Route path="/hajj/services" element={<HajjServices />} />
-              <Route path="/hajj/umrah" element={<HajjUmrah />} />
-              <Route path="/hajj/contact" element={<HajjContact />} />
-              <Route path="/hajj/packages/hajj" element={<HajjPackages />} />
-              <Route path="/hajj/packages/umrah" element={<UmrahPackages />} />
-              <Route path="/hajj/flight-booking" element={<HajjFlightBooking />} />
-              <Route path="/hajj/hotel-reservation" element={<HajjHotelReservation />} />
-              <Route path="/travel" element={<TravelHome />} />
-              <Route path="/travel/services" element={<TravelServices />} />
-              <Route path="/travel/contact" element={<TravelContact />} />
-              <Route path="/travel/student-visa" element={<StudentVisa />} />
-              <Route path="/travel/work-visa" element={<WorkVisa />} />
-              <Route path="/travel/tourist-visa" element={<TouristVisa />} />
-              <Route path="/travel/business-visa" element={<BusinessVisa />} />
-              <Route path="/travel/family-visa" element={<FamilyVisa />} />
-              <Route path="/travel/flights" element={<TravelFlightBooking />} />
-              <Route path="/travel/training" element={<Training />} />
-              <Route path="/travel/training/:id" element={<TrainingDetail />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
-        </AnimatePresence>
-      </main>
-      <Footer />
-      <FloatingWhatsApp />
-    </Router>
+    <EarthProvider> {/* ← ADD THIS WRAPPER */}
+      <Router>
+        <Navbar />
+        <main style={{ minHeight: "100vh" }}>
+          <AnimatePresence mode="wait">
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                <Route path="/" element={<Gateway />} />
+                <Route path="/hajj" element={<HajjHome />} />
+                <Route path="/hajj/services" element={<HajjServices />} />
+                <Route path="/hajj/umrah" element={<HajjUmrah />} />
+                <Route path="/hajj/contact" element={<HajjContact />} />
+                <Route path="/hajj/packages/hajj" element={<HajjPackages />} />
+                <Route path="/hajj/packages/umrah" element={<UmrahPackages />} />
+                <Route path="/hajj/flight-booking" element={<HajjFlightBooking />} />
+                <Route path="/hajj/hotel-reservation" element={<HajjHotelReservation />} />
+                <Route path="/travel" element={<TravelHome />} />
+                <Route path="/travel/services" element={<TravelServices />} />
+                <Route path="/travel/contact" element={<TravelContact />} />
+                <Route path="/travel/student-visa" element={<StudentVisa />} />
+                <Route path="/travel/work-visa" element={<WorkVisa />} />
+                <Route path="/travel/tourist-visa" element={<TouristVisa />} />
+                <Route path="/travel/business-visa" element={<BusinessVisa />} />
+                <Route path="/travel/family-visa" element={<FamilyVisa />} />
+                <Route path="/travel/flights" element={<TravelFlightBooking />} />
+                <Route path="/travel/training" element={<Training />} />
+                <Route path="/travel/training/:id" element={<TrainingDetail />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
+          </AnimatePresence>
+        </main>
+        <Footer />
+        <FloatingWhatsApp />
+      </Router>
+    </EarthProvider>
   );
 }
