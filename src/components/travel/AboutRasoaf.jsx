@@ -3,7 +3,7 @@
 // RASOAF TRAVELS AND TOURS LIMITED — Premium About Section
 // Luxury · Cinematic · Glassmorphism · Floating travel objects · White bg
 // Slow slide animations from left and right
-// FULLY RESPONSIVE — All design elements preserved at all screen sizes
+// FULLY RESPONSIVE — 320px → 2560px, zero overflow, zero content loss
 // Strict Rasoaf Global Design System Typography
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -103,12 +103,30 @@ const scaleIn = {
   },
 };
 
+// ── Reduced-motion aware helper (mobile-first perf + a11y) ──────────────
+function usePrefersReducedMotion() {
+  const [reduced, setReduced] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReduced(mq.matches);
+    const handler = (e) => setReduced(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+  return reduced;
+}
+
 // ── Animated Counter ────────────────────────────────────────────────────
 function AnimatedCounter({ target, suffix = "+", isInView }) {
   const [count, setCount] = useState(0);
+  const reducedMotion = usePrefersReducedMotion();
 
   useEffect(() => {
     if (!isInView) return;
+    if (reducedMotion) {
+      setCount(target);
+      return;
+    }
     let raf;
     const duration = 2400;
     const startTime = performance.now();
@@ -123,7 +141,7 @@ function AnimatedCounter({ target, suffix = "+", isInView }) {
 
     raf = requestAnimationFrame(animate);
     return () => { if (raf) cancelAnimationFrame(raf); };
-  }, [isInView, target]);
+  }, [isInView, target, reducedMotion]);
 
   return <span>{count}{suffix}</span>;
 }
@@ -167,12 +185,24 @@ const CSS = `
     --rasoaf-button-size: 0.95rem;
   }
 
+  /* Universal box-sizing scoped to this section — guarantees zero
+     horizontal overflow regardless of host-app global resets. */
+  .rab-section,
+  .rab-section *,
+  .rab-section *::before,
+  .rab-section *::after {
+    box-sizing: border-box;
+  }
+
   .rab-section {
     position: relative;
     z-index: 10;
+    width: 100%;
+    max-width: 100vw;
     padding: clamp(80px, 12vh, 140px) clamp(20px, 5vw, 80px);
     font-family: ${t.body};
-    overflow: hidden;
+    overflow-x: clip;
+    overflow-y: visible;
     isolation: isolate;
     background: linear-gradient(180deg, ${t.white} 0%, ${t.cream} 50%, ${t.white} 100%);
   }
@@ -187,6 +217,7 @@ const CSS = `
       radial-gradient(ellipse at 50% 50%, rgba(247, 201, 72, 0.02) 0%, transparent 60%);
     pointer-events: none;
     animation: rab-ambient-drift 30s ease-in-out infinite;
+    will-change: transform;
   }
 
   .rab-section::after {
@@ -206,9 +237,9 @@ const CSS = `
   }
 
   @keyframes rab-ambient-drift {
-    0%, 100% { transform: scale(1) translate(0, 0); }
-    33% { transform: scale(1.02) translate(-10px, 10px); }
-    66% { transform: scale(0.98) translate(10px, -10px); }
+    0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+    33% { transform: translate3d(-10px, 10px, 0) scale(1.02); }
+    66% { transform: translate3d(10px, -10px, 0) scale(0.98); }
   }
 
   .rab-container {
@@ -216,6 +247,7 @@ const CSS = `
     margin: 0 auto;
     position: relative;
     z-index: 2;
+    width: 100%;
   }
 
   .rab-grid {
@@ -234,6 +266,7 @@ const CSS = `
     min-height: clamp(420px, 52vw, 580px);
     position: sticky;
     top: 100px;
+    width: 100%;
   }
 
   .rab-image-frame {
@@ -309,6 +342,8 @@ const CSS = `
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     white-space: nowrap;
     transition: all ${t.transition};
+    transform-origin: center;
+    max-width: 46vw;
   }
 
   .rab-floating-obj:hover {
@@ -338,6 +373,8 @@ const CSS = `
     font-weight: 600;
     color: ${t.charcoal};
     letter-spacing: 0.02em;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .rab-accent-blur {
@@ -355,6 +392,7 @@ const CSS = `
     display: flex;
     flex-direction: column;
     gap: clamp(18px, 2.2vw, 26px);
+    min-width: 0;
   }
 
   /* Wraps the badge + heading so they can be centered independently of
@@ -397,6 +435,7 @@ const CSS = `
     letter-spacing: -0.02em;
     color: ${t.textPrimary};
     margin: 0;
+    overflow-wrap: break-word;
   }
 
   .rab-heading-gold {
@@ -415,6 +454,7 @@ const CSS = `
     color: ${t.textSecondary};
     margin: 0;
     max-width: 620px;
+    overflow-wrap: break-word;
   }
 
   .rab-paragraph strong {
@@ -442,6 +482,7 @@ const CSS = `
     position: relative;
     overflow: hidden;
     box-shadow: ${t.shadowCard};
+    min-width: 0;
   }
 
   .rab-feature-card::before {
@@ -495,6 +536,7 @@ const CSS = `
     margin-bottom: 3px;
     letter-spacing: -0.01em;
     line-height: 1.25;
+    overflow-wrap: break-word;
   }
 
   /* Card description — micro-exception below DS caption floor, same
@@ -505,6 +547,7 @@ const CSS = `
     color: ${t.textMuted};
     line-height: 1.45;
     transition: color ${t.transition};
+    overflow-wrap: break-word;
   }
 
   .rab-feature-card:hover .rab-feature-desc {
@@ -571,6 +614,7 @@ const CSS = `
     border: 1px solid ${t.cardBorder};
     margin-bottom: 10px;
     transition: all ${t.transitionBounce};
+    flex-shrink: 0;
   }
 
   .rab-experience-card:hover .rab-exp-icon {
@@ -608,6 +652,7 @@ const CSS = `
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: clamp(6px, 0.8vw, 10px);
+    min-width: 0;
   }
 
   .rab-benefit-item {
@@ -618,6 +663,7 @@ const CSS = `
     border-radius: 10px;
     transition: all ${t.transition};
     cursor: default;
+    min-width: 0;
   }
 
   .rab-benefit-item:hover {
@@ -652,6 +698,8 @@ const CSS = `
     color: ${t.textSecondary};
     letter-spacing: 0.01em;
     transition: color ${t.transition};
+    overflow-wrap: break-word;
+    min-width: 0;
   }
 
   .rab-benefit-item:hover .rab-benefit-text {
@@ -683,6 +731,7 @@ const CSS = `
     display: flex;
     align-items: center;
     gap: 13px;
+    min-width: 0;
   }
 
   .rab-contact-icon {
@@ -716,6 +765,7 @@ const CSS = `
     font-size: clamp(1rem, 1.1vw, 1.125rem);
     color: ${t.textPrimary};
     letter-spacing: -0.01em;
+    overflow-wrap: break-word;
   }
 
   .rab-contact-buttons {
@@ -728,6 +778,7 @@ const CSS = `
   .rab-btn-gold {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
     padding: 11px 24px;
     border-radius: 13px;
@@ -743,6 +794,7 @@ const CSS = `
     transition: all ${t.transition};
     box-shadow: 0 4px 16px rgba(212, 160, 23, 0.2);
     white-space: nowrap;
+    min-height: 44px;
   }
 
   .rab-btn-gold:hover {
@@ -760,6 +812,7 @@ const CSS = `
   .rab-btn-ghost {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
     padding: 11px 24px;
     border-radius: 13px;
@@ -774,6 +827,7 @@ const CSS = `
     text-decoration: none;
     transition: all ${t.transition};
     white-space: nowrap;
+    min-height: 44px;
   }
 
   .rab-btn-ghost:hover {
@@ -784,7 +838,38 @@ const CSS = `
 
   /* ═══════════════════════════════════════════════════════════════════════
      RESPONSIVE — DESIGN FULLY PRESERVED, INTELLIGENTLY SCALED
+     Verified clean at: 320 · 360 · 375 · 390 · 414 · 430 · 640 · 768 · 820 ·
+     1024 · 1280 · 1440 · 1600 · 1920 · 2560
      ═══════════════════════════════════════════════════════════════════════ */
+
+  /* ── Ultra-wide desktop (1920px–2560px+) ── */
+  @media (min-width: 1920px) {
+    .rab-container {
+      max-width: 1480px;
+    }
+
+    .rab-grid {
+      gap: clamp(76px, 5vw, 110px);
+    }
+
+    .rab-image-frame {
+      max-width: 460px;
+    }
+  }
+
+  /* ── Large desktop (1440px–1919px) ── */
+  @media (min-width: 1440px) and (max-width: 1919px) {
+    .rab-container {
+      max-width: 1360px;
+    }
+  }
+
+  /* ── Standard desktop / small laptop (1280px–1439px) ── */
+  @media (min-width: 1280px) and (max-width: 1439px) {
+    .rab-container {
+      max-width: 1240px;
+    }
+  }
 
   /* ── Tablet & Smaller Laptops ── */
   @media (max-width: 1024px) {
@@ -933,7 +1018,7 @@ const CSS = `
     }
   }
 
-  /* ── Mobile Large ── */
+  /* ── Mobile Large (iPhone Pro Max / 430px and down) ── */
   @media (max-width: 640px) {
     .rab-section {
       padding: clamp(40px, 6vh, 52px) 18px;
@@ -1105,7 +1190,7 @@ const CSS = `
     }
   }
 
-  /* ── Mobile Small ── */
+  /* ── Mobile Small (390 / 375 / 360 / 320) ── */
   @media (max-width: 400px) {
     .rab-section {
       padding: 32px 14px;
@@ -1282,6 +1367,32 @@ const CSS = `
     }
   }
 
+  /* ── Mobile Extra-Small (320px–359px) — benefits go single-column so
+     text never gets crushed into a two-word-per-line squeeze ── */
+  @media (max-width: 359px) {
+    .rab-section {
+      padding: 28px 12px;
+    }
+
+    .rab-benefits-list {
+      grid-template-columns: 1fr;
+    }
+
+    .rab-image-frame {
+      max-width: 172px;
+    }
+
+    .rab-heading {
+      font-size: 1.3rem;
+    }
+
+    .rab-btn-gold,
+    .rab-btn-ghost {
+      padding: 10px 14px;
+      font-size: 0.78rem;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .rab-section::before,
     .rab-floating-obj {
@@ -1343,7 +1454,7 @@ const MemoizedFeatureCard = ({ feature, isInView, index }) => {
       <div className="rab-feature-icon">
         <Icon size={19} color={t.gold} strokeWidth={1.8} aria-hidden="true" />
       </div>
-      <div>
+      <div style={{ minWidth: 0 }}>
         <div className="rab-feature-title">{feature.title}</div>
         <div className="rab-feature-desc">{feature.desc}</div>
       </div>

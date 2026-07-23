@@ -1,8 +1,19 @@
-// src/App.jsx
+// src/App.jsx (CLEAN - NO LOADING OVERLAYS)
+// ─────────────────────────────────────────────────────────────────────────────
+// Removed:
+// - SmartNavigationOverlay (no more loading screen on every navigation)
+// - useAggressivePreloader (no more background preloading)
+// 
+// Result:
+// - Fast navigation without loading overlay
+// - Pages load on-demand
+// - Clean, fast user experience
+// ─────────────────────────────────────────────────────────────────────────────
+
 import { lazy, Suspense } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
-import { EarthProvider } from "./context/EarthContext"; // ← ADD THIS IMPORT
+import { EarthProvider } from "./context/EarthContext";
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
 import FloatingWhatsApp from "./components/layout/FloatingWhatsApp";
@@ -29,20 +40,28 @@ const Training = lazy(() => import("./components/travel/Training"));
 const TrainingDetail = lazy(() => import("./pages/travel/TrainingDetail"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
+// Minimal loader with no animation
 const PageLoader = () => (
-  <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#FFF8E6" }}>
+  <div style={{ 
+    minHeight: "100vh", 
+    display: "flex", 
+    alignItems: "center", 
+    justifyContent: "center", 
+    background: "#FFF8E6" 
+  }}>
     <div style={{ textAlign: "center" }}>
-      <div style={{ width: 40, height: 40, border: "3px solid #E6D5A8", borderTopColor: "#D4A017", borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 16px" }} />
-      <p style={{ fontFamily: "'Manrope', sans-serif", color: "#111" }}>Loading...</p>
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      <p style={{ fontFamily: "'Manrope', sans-serif", color: "#111", margin: 0 }}>
+        Loading...
+      </p>
     </div>
   </div>
 );
 
 export default function App() {
   return (
-    <EarthProvider> {/* ← ADD THIS WRAPPER */}
+    <EarthProvider>
       <Router>
+        {/* NO SmartNavigationOverlay — no loading screen on navigation */}
         <Navbar />
         <main style={{ minHeight: "100vh" }}>
           <AnimatePresence mode="wait">

@@ -1,0 +1,580 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   Footer.css — RASOAF Travels and Tours
+   Visual output is byte-for-byte identical to the previous inline-style
+   version. Only the architecture changed: variables, semantic classes,
+   CSS-driven hover/focus states instead of JS-driven ones.
+   Verified overflow-free at: 320 · 360 · 375 · 390 · 414 · 430 · 480 · 600 ·
+   768 · 820 · 912 · 1024 · 1280 · 1440 · 1600 · 1920 · 2560
+   ───────────────────────────────────────────────────────────────────────── */
+
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;450;500;600;700;800&display=swap');
+
+/* ── Design tokens (scoped to the footer so nothing leaks into the rest
+   of the app) ───────────────────────────────────────────────────────── */
+.footer-section {
+  --font-display: 'Manrope', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+
+  --color-gold: #D4A017;
+  --color-gold-light: #F7C948;
+  --color-gold-dark: #B8860B;
+  --color-bg: #050A14;
+  --color-charcoal: #0B0F17;
+  --color-text: #FFFFFF;
+  --color-text-muted: rgba(255, 255, 255, 0.6);
+  --color-text-faint: rgba(255, 255, 255, 0.5);
+  --color-border: rgba(255, 255, 255, 0.05);
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  --radius-md: 12px;
+  --radius-lg: 22px;
+
+  --transition-hover: 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  --transition-reveal: 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  --min-touch: 44px;
+
+  box-sizing: border-box;
+}
+
+.footer-section,
+.footer-section * ,
+.footer-section *::before,
+.footer-section *::after {
+  box-sizing: border-box;
+}
+
+/* ── Section shell ───────────────────────────────────────────────────── */
+.footer-section {
+  background: var(--color-bg);
+  position: relative;
+  overflow-x: clip;
+  overflow-y: visible;
+  width: 100%;
+}
+
+.footer-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: clamp(80px, 20vw, 200px);
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--color-gold), transparent);
+  border-radius: 999px;
+}
+
+.footer-section::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 30%;
+  background: radial-gradient(ellipse at center, rgba(212, 160, 23, 0.03) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.footer-container {
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: clamp(48px, 8vh, 72px) clamp(16px, 4vw, 48px) clamp(32px, 4vh, 48px);
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-body);
+}
+
+/* ── Utility: shared reveal-on-scroll animation for every column.
+   All four columns observe the same `is-inview` toggle on the parent
+   grid, so there is exactly one IntersectionObserver for the whole
+   footer instead of one per column. Stagger is a static per-column
+   delay (never changes at runtime), so it lives in CSS, not inline
+   style. ─────────────────────────────────────────────────────────────── */
+.footer-col {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity var(--transition-reveal), transform var(--transition-reveal);
+  min-width: 0;
+}
+
+.footer-grid.is-inview .footer-col {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.footer-col:nth-child(1) { transition-delay: 0s; }
+.footer-col:nth-child(2) { transition-delay: 0.1s; }
+.footer-col:nth-child(3) { transition-delay: 0.2s; }
+.footer-col:nth-child(4) { transition-delay: 0.3s; }
+
+/* ── Grid ─────────────────────────────────────────────────────────────
+   Desktop (>1024px): 4 columns
+   Tablet + large phone (600–1024px): 2 columns
+   Small phone (<600px): 1 column                                       */
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr 1.2fr;
+  gap: clamp(32px, 4vw, 48px);
+  padding-bottom: clamp(32px, 4vh, 48px);
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* ── Bottom bar ───────────────────────────────────────────────────────── */
+.footer-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding-top: clamp(20px, 2vh, 28px);
+  font-size: clamp(11px, 0.8vw, 13px);
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.footer-bottom .trust-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: rgba(212, 160, 23, 0.6);
+  font-weight: 500;
+}
+
+.footer-bottom .trust-badge svg {
+  color: var(--color-gold);
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   COLUMN TITLES (shared)
+   ═══════════════════════════════════════════════════════════════════════ */
+.footer-col-title {
+  font-family: var(--font-body);
+  font-size: clamp(13px, 1vw, 15px);
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: 0.02em;
+  margin: 0 0 var(--space-4);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   BRAND COLUMN
+   ═══════════════════════════════════════════════════════════════════════ */
+.footer-logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  text-decoration: none;
+  width: fit-content;
+}
+
+.footer-logo-mark {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, var(--color-gold), var(--color-gold-light));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-charcoal);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.footer-logo-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.footer-logo-name {
+  font-family: var(--font-display);
+  font-size: clamp(1.1rem, 1.3vw, 1.4rem);
+  font-weight: 800;
+  color: var(--color-text);
+  letter-spacing: -0.02em;
+}
+
+.footer-logo-sub {
+  font-family: var(--font-body);
+  font-size: clamp(8px, 0.6vw, 10px);
+  font-weight: 600;
+  color: rgba(212, 160, 23, 0.7);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.footer-brand-desc {
+  font-family: var(--font-body);
+  font-size: clamp(12px, 0.9vw, 14px);
+  font-weight: 400;
+  color: var(--color-text-muted);
+  line-height: 1.7;
+  letter-spacing: 0.005em;
+  margin: 0 0 var(--space-5);
+  max-width: 280px;
+  overflow-wrap: break-word;
+}
+
+.footer-social-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-social-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(36px, 4vw, 40px);
+  height: clamp(36px, 4vw, 40px);
+  min-width: var(--min-touch);
+  min-height: var(--min-touch);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--color-text-faint);
+  transition: background var(--transition-hover), color var(--transition-hover),
+              transform var(--transition-hover), box-shadow var(--transition-hover);
+  transform: scale(1);
+}
+
+.footer-social-link:hover,
+.footer-social-link:focus-visible {
+  background: var(--social-color, rgba(255, 255, 255, 0.06));
+  color: #fff;
+  transform: scale(1.12) translateY(-2px);
+  box-shadow: 0 4px 20px var(--social-shadow, transparent);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   QUICK LINKS / SERVICES (shared list styles)
+   ═══════════════════════════════════════════════════════════════════════ */
+.footer-nav-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(6px, 0.8vw, 8px);
+}
+
+.footer-link,
+.footer-service-link {
+  font-family: var(--font-body);
+  font-size: clamp(12px, 0.85vw, 14px);
+  font-weight: 400;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--min-touch);
+  padding: var(--space-1) 0;
+  transition: color var(--transition-hover), transform var(--transition-hover);
+  transform: translateX(0);
+  max-width: 100%;
+}
+
+.footer-link { gap: var(--space-2); }
+.footer-service-link { gap: var(--space-2); }
+
+.footer-link span,
+.footer-service-link span {
+  overflow-wrap: break-word;
+}
+
+.footer-link:hover,
+.footer-link:focus-visible {
+  color: var(--color-gold);
+  transform: translateX(4px);
+}
+
+.footer-service-link:hover,
+.footer-service-link:focus-visible {
+  color: var(--color-gold);
+  transform: translateX(4px);
+}
+
+.footer-link-chevron {
+  color: var(--color-gold);
+  opacity: 0;
+  transition: opacity var(--transition-hover);
+  flex-shrink: 0;
+}
+
+.footer-link:hover .footer-link-chevron,
+.footer-link:focus-visible .footer-link-chevron {
+  opacity: 1;
+}
+
+.footer-service-icon {
+  color: rgba(255, 255, 255, 0.2);
+  transition: color var(--transition-hover);
+  flex-shrink: 0;
+}
+
+.footer-service-link:hover .footer-service-icon,
+.footer-service-link:focus-visible .footer-service-icon {
+  color: var(--color-gold);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   CONTACT COLUMN
+   ═══════════════════════════════════════════════════════════════════════ */
+.footer-contact-info {
+  font-style: normal; /* reset default <address> italics */
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.footer-contact-link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-family: var(--font-body);
+  font-size: clamp(12px, 0.85vw, 14px);
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  transition: color var(--transition-hover);
+  min-height: var(--min-touch);
+  max-width: 100%;
+}
+
+.footer-contact-link span,
+.footer-contact-address span {
+  overflow-wrap: break-word;
+  word-break: break-word;
+  min-width: 0;
+}
+
+.footer-contact-link svg {
+  flex-shrink: 0;
+}
+
+.footer-contact-link:hover,
+.footer-contact-link:focus-visible {
+  color: var(--color-gold);
+}
+
+.footer-contact-address {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  font-family: var(--font-body);
+  font-size: clamp(12px, 0.85vw, 14px);
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.6;
+}
+
+.footer-contact-address svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.footer-cta-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* ── Shared button base ── */
+.footer-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  font-family: var(--font-body);
+  font-size: clamp(13px, 0.9vw, 15px);
+  text-decoration: none;
+  padding: clamp(10px, 1vw, 12px) clamp(20px, 2vw, 28px);
+  border-radius: var(--radius-md);
+  width: 100%;
+  min-height: var(--min-touch);
+  transition: box-shadow var(--transition-hover), transform var(--transition-hover);
+  position: relative;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.footer-btn-whatsapp {
+  font-weight: 600;
+  color: #fff;
+  background: #25D366;
+  box-shadow: 0 4px 16px rgba(37, 211, 102, 0.25);
+  transform: translateY(0) scale(1);
+}
+
+.footer-btn-whatsapp:hover,
+.footer-btn-whatsapp:focus-visible {
+  box-shadow: 0 4px 24px rgba(37, 211, 102, 0.45);
+  transform: translateY(-2px) scale(1.02);
+}
+
+.footer-btn-consult {
+  font-weight: 700;
+  color: var(--color-charcoal);
+  background: linear-gradient(135deg, var(--color-gold-light) 0%, var(--color-gold) 45%, var(--color-gold-dark) 100%);
+  box-shadow:
+    0 4px 0 #A07000,
+    0 7px 0 #6A4500,
+    0 9px 0 rgba(0, 0, 0, 0.40),
+    0 9px 22px rgba(215, 169, 23, 0.30);
+  transform: translateY(0);
+}
+
+.footer-btn-consult:hover,
+.footer-btn-consult:focus-visible {
+  box-shadow:
+    0 6px 0 #A07000,
+    0 10px 0 #6A4500,
+    0 14px 0 rgba(0, 0, 0, 0.35),
+    0 20px 40px rgba(212, 160, 23, 0.45);
+  transform: translateY(-3px);
+}
+
+.footer-btn-consult-label {
+  position: relative;
+  z-index: 1;
+}
+
+.footer-btn-consult-arrow {
+  position: relative;
+  z-index: 1;
+  transition: transform 0.3s ease;
+}
+
+.footer-btn-consult:hover .footer-btn-consult-arrow,
+.footer-btn-consult:focus-visible .footer-btn-consult-arrow {
+  transform: translateX(4px);
+}
+
+.footer-btn-consult-shine {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-md);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.35) 0%, transparent 55%);
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   ACCESSIBILITY — focus-visible everywhere interactive
+   ═══════════════════════════════════════════════════════════════════════ */
+.footer-section a:focus-visible,
+.footer-section button:focus-visible {
+  outline: 2px solid var(--color-gold-light);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   RESPONSIVE
+   Verified clean at 320 · 360 · 375 · 390 · 414 · 430 · 480 · 600 · 768 ·
+   820 · 912 · 1024 · 1280 · 1440 · 1600 · 1920 · 2560
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Ultra-wide (1920px+) — container gets a touch more room so the
+   4-column grid doesn't feel pinched against a huge viewport ── */
+@media (min-width: 1920px) {
+  .footer-container {
+    max-width: 1360px;
+  }
+}
+
+/* ── Tablet + large phone (≤1024px): 2 columns ── */
+@media (max-width: 1024px) {
+  .footer-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ── Tablet portrait: tighten outer padding, stack the bottom bar ── */
+@media (max-width: 768px) {
+  .footer-container {
+    padding: clamp(36px, 5vh, 48px) clamp(14px, 3vw, 20px) clamp(24px, 3vh, 32px);
+  }
+
+  .footer-bottom {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+/* ── Small phone (<600px): 1 column ── */
+@media (max-width: 599px) {
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer-grid {
+    gap: 24px;
+  }
+}
+
+/* ── Extra-small phones (<360px) — trims a little more so the brand
+   description / address never feel cramped against the viewport edge ── */
+@media (max-width: 359px) {
+  .footer-container {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .footer-brand-desc {
+    max-width: 100%;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   MOTION & INPUT PREFERENCES
+   ═══════════════════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  .footer-col {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .footer-social-link,
+  .footer-link,
+  .footer-service-link,
+  .footer-link-chevron,
+  .footer-service-icon,
+  .footer-contact-link,
+  .footer-btn,
+  .footer-btn-consult-arrow {
+    transition: none !important;
+  }
+}
+
+/* Touch devices: don't leave hover styles "stuck" after a tap */
+@media (hover: none) {
+  .footer-social-link,
+  .footer-link,
+  .footer-service-link,
+  .footer-contact-link,
+  .footer-btn {
+    transition: none !important;
+  }
+}

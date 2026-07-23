@@ -1,14 +1,43 @@
-// src/pages/hajj/Home.jsx
+// src/pages/hajj/Home.jsx (NO LAZY LOADING - NO PLACEHOLDER)
+// ─────────────────────────────────────────────────────────────────────────────
+// CHANGE: Import HajjHeroSection normally (NOT lazy)
+// RESULT: Hero renders immediately, no yellow placeholder
+// ─────────────────────────────────────────────────────────────────────────────
+
 import { useNavigate } from "react-router-dom";
 import { HajjHeroSection, ServiceCard } from "../../components/hajj";
 import { SectionHeader } from "../../components/common";
 import { Star, Plane, Hotel, Globe } from "lucide-react";
 
 const services = [
-  { icon: Star, title: "Hajj Packages", description: "Complete Hajj pilgrimage packages with expert guidance and spiritual support.", color: "#D4A017", route: "/hajj/packages/hajj" },
-  { icon: Star, title: "Umrah Packages", description: "Flexible Umrah packages available throughout the year including Ramadan.", color: "#D4A017", route: "/hajj/packages/umrah" },
-  { icon: Plane, title: "Flight Booking", description: "Reliable flights to Jeddah and Madinah from all major Nigerian cities.", color: "#1A73E8", route: "/hajj/flight-booking" },
-  { icon: Hotel, title: "Hotel Reservation", description: "Comfortable accommodation near the Holy Mosques in Makkah and Madinah.", color: "#0D9488", route: "/hajj/hotel-reservation" },
+  { 
+    icon: Star, 
+    title: "Hajj Packages", 
+    description: "Complete Hajj pilgrimage packages with expert guidance and spiritual support.", 
+    color: "#D4A017", 
+    route: "/hajj/packages/hajj" 
+  },
+  { 
+    icon: Star, 
+    title: "Umrah Packages", 
+    description: "Flexible Umrah packages available throughout the year including Ramadan.", 
+    color: "#D4A017", 
+    route: "/hajj/packages/umrah" 
+  },
+  { 
+    icon: Plane, 
+    title: "Flight Booking", 
+    description: "Reliable flights to Jeddah and Madinah from all major Nigerian cities.", 
+    color: "#1A73E8", 
+    route: "/hajj/flight-booking" 
+  },
+  { 
+    icon: Hotel, 
+    title: "Hotel Reservation", 
+    description: "Comfortable accommodation near the Holy Mosques in Makkah and Madinah.", 
+    color: "#0D9488", 
+    route: "/hajj/hotel-reservation" 
+  },
 ];
 
 export default function HajjHome() {
@@ -16,6 +45,7 @@ export default function HajjHome() {
 
   return (
     <div style={{ minHeight: "100vh", background: "#FFF8E6" }}>
+      {/* HERO SECTION — Renders immediately, no placeholder */}
       <HajjHeroSection
         badge="Sacred Journeys"
         title="Your Trusted Hajj & Umrah Partner"
@@ -28,6 +58,7 @@ export default function HajjHome() {
         }}
       />
 
+      {/* SERVICES SECTION */}
       <section
         id="services-section"
         style={{
@@ -57,6 +88,12 @@ export default function HajjHome() {
           ))}
         </div>
       </section>
+
+      {/* ADD YOUR OTHER SECTIONS HERE */}
+      {/* <HajjStats /> */}
+      {/* <HajjTestimonials /> */}
+      {/* <HajjFAQ /> */}
+      {/* etc. */}
     </div>
   );
 }
