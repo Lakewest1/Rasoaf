@@ -1,7 +1,7 @@
 // src/components/travel/AboutRasoaf.jsx
 // ─────────────────────────────────────────────────────────────────────────────
 // RASOAF TRAVELS AND TOURS LIMITED — Premium About Section
-// Luxury · Cinematic · Glassmorphism · Floating travel objects · White bg
+// Luxury · Cinematic · Glassmorphism · Floating travel objects · PURE WHITE BG
 // Slow slide animations from left and right
 // FULLY RESPONSIVE — 320px → 2560px, zero overflow, zero content loss
 // Strict Rasoaf Global Design System Typography
@@ -28,10 +28,7 @@ const t = {
   white: "#FFFFFF",
   charcoal: "#0B0F17",
   textPrimary: "#0B0F17",
-  // Aligned to the DS muted token — used for primary secondary-text.
   textSecondary: "#5F5F5F",
-  // A step lighter than DS muted, reserved for tertiary/micro text
-  // (feature descriptions, tiny labels) to keep a two-tier hierarchy.
   textMuted: "#7A7A7A",
   cardBg: "#FFFFFF",
   cardBgAlt: "#FFFDF8",
@@ -103,7 +100,7 @@ const scaleIn = {
   },
 };
 
-// ── Reduced-motion aware helper (mobile-first perf + a11y) ──────────────
+// ── Reduced-motion aware helper ──────────────────────────────────────────
 function usePrefersReducedMotion() {
   const [reduced, setReduced] = useState(false);
   useEffect(() => {
@@ -146,7 +143,7 @@ function AnimatedCounter({ target, suffix = "+", isInView }) {
   return <span>{count}{suffix}</span>;
 }
 
-// ── Data (preserved) ────────────────────────────────────────────────────
+// ── Data ────────────────────────────────────────────────────────────────
 const features = [
   { icon: GraduationCap, title: "Admissions Support", desc: "Expert guidance for university and college applications worldwide" },
   { icon: FileCheck, title: "Visa & Immigration", desc: "Professional visa processing for study, work, and travel" },
@@ -177,7 +174,6 @@ const CSS = `
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@700;800&display=swap');
 
   :root {
-    /* Type scale (per Rasoaf Global Design System) */
     --rasoaf-h2-size: clamp(2.3rem, 5vw, 3.5rem);
     --rasoaf-body-large: clamp(1rem, 1.05vw, 1.125rem);
     --rasoaf-caption-size: 0.875rem;
@@ -185,8 +181,6 @@ const CSS = `
     --rasoaf-button-size: 0.95rem;
   }
 
-  /* Universal box-sizing scoped to this section — guarantees zero
-     horizontal overflow regardless of host-app global resets. */
   .rab-section,
   .rab-section *,
   .rab-section *::before,
@@ -204,36 +198,26 @@ const CSS = `
     overflow-x: clip;
     overflow-y: visible;
     isolation: isolate;
-    background: linear-gradient(180deg, ${t.white} 0%, ${t.cream} 50%, ${t.white} 100%);
+    /* ─── PURE WHITE BACKGROUND ─── */
+    background: ${t.white};
   }
 
+  /* Subtle ambient glow overlay — very faint, keeps the white clean */
   .rab-section::before {
     content: '';
     position: absolute;
     inset: 0;
     background: 
-      radial-gradient(ellipse at 15% 85%, rgba(212, 160, 23, 0.04) 0%, transparent 50%),
-      radial-gradient(ellipse at 85% 15%, rgba(212, 160, 23, 0.03) 0%, transparent 50%),
-      radial-gradient(ellipse at 50% 50%, rgba(247, 201, 72, 0.02) 0%, transparent 60%);
+      radial-gradient(ellipse at 15% 85%, rgba(212, 160, 23, 0.03) 0%, transparent 50%),
+      radial-gradient(ellipse at 85% 15%, rgba(212, 160, 23, 0.02) 0%, transparent 50%);
     pointer-events: none;
     animation: rab-ambient-drift 30s ease-in-out infinite;
     will-change: transform;
   }
 
+  /* Removed the repeating grid pattern for cleaner white look */
   .rab-section::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: 
-      repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 3px,
-        rgba(212, 160, 23, 0.012) 3px,
-        rgba(212, 160, 23, 0.012) 6px
-      );
-    opacity: 0.5;
-    pointer-events: none;
+    display: none;
   }
 
   @keyframes rab-ambient-drift {
@@ -365,8 +349,6 @@ const CSS = `
     border: 1px solid rgba(212, 160, 23, 0.15);
   }
 
-  /* Micro-label — intentionally below the DS caption floor since it's a
-     decorative floating chip; deliberate exception, kept in Inter 600. */
   .rab-floating-label {
     font-family: ${t.body};
     font-size: clamp(9px, 0.75vw, 11px);
@@ -381,7 +363,7 @@ const CSS = `
     position: absolute;
     border-radius: 50%;
     background: ${t.gold};
-    opacity: 0.06;
+    opacity: 0.04;
     filter: blur(40px);
     pointer-events: none;
     z-index: 0;
@@ -395,8 +377,6 @@ const CSS = `
     min-width: 0;
   }
 
-  /* Wraps the badge + heading so they can be centered independently of
-     the rest of the (left-aligned) content column below them. */
   .rab-header-block {
     display: flex;
     flex-direction: column;
@@ -405,7 +385,6 @@ const CSS = `
     gap: clamp(14px, 1.8vw, 20px);
   }
 
-  /* Eyebrow — Inter 700, uppercase, 0.8rem, letter-spacing 0.18em (per DS) */
   .rab-badge {
     display: inline-flex;
     align-items: center;
@@ -426,7 +405,6 @@ const CSS = `
     line-height: 1;
   }
 
-  /* H2 — Manrope 800, clamp(2.3rem,5vw,3.5rem), letter-spacing -0.02em, line-height 1.15 (per DS) */
   .rab-heading {
     font-family: ${t.display};
     font-weight: 800;
@@ -445,7 +423,6 @@ const CSS = `
     background-clip: text;
   }
 
-  /* Paragraph — DS body-large scale, line-height 1.7 */
   .rab-paragraph {
     font-family: ${t.body};
     font-size: var(--rasoaf-body-large);
@@ -526,8 +503,6 @@ const CSS = `
     box-shadow: 0 4px 16px rgba(212, 160, 23, 0.1);
   }
 
-  /* Card title — a compact heading tier reaching DS H6 (1.125rem) at its
-     max; floors slightly under for the tight 2-up desktop grid. */
   .rab-feature-title {
     font-family: ${t.display};
     font-weight: 700;
@@ -539,8 +514,6 @@ const CSS = `
     overflow-wrap: break-word;
   }
 
-  /* Card description — micro-exception below DS caption floor, same
-     rationale as the floating labels: dense 2-up card grid. */
   .rab-feature-desc {
     font-family: ${t.body};
     font-size: clamp(0.75rem, 0.85vw, 0.8125rem);
@@ -623,8 +596,6 @@ const CSS = `
     box-shadow: 0 4px 20px rgba(212, 160, 23, 0.15);
   }
 
-  /* Hero stat number — snapped to a DS-aligned scale, matching the same
-     treatment used for stat numbers across the site. */
   .rab-exp-number {
     font-family: ${t.display};
     font-weight: 800;
@@ -690,7 +661,6 @@ const CSS = `
     transform: scale(1.15);
   }
 
-  /* Benefit text — reaches DS caption (0.875rem) at its max */
   .rab-benefit-text {
     font-family: ${t.body};
     font-size: clamp(0.75rem, 0.88vw, 0.875rem);
@@ -758,7 +728,6 @@ const CSS = `
     line-height: 1.3;
   }
 
-  /* Phone number — small heading tier, close to DS body-large */
   .rab-contact-phone {
     font-family: ${t.display};
     font-weight: 700;
@@ -774,7 +743,6 @@ const CSS = `
     flex-wrap: wrap;
   }
 
-  /* Buttons — Inter 600, 0.95rem, letter-spacing 0.01em (per DS) */
   .rab-btn-gold {
     display: inline-flex;
     align-items: center;
@@ -837,119 +805,95 @@ const CSS = `
   }
 
   /* ═══════════════════════════════════════════════════════════════════════
-     RESPONSIVE — DESIGN FULLY PRESERVED, INTELLIGENTLY SCALED
-     Verified clean at: 320 · 360 · 375 · 390 · 414 · 430 · 640 · 768 · 820 ·
-     1024 · 1280 · 1440 · 1600 · 1920 · 2560
+     RESPONSIVE — DESIGN FULLY PRESERVED
      ═══════════════════════════════════════════════════════════════════════ */
 
-  /* ── Ultra-wide desktop (1920px–2560px+) ── */
   @media (min-width: 1920px) {
     .rab-container {
       max-width: 1480px;
     }
-
     .rab-grid {
       gap: clamp(76px, 5vw, 110px);
     }
-
     .rab-image-frame {
       max-width: 460px;
     }
   }
 
-  /* ── Large desktop (1440px–1919px) ── */
   @media (min-width: 1440px) and (max-width: 1919px) {
     .rab-container {
       max-width: 1360px;
     }
   }
 
-  /* ── Standard desktop / small laptop (1280px–1439px) ── */
   @media (min-width: 1280px) and (max-width: 1439px) {
     .rab-container {
       max-width: 1240px;
     }
   }
 
-  /* ── Tablet & Smaller Laptops ── */
   @media (max-width: 1024px) {
     .rab-grid {
       grid-template-columns: 1fr;
       gap: clamp(40px, 5vw, 56px);
     }
-
     .rab-visual {
       min-height: clamp(380px, 48vw, 500px);
       position: relative;
       top: auto;
       order: -1;
     }
-
     .rab-image-frame {
       max-width: 400px;
     }
-
-    /* Floating objects — scaled down but KEPT */
     .rab-floating-obj {
       padding: 7px 11px;
       gap: 6px;
       border-radius: 10px;
     }
-
     .rab-floating-icon {
       width: 26px;
       height: 26px;
       border-radius: 7px;
     }
-
     .rab-floating-icon svg {
       width: 13px;
       height: 13px;
     }
-
     .rab-floating-label {
       font-size: 8.5px;
     }
   }
 
-  /* ── Tablet Portrait ── */
   @media (max-width: 820px) {
     .rab-section {
       padding: clamp(56px, 8vh, 76px) clamp(20px, 4vw, 32px);
     }
-
     .rab-grid {
       gap: 32px;
     }
-
     .rab-visual {
       min-height: clamp(320px, 45vw, 420px);
     }
-
     .rab-image-frame {
       max-width: 340px;
       border-radius: 28px;
     }
-
     .rab-heading {
       font-size: clamp(1.7rem, 4.5vw, 2.2rem);
     }
-
     .rab-paragraph {
       font-size: 0.95rem;
       max-width: 100%;
     }
-
     .rab-features-grid {
       grid-template-columns: 1fr 1fr;
       gap: 12px;
     }
-
     .rab-bottom-row {
       grid-template-columns: 1fr;
       gap: 16px;
     }
-
     .rab-experience-card {
       flex-direction: row;
       gap: 20px;
@@ -959,122 +903,97 @@ const CSS = `
       align-items: center;
       justify-content: flex-start;
     }
-
     .rab-exp-icon {
       margin-bottom: 0;
     }
-
     .rab-exp-number {
       font-size: clamp(2.1rem, 5vw, 2.6rem);
     }
-
     .rab-exp-label {
       font-size: 10.5px;
       text-align: left;
     }
-
     .rab-benefits-list {
       grid-template-columns: 1fr 1fr;
       gap: 8px;
     }
-
     .rab-contact-card {
       flex-wrap: wrap;
       padding: 18px 22px;
       gap: 14px;
     }
-
     .rab-contact-info {
       flex: 1;
       min-width: 180px;
     }
-
     .rab-contact-buttons {
       flex: 1;
       min-width: 180px;
       justify-content: flex-start;
     }
-
-    /* Floating objects — scaled down further but KEPT */
     .rab-floating-obj {
       padding: 6px 10px;
       gap: 5px;
       border-radius: 9px;
     }
-
     .rab-floating-icon {
       width: 22px;
       height: 22px;
       border-radius: 6px;
     }
-
     .rab-floating-icon svg {
       width: 11px;
       height: 11px;
     }
-
     .rab-floating-label {
       font-size: 7.5px;
     }
   }
 
-  /* ── Mobile Large (iPhone Pro Max / 430px and down) ── */
   @media (max-width: 640px) {
     .rab-section {
       padding: clamp(40px, 6vh, 52px) 18px;
     }
-
     .rab-grid {
       gap: 28px;
     }
-
     .rab-visual {
       min-height: clamp(280px, 55vw, 360px);
     }
-
     .rab-image-frame {
       max-width: 280px;
       border-radius: 24px;
     }
-
     .rab-heading {
       font-size: clamp(1.5rem, 6vw, 1.9rem);
     }
-
     .rab-paragraph {
       font-size: 0.9rem;
       line-height: 1.65;
     }
-
     .rab-features-grid {
       grid-template-columns: 1fr;
       gap: 10px;
     }
-
     .rab-feature-card {
       padding: 14px 16px;
       gap: 12px;
       border-radius: 15px;
     }
-
     .rab-feature-icon {
       width: 38px;
       height: 38px;
       border-radius: 10px;
     }
-
     .rab-feature-title {
       font-size: 1rem;
     }
-
     .rab-feature-desc {
       font-size: 0.8rem;
     }
-
     .rab-bottom-row {
       gap: 14px;
     }
-
     .rab-experience-card {
       padding: 16px 18px;
       gap: 14px;
@@ -1083,37 +1002,25 @@ const CSS = `
       justify-content: center;
       text-align: center;
     }
-
     .rab-exp-icon {
       width: 40px;
       height: 40px;
       border-radius: 12px;
     }
-
     .rab-exp-number {
       font-size: clamp(1.9rem, 7vw, 2.4rem);
     }
-
     .rab-exp-label {
       font-size: 10px;
       text-align: center;
     }
-
     .rab-benefits-list {
       grid-template-columns: 1fr 1fr;
       gap: 6px;
     }
-
-    .rab-benefit-item {
-      padding: 7px 10px;
-      gap: 8px;
-      border-radius: 8px;
-    }
-
     .rab-benefit-text {
       font-size: 0.8rem;
     }
-
     .rab-contact-card {
       flex-direction: column;
       align-items: stretch;
@@ -1121,35 +1028,29 @@ const CSS = `
       border-radius: 16px;
       gap: 14px;
     }
-
     .rab-contact-info {
       justify-content: center;
       flex: none;
       min-width: auto;
       gap: 11px;
     }
-
     .rab-contact-icon {
       width: 40px;
       height: 40px;
       border-radius: 11px;
     }
-
     .rab-contact-label {
       font-size: 11px;
     }
-
     .rab-contact-phone {
       font-size: 1rem;
     }
-
     .rab-contact-buttons {
       flex-direction: column;
       gap: 8px;
       flex: none;
       min-width: auto;
     }
-
     .rab-btn-gold,
     .rab-btn-ghost {
       justify-content: center;
@@ -1159,166 +1060,116 @@ const CSS = `
       width: 100%;
       white-space: normal;
     }
-
     .rab-badge {
       font-size: 0.7rem;
       padding: 5px 14px;
       gap: 6px;
     }
-
-    /* Floating objects — scaled for mobile but KEPT */
     .rab-floating-obj {
       padding: 5px 8px;
       gap: 4px;
       border-radius: 8px;
       box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
     }
-
     .rab-floating-icon {
       width: 18px;
       height: 18px;
       border-radius: 5px;
     }
-
     .rab-floating-icon svg {
       width: 9px;
       height: 9px;
     }
-
     .rab-floating-label {
       font-size: 6.5px;
     }
   }
 
-  /* ── Mobile Small (390 / 375 / 360 / 320) ── */
   @media (max-width: 400px) {
     .rab-section {
       padding: 32px 14px;
     }
-
     .rab-grid {
       gap: 22px;
     }
-
     .rab-visual {
       min-height: clamp(200px, 60vw, 260px);
     }
-
     .rab-image-frame {
       max-width: 200px;
       border-radius: 20px;
     }
-
     .rab-heading {
       font-size: 1.4rem;
     }
-
     .rab-paragraph {
       font-size: 0.85rem;
     }
-
     .rab-features-grid {
       gap: 8px;
     }
-
     .rab-feature-card {
       padding: 12px 14px;
       gap: 10px;
       border-radius: 13px;
     }
-
     .rab-feature-icon {
       width: 34px;
       height: 34px;
       border-radius: 9px;
     }
-
-    .rab-feature-icon svg {
-      width: 16px;
-      height: 16px;
-    }
-
     .rab-feature-title {
       font-size: 0.9rem;
     }
-
     .rab-feature-desc {
       font-size: 0.75rem;
     }
-
     .rab-experience-card {
       padding: 14px 16px;
       border-radius: 14px;
       gap: 12px;
     }
-
     .rab-exp-icon {
       width: 36px;
       height: 36px;
       border-radius: 10px;
     }
-
-    .rab-exp-icon svg {
-      width: 18px;
-      height: 18px;
-    }
-
     .rab-exp-number {
       font-size: clamp(1.6rem, 8vw, 2rem);
     }
-
     .rab-exp-label {
       font-size: 9px;
     }
-
     .rab-benefits-list {
       gap: 4px;
     }
-
     .rab-benefit-item {
       padding: 6px 8px;
       gap: 6px;
     }
-
     .rab-benefit-icon {
       width: 20px;
       height: 20px;
       border-radius: 5px;
     }
-
-    .rab-benefit-icon svg {
-      width: 11px;
-      height: 11px;
-    }
-
     .rab-benefit-text {
       font-size: 0.75rem;
     }
-
     .rab-contact-card {
       padding: 14px 14px;
       border-radius: 14px;
       gap: 12px;
     }
-
     .rab-contact-icon {
       width: 36px;
       height: 36px;
     }
-
-    .rab-contact-icon svg {
-      width: 18px;
-      height: 18px;
-    }
-
     .rab-contact-phone {
       font-size: 0.9rem;
     }
-
     .rab-contact-label {
       font-size: 10px;
     }
-
     .rab-btn-gold,
     .rab-btn-ghost {
       padding: 10px 16px;
@@ -1326,66 +1177,43 @@ const CSS = `
       border-radius: 10px;
       gap: 6px;
     }
-
-    .rab-btn-gold svg,
-    .rab-btn-ghost svg {
-      width: 14px;
-      height: 14px;
-    }
-
     .rab-badge {
       font-size: 0.65rem;
       padding: 4px 12px;
       gap: 5px;
     }
-
-    .rab-badge svg {
-      width: 10px;
-      height: 10px;
-    }
-
-    /* Floating objects — smallest but KEPT */
     .rab-floating-obj {
       padding: 4px 6px;
       gap: 3px;
       border-radius: 6px;
     }
-
     .rab-floating-icon {
       width: 14px;
       height: 14px;
       border-radius: 4px;
     }
-
     .rab-floating-icon svg {
       width: 7px;
       height: 7px;
     }
-
     .rab-floating-label {
       font-size: 5.5px;
     }
   }
 
-  /* ── Mobile Extra-Small (320px–359px) — benefits go single-column so
-     text never gets crushed into a two-word-per-line squeeze ── */
   @media (max-width: 359px) {
     .rab-section {
       padding: 28px 12px;
     }
-
     .rab-benefits-list {
       grid-template-columns: 1fr;
     }
-
     .rab-image-frame {
       max-width: 172px;
     }
-
     .rab-heading {
       font-size: 1.3rem;
     }
-
     .rab-btn-gold,
     .rab-btn-ghost {
       padding: 10px 14px;
@@ -1501,23 +1329,21 @@ export default function AboutRasoaf() {
               initial="hidden"
               animate={isInView ? "visible" : "hidden"}
             >
-              {/* Ambient gold blurs — fade in slowly */}
               <motion.div
                 className="rab-accent-blur"
                 style={{ width: "clamp(140px, 22vw, 220px)", height: "clamp(140px, 22vw, 220px)", top: "-8%", right: "8%" }}
                 initial={{ opacity: 0 }}
-                animate={isInView ? { opacity: 0.06 } : {}}
+                animate={isInView ? { opacity: 0.04 } : {}}
                 transition={{ duration: 1.6, delay: 0.6 }}
               />
               <motion.div
                 className="rab-accent-blur"
                 style={{ width: "clamp(90px, 14vw, 150px)", height: "clamp(90px, 14vw, 150px)", bottom: "12%", left: "4%" }}
                 initial={{ opacity: 0 }}
-                animate={isInView ? { opacity: 0.06 } : {}}
+                animate={isInView ? { opacity: 0.04 } : {}}
                 transition={{ duration: 1.6, delay: 0.8 }}
               />
 
-              {/* Main Image — scales in */}
               <motion.div
                 className="rab-image-frame"
                 variants={scaleIn}
@@ -1535,7 +1361,6 @@ export default function AboutRasoaf() {
                 <div className="rab-image-gradient" />
               </motion.div>
 
-              {/* Floating Objects — appear after slide — KEPT ON ALL SCREENS */}
               {floatingObjects.map((obj, i) => (
                 <MemoizedFloatingObj key={i} item={obj} isInView={isInView} index={i} />
               ))}
@@ -1548,7 +1373,6 @@ export default function AboutRasoaf() {
               initial="hidden"
               animate={isInView ? "visible" : "hidden"}
             >
-              {/* Badge + Heading — centered as a block */}
               <div className="rab-header-block">
                 <motion.div
                   className="rab-badge"
@@ -1577,7 +1401,6 @@ export default function AboutRasoaf() {
                 </motion.h2>
               </div>
 
-              {/* Paragraphs — staggered fade up */}
               <motion.p
                 className="rab-paragraph"
                 initial={{ opacity: 0, y: 20 }}
@@ -1595,16 +1418,13 @@ export default function AboutRasoaf() {
                 We encourage individuals, organizations, and prospective students to contact us with their interests, inquiries, concerns, or complaints. Our experienced team is committed to providing professional guidance and reliable solutions tailored to your needs.
               </motion.p>
 
-              {/* Feature Cards — staggered fade up */}
               <div className="rab-features-grid">
                 {features.map((feature, i) => (
                   <MemoizedFeatureCard key={i} feature={feature} isInView={isInView} index={i} />
                 ))}
               </div>
 
-              {/* Bottom Row */}
               <div className="rab-bottom-row">
-                {/* Experience Card — fades in */}
                 <motion.div
                   className="rab-experience-card"
                   initial={{ opacity: 0, scale: 0.85 }}
@@ -1623,7 +1443,6 @@ export default function AboutRasoaf() {
                   </div>
                 </motion.div>
 
-                {/* Benefits List — staggered slide from right */}
                 <div className="rab-benefits-list">
                   {benefits.map((benefit, i) => (
                     <MemoizedBenefitItem key={i} benefit={benefit} isInView={isInView} index={i} />
@@ -1631,7 +1450,6 @@ export default function AboutRasoaf() {
                 </div>
               </div>
 
-              {/* Contact Card — fades up */}
               <motion.div
                 className="rab-contact-card"
                 initial={{ opacity: 0, y: 30 }}

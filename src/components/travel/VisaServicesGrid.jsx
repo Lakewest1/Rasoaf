@@ -1,20 +1,20 @@
 // src/components/travel/VisaServicesGrid.jsx
 // ─────────────────────────────────────────────────────────────────────────────
-// RASOAF TRAVELS AND TOURS LIMITED — Premium Visa Services Grid
-// Editorial luxury design with image-first cards, glassmorphism overlays
-// Rasoaf Typography System · Full-width editorial heading
-// FULLY RESPONSIVE — 320px → 2560px, zero overflow, zero content loss
+// RASOAF TRAVELS AND TOURS LIMITED — Premium Visa Services Grid (v2)
+// Editorial luxury design · Image-first cards · Glass morphism overlays
+// RASOAF Typography System · Full-width editorial heading · Scroll reveal
+// GPU-accelerated · Perfectly responsive 320px → 2560px
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { SectionHeader } from "../common";
-import { ChevronRight, ChevronLeft, Eye, Sparkles } from "lucide-react";
-import usePrefersReducedMotion from "../../hooks/usePrefersReducedMotion";
+import { motion, useInView, useReducedMotion, AnimatePresence } from "framer-motion";
+import { ChevronRight, ChevronLeft, Eye, Sparkles, Compass, ArrowUpRight } from "lucide-react";
 
-// ── Visa Services Data ──────────────────────────────────────────────────
-const services = [
+// ══════════════════════════════════════════════════════════════════════════
+// Visa Services Data
+// ══════════════════════════════════════════════════════════════════════════
+const services = Object.freeze([
   {
     id: "student",
     title: "Student Visa",
@@ -23,6 +23,7 @@ const services = [
     successRate: "95% Success",
     image: "https://res.cloudinary.com/dbqdgvvgq/image/upload/v1784550199/Rasoaf5_caopg8.jpg",
     route: "/travel/student-visa",
+    color: "#667eea",
   },
   {
     id: "work",
@@ -32,6 +33,7 @@ const services = [
     successRate: "92% Success",
     image: "https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?w=800&h=600&fit=crop&crop=center",
     route: "/travel/work-visa",
+    color: "#0D9488",
   },
   {
     id: "tourist",
@@ -41,6 +43,7 @@ const services = [
     successRate: "98% Success",
     image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&h=600&fit=crop&crop=center",
     route: "/travel/tourist-visa",
+    color: "#7C3AED",
   },
   {
     id: "business",
@@ -50,6 +53,7 @@ const services = [
     successRate: "94% Success",
     image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&h=600&fit=crop&crop=center",
     route: "/travel/business-visa",
+    color: "#DC2626",
   },
   {
     id: "family",
@@ -59,6 +63,7 @@ const services = [
     successRate: "88% Success",
     image: "https://images.unsplash.com/photo-1511895426328-dc8714191300?w=800&h=600&fit=crop&crop=center",
     route: "/travel/family-visa",
+    color: "#E11D48",
   },
   {
     id: "flights",
@@ -68,136 +73,192 @@ const services = [
     successRate: "100% Success",
     image: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=800&h=600&fit=crop&crop=center",
     route: "/travel/flights",
+    color: "#0284C7",
   },
-];
+]);
 
-// ── Rasoaf Design Tokens ────────────────────────────────────────────────
-const t = {
-  display: "'Manrope', system-ui, sans-serif",
-  body: "'Inter', system-ui, sans-serif",
+const AUTOPLAY_MS = 5000;
+const SWIPE_THRESHOLD = 50;
+
+// ══════════════════════════════════════════════════════════════════════════
+// RASOAF Design Tokens
+// ══════════════════════════════════════════════════════════════════════════
+const TOKENS = {
+  display: "'Manrope', system-ui, -apple-system, sans-serif",
+  body: "'Inter', system-ui, -apple-system, sans-serif",
   gold: "#D4A017",
   goldLight: "#F7C948",
   goldDark: "#B8860B",
-  cream: "#FFF8E6",
+  cream: "#FFFDF8",
   white: "#FFFFFF",
-  charcoal: "#0B0F17",
-  textPrimary: "#0B0F17",
-  textSecondary: "#525252",
+  charcoal: "#0A0F1A",
+  textPrimary: "#0A0F1A",
+  textSecondary: "#5F5F5F",
+  textMuted: "#9CA3AF",
   transition: "0.6s cubic-bezier(0.22, 1, 0.36, 1)",
   transitionBounce: "0.5s cubic-bezier(0.34, 1.56, 0.64, 1)",
+  radiusLg: "24px",
+  radiusMd: "16px",
+  radiusSm: "10px",
+  shadowCard: "0 4px 24px rgba(0, 0, 0, 0.06)",
+  shadowHover: "0 20px 60px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(212, 160, 23, 0.15)",
 };
 
-// ── Premium CSS ─────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════
+// Premium CSS  RASOAF Typography System
+// ══════════════════════════════════════════════════════════════════════════
 const CSS = `
-  /* Universal box-sizing scoped to this section — guarantees zero
-     horizontal overflow regardless of host-app global resets. */
-  .visa-services-section,
-  .visa-services-section *,
-  .visa-services-section *::before,
-  .visa-services-section *::after {
+  .vsg-section,
+  .vsg-section *,
+  .vsg-section *::before,
+  .vsg-section *::after {
     box-sizing: border-box;
   }
 
-  /* ── Section ── */
-  .visa-services-section {
-    max-width: 1400px;
+  /* ═══════════════════════════════════════════════════════════════════════ */
+  /* SECTION · Premium White Background                                   */
+  /* ═══════════════════════════════════════════════════════════════════════ */
+
+  .vsg-section {
     width: 100%;
-    margin: 0 auto;
-    padding: clamp(80px, 12vh, 120px) 32px;
-    background: linear-gradient(180deg, ${t.white} 0%, ${t.cream} 50%, ${t.white} 100%);
+    max-width: 100vw;
+    padding: clamp(80px, 12vh, 120px) clamp(16px, 5vw, 80px);
+    background: ${TOKENS.white};
     position: relative;
     overflow-x: clip;
     overflow-y: visible;
-    font-family: ${t.body};
+    isolation: isolate;
+    contain: layout paint style;
   }
 
-  .visa-services-section::before {
+  .vsg-section::before {
     content: '';
     position: absolute;
-    top: -40%;
-    right: -20%;
-    width: 800px;
-    height: 800px;
+    top: -20%;
+    right: -15%;
+    width: 700px;
+    height: 700px;
     background: radial-gradient(circle, rgba(212, 160, 23, 0.04) 0%, transparent 70%);
     border-radius: 50%;
     pointer-events: none;
+    z-index: 0;
   }
 
-  .visa-services-section::after {
+  .vsg-section::after {
     content: '';
     position: absolute;
-    bottom: -20%;
+    bottom: -15%;
     left: -10%;
     width: 500px;
     height: 500px;
     background: radial-gradient(circle, rgba(212, 160, 23, 0.03) 0%, transparent 70%);
     border-radius: 50%;
     pointer-events: none;
+    z-index: 0;
   }
 
-  /* ── Header ── */
-  .visa-header-wrap {
+  .vsg-container {
+    max-width: 1400px;
+    width: 100%;
+    margin: 0 auto;
     position: relative;
     z-index: 2;
-    margin-bottom: clamp(48px, 6vw, 64px);
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════ */
+  /* HEADER · RASOAF Typography                                           */
+  /* ═══════════════════════════════════════════════════════════════════════ */
+
+  .vsg-header {
+    text-align: center;
+    margin-bottom: clamp(48px, 7vh, 72px);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     width: 100%;
   }
 
-  /* ── Rasoaf Typography: Full-width editorial h1 ── */
-  .visa-header-wrap h1,
-  .visa-header-wrap [class*="section-title"],
-  .visa-header-wrap [class*="SectionHeader"] h1 {
-    font-family: ${t.display} !important;
-    font-weight: 800 !important;
-    font-size: clamp(36px, 5vw, 64px) !important;
-    line-height: 1.08 !important;
-    letter-spacing: -0.03em !important;
-    color: ${t.textPrimary} !important;
-    text-align: center !important;
-    max-width: 100% !important;
-    width: 100% !important;
-    margin: 0 auto !important;
-    display: block !important;
-    overflow-wrap: break-word !important;
+  /* Eyebrow: Inter 700 · uppercase · 0.15em letter-spacing */
+  .vsg-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 22px;
+    background: rgba(212, 160, 23, 0.06);
+    border: 1px solid rgba(212, 160, 23, 0.12);
+    border-radius: 9999px;
+    font-family: ${TOKENS.body};
+    font-size: clamp(0.65rem, 0.85vw, 0.78rem);
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: ${TOKENS.goldDark};
+    margin-bottom: clamp(16px, 2.5vh, 24px);
+    transition: all 0.3s ease;
+    white-space: nowrap;
   }
 
-  /* Gold gradient for "to the World" */
-  .visa-header-wrap h1 span,
-  .visa-header-wrap [class*="section-title"] span,
-  .visa-header-wrap [class*="SectionHeader"] h1 span {
-    background: linear-gradient(135deg, ${t.goldDark} 0%, ${t.gold} 40%, ${t.goldLight} 100%) !important;
-    -webkit-background-clip: text !important;
-    -webkit-text-fill-color: transparent !important;
-    background-clip: text !important;
+  .vsg-eyebrow:hover {
+    background: rgba(212, 160, 23, 0.1);
+    border-color: rgba(212, 160, 23, 0.25);
+    transform: translateY(-1px);
   }
 
-  /* Badge styling */
-  .visa-header-wrap [class*="badge"],
-  .visa-header-wrap [class*="SectionHeader"] [class*="badge"] {
-    font-family: ${t.body} !important;
-    font-weight: 700 !important;
-    font-size: clamp(10px, 0.8vw, 11.5px) !important;
-    letter-spacing: 0.12em !important;
-    text-transform: uppercase !important;
+  .vsg-eyebrow svg {
+    color: ${TOKENS.gold};
+    flex-shrink: 0;
   }
 
-  /* Subtitle styling */
-  .visa-header-wrap [class*="subtitle"],
-  .visa-header-wrap [class*="SectionHeader"] p {
-    font-family: ${t.body} !important;
-    font-weight: 400 !important;
-    font-size: clamp(13px, 1.1vw, 15.5px) !important;
-    line-height: 1.7 !important;
-    letter-spacing: 0.005em !important;
-    color: ${t.textSecondary} !important;
-    max-width: 680px !important;
-    margin: 16px auto 0 !important;
-    width: 100% !important;
-    overflow-wrap: break-word !important;
+  /* Title: Manrope 800 · -0.03em letter-spacing · editorial */
+  .vsg-title {
+    font-family: ${TOKENS.display};
+    font-weight: 800;
+    font-size: clamp(2.4rem, 5.5vw, 4rem);
+    letter-spacing: -0.03em;
+    line-height: 1.08;
+    color: ${TOKENS.textPrimary};
+    text-align: center;
+    max-width: 100%;
+    width: 100%;
+    margin: 0 auto;
+    display: block;
+    overflow-wrap: break-word;
   }
 
-  /* ── Grid ── */
-  .visa-services-grid {
+  .vsg-title-accent {
+    background: linear-gradient(135deg, ${TOKENS.goldDark} 0%, ${TOKENS.gold} 40%, ${TOKENS.goldLight} 100%);
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: vsg-shimmer 4s ease-in-out infinite;
+  }
+
+  @keyframes vsg-shimmer {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+
+  /* Subtitle: Inter 400 · 0.005em letter-spacing */
+  .vsg-subtitle {
+    font-family: ${TOKENS.body};
+    font-size: clamp(0.9rem, 1.1vw, 1rem);
+    font-weight: 400;
+    line-height: 1.7;
+    letter-spacing: 0.005em;
+    color: ${TOKENS.textSecondary};
+    max-width: 640px;
+    margin: 14px auto 0;
+    width: 100%;
+    overflow-wrap: break-word;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════ */
+  /* DESKTOP GRID · 3 Columns                                             */
+  /* ═══════════════════════════════════════════════════════════════════════ */
+
+  .vsg-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: clamp(20px, 2.5vw, 32px);
@@ -205,153 +266,159 @@ const CSS = `
     z-index: 2;
   }
 
-  /* ── Card ── */
-  .visa-card {
+  /* ═══════════════════════════════════════════════════════════════════════ */
+  /* CARD · Premium Image-First Design                                    */
+  /* ═══════════════════════════════════════════════════════════════════════ */
+
+  .vsg-card {
     position: relative;
-    border-radius: 24px;
+    border-radius: ${TOKENS.radiusLg};
     overflow: hidden;
     height: 460px;
-    background: ${t.charcoal};
+    background: ${TOKENS.charcoal};
     cursor: pointer;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    transition: all ${t.transition};
+    box-shadow: ${TOKENS.shadowCard};
+    transition: all ${TOKENS.transition};
     min-width: 0;
+    isolation: isolate;
   }
 
-  .visa-card:hover,
-  .visa-card:focus-within {
+  .vsg-card:hover,
+  .vsg-card:focus-within {
     transform: translateY(-8px);
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15), 0 0 0 2px rgba(212, 160, 23, 0.18);
+    box-shadow: ${TOKENS.shadowHover};
   }
 
-  .visa-card:focus-visible {
-    outline: 2px solid ${t.gold};
-    outline-offset: 3px;
+  .vsg-card:focus-visible {
+    outline: 3px solid ${TOKENS.gold};
+    outline-offset: 4px;
   }
 
-  /* ── Image ── */
-  .visa-card-image {
+  /* Image */
+  .vsg-card-image {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
     transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform;
   }
 
-  .visa-card:hover .visa-card-image,
-  .visa-card:focus-within .visa-card-image {
+  .vsg-card:hover .vsg-card-image,
+  .vsg-card:focus-within .vsg-card-image {
     transform: scale(1.08);
   }
 
-  /* ── Fade Hint Text ── */
-  .visa-card-hint {
+  /* Hint text: Inter 500 */
+  .vsg-card-hint {
     position: absolute;
-    bottom: 16px;
+    bottom: 20px;
     left: 50%;
     transform: translateX(-50%);
-    font-family: ${t.body};
-    font-size: 0.8rem;
+    font-family: ${TOKENS.body};
+    font-size: 0.78rem;
     font-weight: 500;
-    color: rgba(255, 255, 255, 0.65);
+    color: rgba(255, 255, 255, 0.7);
     letter-spacing: 0.06em;
     text-transform: uppercase;
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 8px 16px;
-    background: rgba(0, 0, 0, 0.35);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border-radius: 100px;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    opacity: 0.7;
-    transition: all 0.4s ease;
+    padding: 8px 18px;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 9999px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    opacity: 0.8;
+    transition: all 0.5s ease;
     z-index: 3;
     pointer-events: none;
-    max-width: 90%;
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 
-  .visa-card:hover .visa-card-hint,
-  .visa-card:focus-within .visa-card-hint {
+  .vsg-card:hover .vsg-card-hint,
+  .vsg-card:focus-within .vsg-card-hint {
     opacity: 0;
-    transform: translateX(-50%) translateY(10px);
+    transform: translateX(-50%) translateY(12px);
   }
 
-  /* ── Overlay ── */
-  .visa-card-overlay {
+  /* Overlay - Glass morphism */
+  .vsg-card-overlay {
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
-    padding: 32px 28px 28px;
-    background: rgba(10, 60, 110, 0.8);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    padding: 28px 24px 24px;
+    background: linear-gradient(180deg, 
+      rgba(10, 30, 60, 0.65) 0%, 
+      rgba(10, 30, 60, 0.88) 100%
+    );
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 22px;
     margin: 0 6px 6px;
     height: 55%;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
-    transform: translateY(calc(100% - 50px));
+    transform: translateY(calc(100% - 52px));
     transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1), height 0.7s cubic-bezier(0.22, 1, 0.36, 1);
-    box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.3);
     pointer-events: none;
     min-width: 0;
   }
 
-  .visa-card:hover .visa-card-overlay,
-  .visa-card:focus-within .visa-card-overlay {
+  .vsg-card:hover .vsg-card-overlay,
+  .vsg-card:focus-within .vsg-card-overlay {
     transform: translateY(0);
-    height: 60%;
+    height: 62%;
     pointer-events: auto;
   }
 
-  /* ── Overlay Shine ── */
-  .visa-card-overlay::before {
+  /* Overlay shine sweep */
+  .vsg-card-overlay::before {
     content: '';
     position: absolute;
     top: 0;
     left: -100%;
     width: 200%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
     transform: skewX(-25deg);
-    transition: left 0.8s ease;
+    transition: left 0.9s ease;
     pointer-events: none;
   }
 
-  .visa-card:hover .visa-card-overlay::before,
-  .visa-card:focus-within .visa-card-overlay::before {
+  .vsg-card:hover .vsg-card-overlay::before,
+  .vsg-card:focus-within .vsg-card-overlay::before {
     left: 100%;
   }
 
-  /* ── Card Title — Rasoaf Display (Manrope 800) ── */
-  .visa-card-title {
-    font-family: ${t.display};
+  /* Card Title: Manrope 800 */
+  .vsg-card-title {
+    font-family: ${TOKENS.display};
     font-weight: 800;
     font-size: clamp(1.2rem, 1.6vw, 1.4rem);
     color: #FFFFFF;
     letter-spacing: -0.02em;
     line-height: 1.15;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
     pointer-events: none;
     overflow-wrap: break-word;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   }
 
-  /* ── Card Description — Rasoaf Body (Inter 400) ── */
-  .visa-card-desc {
-    font-family: ${t.body};
-    font-size: 0.85rem;
+  /* Card Description: Inter 400 */
+  .vsg-card-desc {
+    font-family: ${TOKENS.body};
+    font-size: 0.84rem;
     font-weight: 400;
-    color: rgba(255, 255, 255, 0.78);
+    color: rgba(255, 255, 255, 0.75);
     line-height: 1.6;
     letter-spacing: 0.005em;
-    margin-bottom: 14px;
+    margin-bottom: 16px;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -360,61 +427,56 @@ const CSS = `
     overflow-wrap: break-word;
   }
 
-  .visa-card:hover .visa-card-desc,
-  .visa-card:focus-within .visa-card-desc {
-    -webkit-line-clamp: 3;
+  .vsg-card:hover .vsg-card-desc,
+  .vsg-card:focus-within .vsg-card-desc {
+    -webkit-line-clamp: 4;
   }
 
-  /* ── Info Row ── */
-  .visa-card-info {
+  /* Info Row */
+  .vsg-card-info {
     display: flex;
-    gap: 24px;
-    margin-bottom: 14px;
+    gap: 28px;
+    margin-bottom: 16px;
     pointer-events: none;
     flex-wrap: wrap;
   }
 
-  .visa-info-item {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    min-width: 0;
-  }
-
-  .visa-info-label {
-    font-family: ${t.body};
+  /* Label: Inter 600 */
+  .vsg-info-label {
+    font-family: ${TOKENS.body};
     font-size: 0.68rem;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(255, 255, 255, 0.45);
     text-transform: uppercase;
     letter-spacing: 0.1em;
     white-space: nowrap;
   }
 
-  .visa-info-value {
-    font-family: ${t.display};
-    font-size: 0.85rem;
+  /* Value: Manrope 700 */
+  .vsg-info-value {
+    font-family: ${TOKENS.display};
+    font-size: 0.88rem;
     font-weight: 700;
     color: #FFFFFF;
     letter-spacing: -0.01em;
     white-space: nowrap;
   }
 
-  .visa-info-value.success {
+  .vsg-info-value.success {
     color: #4ADE80;
   }
 
-  /* ── CTA Button — Rasoaf Body (Inter 700) ── */
-  .visa-cta-button {
+  /* CTA Button: Inter 700 */
+  .vsg-cta-button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 11px 22px;
-    background: #0B1A2E;
-    border: none;
-    border-radius: 10px;
-    font-family: ${t.body};
+    padding: 12px 24px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: ${TOKENS.radiusSm};
+    font-family: ${TOKENS.body};
     font-size: 0.88rem;
     font-weight: 700;
     letter-spacing: 0.01em;
@@ -426,464 +488,512 @@ const CSS = `
     overflow: hidden;
     pointer-events: auto;
     z-index: 10;
-    min-height: 44px;
+    min-height: 46px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
   }
 
-  .visa-cta-button::before {
+  .vsg-cta-button::before {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(135deg, ${t.gold}, ${t.goldLight});
+    background: linear-gradient(135deg, ${TOKENS.gold}, ${TOKENS.goldLight});
     opacity: 0;
     transition: opacity 0.4s ease;
+    z-index: 0;
   }
 
-  .visa-cta-button:hover::before,
-  .visa-cta-button:focus-visible::before {
+  .vsg-cta-button:hover::before,
+  .vsg-cta-button:focus-visible::before {
     opacity: 1;
   }
 
-  .visa-cta-button:focus-visible {
-    outline: 2px solid ${t.gold};
+  .vsg-cta-button > * {
+    position: relative;
+    z-index: 2;
+  }
+
+  .vsg-cta-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(212, 160, 23, 0.35);
+    border-color: ${TOKENS.gold};
+  }
+
+  .vsg-cta-button:focus-visible {
+    outline: 2px solid ${TOKENS.gold};
     outline-offset: 3px;
   }
 
-  .visa-cta-button span {
-    position: relative;
-    z-index: 2;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .visa-cta-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(212, 160, 23, 0.35);
-  }
-
-  .visa-cta-arrow {
+  .vsg-cta-arrow {
     transition: transform 0.3s ease;
   }
 
-  .visa-cta-button:hover .visa-cta-arrow {
+  .vsg-cta-button:hover .vsg-cta-arrow {
     transform: translateX(4px);
   }
 
-  /* ── Mobile Carousel ── */
-  .visa-mobile-carousel {
+  /* ═══════════════════════════════════════════════════════════════════════ */
+  /* MOBILE CAROUSEL                                                      */
+  /* ═══════════════════════════════════════════════════════════════════════ */
+
+  .vsg-mobile-carousel {
     display: none;
     position: relative;
     width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+    overflow: hidden;
+    touch-action: pan-y;
+    user-select: none;
+    -webkit-user-select: none;
+    padding: 8px 0;
   }
 
-  .visa-mobile-track {
+  .vsg-mobile-track {
     display: flex;
-    transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform;
+    backface-visibility: hidden;
+    transform: translate3d(0, 0, 0);
+    align-items: center;
   }
 
-  .visa-mobile-slide {
+  .vsg-mobile-slide {
     flex: 0 0 100%;
     min-width: 0;
-    padding: 4px 2px 8px;
-    box-sizing: border-box;
+    padding: 4px 4px 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 
-  .visa-mobile-slide .visa-card {
+  .vsg-mobile-slide .vsg-card {
     height: 480px;
+    width: 100%;
     cursor: pointer;
   }
 
-  /* Mobile hint stays visible (touch devices have no :hover) — it's the
-     "more" affordance. Tapping the image or this hint toggles the
-     .visa-card-revealed state set in JS, which slides the overlay up
-     exactly like the desktop hover state does. Until then the overlay
-     stays fully hidden below so the image is never covered. */
-  .visa-mobile-slide .visa-card-hint {
+  .vsg-mobile-slide .vsg-card-hint {
     opacity: 0.85;
   }
 
-  .visa-mobile-slide .visa-card-revealed .visa-card-hint {
+  .vsg-mobile-slide .vsg-card-revealed .vsg-card-hint {
     opacity: 0;
-    transform: translateX(-50%) translateY(10px);
+    transform: translateX(-50%) translateY(12px);
   }
 
-  .visa-mobile-slide .visa-card-revealed .visa-card-overlay {
+  .vsg-mobile-slide .vsg-card-revealed .vsg-card-overlay {
     transform: translateY(0);
-    height: 62%;
+    height: 64%;
     pointer-events: auto;
   }
 
-  .visa-mobile-slide .visa-card-image {
+  .vsg-mobile-slide .vsg-card-image {
     transform: none !important;
   }
 
-  .visa-mobile-slide .visa-card-desc {
+  .vsg-mobile-slide .vsg-card-desc {
     -webkit-line-clamp: 4;
   }
 
-  .visa-mobile-nav {
+  /* Mobile Navigation */
+  .vsg-mobile-nav {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 20px;
-    margin-top: 18px;
+    margin-top: 20px;
+    padding: 4px 0;
   }
 
-  /* Visual button stays a refined 40px circle; the real hit target is
-     widened to 44px via a transparent expanded pseudo-element so the
-     control still meets minimum touch-target guidance without changing
-     how it looks on screen. */
-  .visa-mobile-btn {
+  .vsg-mobile-btn {
     position: relative;
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: ${t.white};
-    border: 1px solid rgba(212, 160, 23, 0.25);
-    color: ${t.textPrimary};
+    background: ${TOKENS.white};
+    border: 1px solid rgba(212, 160, 23, 0.2);
+    color: ${TOKENS.textPrimary};
     cursor: pointer;
-    box-shadow: 0 2px 14px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
     transition: all 0.3s ease;
+    outline: none;
   }
 
-  .visa-mobile-btn::before {
-    content: '';
-    position: absolute;
-    inset: -2px;
+  .vsg-mobile-btn:hover {
+    background: ${TOKENS.cream};
+    border-color: ${TOKENS.gold};
+    box-shadow: 0 4px 16px rgba(212, 160, 23, 0.15);
   }
 
-  .visa-mobile-btn:hover {
-    background: ${t.cream};
-    border-color: ${t.gold};
-  }
-
-  .visa-mobile-btn:focus-visible {
-    outline: 2px solid ${t.gold};
+  .vsg-mobile-btn:focus-visible {
+    outline: 2px solid ${TOKENS.gold};
     outline-offset: 3px;
   }
 
-  .visa-mobile-dots {
+  .vsg-mobile-dots {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
   }
 
-  .visa-mobile-dot {
+  .vsg-mobile-dot {
     position: relative;
-    width: 6px;
-    height: 6px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
-    background: rgba(11, 15, 23, 0.2);
+    background: rgba(0, 0, 0, 0.15);
     border: none;
     cursor: pointer;
     padding: 0;
-    transition: all 0.35s ease;
+    transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    outline: none;
   }
 
-  /* Expanded invisible hit area — keeps the dot visually tiny while the
-     tappable region reaches ~40px, matching mobile a11y expectations. */
-  .visa-mobile-dot::before {
+  .vsg-mobile-dot::before {
     content: '';
     position: absolute;
-    inset: -17px;
+    inset: -10px;
   }
 
-  .visa-mobile-dot:focus-visible {
-    outline: 2px solid ${t.gold};
+  .vsg-mobile-dot:hover {
+    background: rgba(0, 0, 0, 0.25);
+  }
+
+  .vsg-mobile-dot-active {
+    width: 26px;
+    border-radius: 4px;
+    background: linear-gradient(135deg, ${TOKENS.goldLight}, ${TOKENS.gold});
+    box-shadow: 0 0 12px rgba(212, 160, 23, 0.3);
+  }
+
+  .vsg-mobile-dot:focus-visible {
+    outline: 2px solid ${TOKENS.gold};
     outline-offset: 4px;
   }
 
-  .visa-mobile-dot-active {
-    width: 20px;
-    background: ${t.gold};
+  .vsg-swipe-indicator {
+    text-align: center;
+    color: ${TOKENS.textMuted};
+    font-family: ${TOKENS.body};
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    margin-top: 10px;
   }
 
-  /* ═══════════════════════════════════════════════════════════════════════
-     RESPONSIVE — DESIGN FULLY PRESERVED, INTELLIGENTLY SCALED
-     Verified clean at: 320 · 360 · 375 · 390 · 414 · 430 · 480 · 640 · 768 ·
-     820 · 1024 · 1280 · 1440 · 1600 · 1920 · 2560
-     ═══════════════════════════════════════════════════════════════════════ */
+  /* ═══════════════════════════════════════════════════════════════════════ */
+  /* RESPONSIVE BREAKPOINTS · Perfect 320px → 2560px                      */
+  /* ═══════════════════════════════════════════════════════════════════════ */
 
-  /* ── Ultra-wide desktop (1920px–2560px+) ── */
+  @media (min-width: 600px) {
+    .vsg-grid { display: grid; }
+    .vsg-mobile-carousel { display: none; }
+  }
+
   @media (min-width: 1920px) {
-    .visa-services-section {
-      max-width: 1600px;
-    }
-
-    .visa-services-grid {
-      gap: clamp(28px, 2vw, 40px);
-    }
-
-    .visa-card {
-      height: 500px;
-    }
+    .vsg-container { max-width: 1600px; }
+    .vsg-grid { gap: clamp(28px, 2vw, 40px); }
+    .vsg-card { height: 500px; }
   }
 
-  /* ── Large desktop (1440px–1919px) ── */
   @media (min-width: 1440px) and (max-width: 1919px) {
-    .visa-services-section {
-      max-width: 1480px;
-    }
+    .vsg-container { max-width: 1480px; }
   }
 
-  /* ── Responsive ── */
   @media (max-width: 1024px) {
-    .visa-services-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
+    .vsg-grid { grid-template-columns: repeat(2, 1fr); }
+    .vsg-card { height: 440px; }
   }
 
   @media (max-width: 768px) {
-    .visa-services-section {
-      padding: clamp(60px, 8vh, 80px) 20px;
-    }
-
-    .visa-header-wrap h1,
-    .visa-header-wrap [class*="section-title"] {
-      font-size: clamp(28px, 6vw, 40px) !important;
-    }
-
-    .visa-services-grid {
-      display: none;
-    }
-
-    .visa-mobile-carousel {
-      display: block;
-    }
+    .vsg-section { padding: clamp(60px, 8vh, 80px) 20px; }
+    .vsg-grid { display: none; }
+    .vsg-mobile-carousel { display: block; }
+    .vsg-title { font-size: clamp(1.8rem, 6vw, 2.6rem); }
   }
 
   @media (max-width: 480px) {
-    .visa-services-section {
-      padding: clamp(40px, 6vh, 60px) 16px;
-    }
-
-    .visa-header-wrap h1,
-    .visa-header-wrap [class*="section-title"] {
-      font-size: clamp(24px, 7vw, 32px) !important;
-    }
-
-    .visa-mobile-slide .visa-card {
-      height: 440px;
-    }
-
-    .visa-card-overlay {
-      padding: 24px 20px 20px;
-    }
-
-    .visa-card-title {
-      font-size: 1.1rem;
-    }
-
-    .visa-card-info {
-      gap: 16px;
-    }
-
-    .visa-cta-button {
-      padding: 10px 18px;
-      font-size: 0.82rem;
-    }
+    .vsg-section { padding: clamp(40px, 6vh, 60px) 16px; }
+    .vsg-mobile-slide .vsg-card { height: 450px; }
+    .vsg-card-overlay { padding: 24px 20px 20px; }
+    .vsg-card-title { font-size: 1.15rem; }
   }
 
-  /* ── Mobile Extra-Small (320px–359px) — trims card height and
-     overlay padding so tall content never gets squeezed or clipped
-     on the smallest handsets ── */
-  @media (max-width: 359px) {
-    .visa-services-section {
-      padding: clamp(32px, 6vh, 48px) 12px;
-    }
-
-    .visa-header-wrap h1,
-    .visa-header-wrap [class*="section-title"] {
-      font-size: clamp(22px, 7.5vw, 28px) !important;
-    }
-
-    .visa-header-wrap [class*="subtitle"],
-    .visa-header-wrap [class*="SectionHeader"] p {
-      font-size: 12.5px !important;
-    }
-
-    .visa-mobile-slide .visa-card {
-      height: 400px;
-    }
-
-    .visa-card-overlay {
-      padding: 18px 16px 16px;
-      border-radius: 18px;
-    }
-
-    .visa-card-title {
-      font-size: 1rem;
-    }
-
-    .visa-card-desc {
-      font-size: 0.78rem;
-      margin-bottom: 10px;
-    }
-
-    .visa-card-info {
-      gap: 12px;
-      margin-bottom: 10px;
-    }
-
-    .visa-cta-button {
-      padding: 9px 16px;
-      font-size: 0.78rem;
-      min-height: 40px;
-    }
-
-    .visa-mobile-btn {
-      width: 36px;
-      height: 36px;
-    }
+  @media (max-width: 374px) {
+    .vsg-section { padding: clamp(32px, 5vh, 48px) 12px; }
+    .vsg-title { font-size: clamp(1.4rem, 7vw, 1.8rem); }
+    .vsg-mobile-slide .vsg-card { height: 410px; }
+    .vsg-card-overlay { padding: 18px 16px 16px; border-radius: 18px; }
+    .vsg-card-title { font-size: 1.05rem; }
+    .vsg-card-desc { font-size: 0.76rem; }
+    .vsg-cta-button { padding: 10px 18px; font-size: 0.8rem; min-height: 42px; }
+    .vsg-mobile-btn { width: 38px; height: 38px; }
   }
+
+  /* ═══════════════════════════════════════════════════════════════════════ */
+  /* TOUCH DEVICES                                                        */
+  /* ═══════════════════════════════════════════════════════════════════════ */
+
+  @media (hover: none) and (pointer: coarse) {
+    .vsg-card { cursor: default; }
+    .vsg-card:hover { transform: none; box-shadow: ${TOKENS.shadowCard}; }
+    .vsg-card:hover .vsg-card-image { transform: none; }
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════ */
+  /* REDUCED MOTION                                                       */
+  /* ═══════════════════════════════════════════════════════════════════════ */
 
   @media (prefers-reduced-motion: reduce) {
-    .visa-card-overlay,
-    .visa-card-image,
-    .visa-card,
-    .visa-card-hint,
-    .visa-mobile-track,
-    .visa-mobile-btn,
-    .visa-mobile-dot,
-    .visa-cta-button,
-    .visa-cta-arrow {
-      transition: none !important;
+    .vsg-section,
+    .vsg-section *,
+    .vsg-section *::before,
+    .vsg-section *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
     }
-    .visa-card:hover .visa-card-image,
-    .visa-card:focus-within .visa-card-image {
-      transform: none;
+    .vsg-card:hover .vsg-card-image { transform: none; }
+    .vsg-card:hover .vsg-card-overlay { 
+      transform: translateY(calc(100% - 52px)); 
+      height: 55%; 
     }
-    .visa-card:hover .visa-card-overlay,
-    .visa-card:focus-within .visa-card-overlay {
-      transform: translateY(calc(100% - 50px));
-      height: 55%;
-    }
-    .visa-card:hover .visa-card-desc,
-    .visa-card:focus-within .visa-card-desc {
-      -webkit-line-clamp: 2;
-    }
-    .visa-card:hover .visa-card-hint,
-    .visa-card:focus-within .visa-card-hint {
-      opacity: 0.7;
-      transform: translateX(-50%) translateY(0);
+    .vsg-card:hover .vsg-card-desc { -webkit-line-clamp: 2; }
+    .vsg-card:hover .vsg-card-hint { opacity: 0.8; transform: translateX(-50%) translateY(0); }
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════ */
+  /* HIGH CONTRAST & PRINT                                                */
+  /* ═══════════════════════════════════════════════════════════════════════ */
+
+  @media (forced-colors: active) {
+    .vsg-card { border: 2px solid CanvasText; }
+    .vsg-card:focus-visible { outline: 3px solid Highlight; }
+  }
+
+  @media print {
+    .vsg-section { padding: 20px; background: white !important; }
+    .vsg-mobile-carousel { display: none !important; }
+    .vsg-grid { display: grid !important; }
+    .vsg-card { box-shadow: none !important; border: 1px solid #ccc !important; }
+    .vsg-card-overlay { 
+      transform: translateY(0) !important; 
+      height: auto !important;
+      position: relative !important;
+      background: rgba(0,0,0,0.7) !important;
     }
   }
 `;
 
 // ══════════════════════════════════════════════════════════════════════════
-//  MAIN COMPONENT
+// VISA CARD COMPONENT
 // ══════════════════════════════════════════════════════════════════════════
-export default function VisaServicesGrid() {
-  const navigate = useNavigate();
-  const [hoveredId, setHoveredId] = useState(null);
-
-  const handleNavigate = useCallback((route, e) => {
-    if (e) {
-      e.stopPropagation();
-      e.preventDefault();
-    }
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    setTimeout(() => navigate(route), 300);
-  }, [navigate]);
-
-  return (
-    <>
-      <style>{CSS}</style>
-
-      <section className="visa-services-section">
-        <div className="visa-header-wrap">
-          <SectionHeader
-            badge="✦ Premium Visa Solutions ✦"
-            title={
-              <>
-                Your Gateway{" "}
-                <span style={{
-                  background: "linear-gradient(135deg, #B8860B 0%, #D4A017 40%, #F7C948 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
-                }}>
-                  to the World
-                </span>
-              </>
-            }
-            subtitle="RASOAF Travels and Tours Limited orchestrates extraordinary travel experiences with white-glove service. Complimentary consultation, meticulous documentation, and unwavering support because your journey deserves nothing less than perfection."
-          />
-        </div>
-
-        {/* Desktop Grid */}
-        <div className="visa-services-grid">
-          {services.map((service, index) => (
-            <VisaCard
-              key={service.id}
-              service={service}
-              index={index}
-              isHovered={hoveredId === service.id}
-              onHoverStart={() => setHoveredId(service.id)}
-              onHoverEnd={() => setHoveredId(null)}
-              onNavigate={handleNavigate}
-            />
-          ))}
-        </div>
-
-        {/* Mobile Carousel */}
-        <MobileVisaCarousel services={services} onNavigate={handleNavigate} />
-      </section>
-    </>
-  );
-}
-
-// ══════════════════════════════════════════════════════════════════════════
-//  MOBILE VISA CAROUSEL
-// ══════════════════════════════════════════════════════════════════════════
-function MobileVisaCarousel({ services, onNavigate }) {
-  const [current, setCurrent] = useState(0);
-  const [touchStart, setTouchStart] = useState(null);
-  const timerRef = useRef(null);
-  const reducedMotion = usePrefersReducedMotion();
-  const total = services.length;
-
-  const startAutoplay = useCallback(() => {
-    if (timerRef.current) clearInterval(timerRef.current);
-    if (reducedMotion) return;
-    timerRef.current = setInterval(() => setCurrent(prev => (prev + 1) % total), 5000);
-  }, [reducedMotion, total]);
+const VisaCard = ({ 
+  service, 
+  index = 0, 
+  onHoverStart, 
+  onHoverEnd, 
+  onNavigate, 
+  isMobile = false, 
+  isActive = true 
+}) => {
+  const cardRef = useRef(null);
+  const isInView = useInView(cardRef, { once: true, margin: "-60px" });
+  const prefersReducedMotion = useReducedMotion();
+  const [revealed, setRevealed] = useState(false);
 
   useEffect(() => {
-    startAutoplay();
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [startAutoplay]);
+    if (isMobile && !isActive) setRevealed(false);
+  }, [isMobile, isActive]);
 
-  const goTo = useCallback((i) => {
-    setCurrent(((i % total) + total) % total);
-    startAutoplay();
-  }, [total, startAutoplay]);
+  const cardVariants = useMemo(() => ({
+    hidden: { opacity: 0, y: 60, scale: 0.94 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        duration: 0.7,
+        delay: index * 0.1,
+        ease: [0.16, 1, 0.3, 1],
+        opacity: { duration: 0.5 },
+      },
+    },
+  }), [index]);
 
-  const prev = () => goTo(current - 1);
-  const next = () => goTo(current + 1);
+  const handleCardClick = useCallback((e) => {
+    if (isMobile) {
+      setRevealed(prev => !prev);
+      return;
+    }
+    onNavigate(service.route, e);
+  }, [isMobile, onNavigate, service.route]);
 
-  const handleTouchStart = (e) => setTouchStart(e.touches[0].clientX);
-  const handleTouchEnd = (e) => {
-    if (touchStart === null) return;
-    const diff = e.changedTouches[0].clientX - touchStart;
-    if (diff > 50) prev();
-    else if (diff < -50) next();
-    setTouchStart(null);
-  };
+  const handleButtonClick = useCallback((e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    onNavigate(service.route, e);
+  }, [onNavigate, service.route]);
+
+  const handleKeyDown = useCallback((e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      if (isMobile) {
+        setRevealed(prev => !prev);
+      } else {
+        onNavigate(service.route, e);
+      }
+    }
+  }, [isMobile, onNavigate, service.route]);
+
+  const mobileRevealed = isMobile && revealed;
 
   return (
-    <div className="visa-mobile-carousel">
-      <div
-        className="visa-mobile-track"
-        style={{ transform: `translateX(-${current * 100}%)` }}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
+    <motion.div
+      ref={cardRef}
+      className={`vsg-card${mobileRevealed ? " vsg-card-revealed" : ""}`}
+      variants={!isMobile ? cardVariants : {}}
+      initial={!isMobile ? "hidden" : {}}
+      animate={!isMobile && isInView ? "visible" : {}}
+      onMouseEnter={onHoverStart}
+      onMouseLeave={onHoverEnd}
+      onClick={handleCardClick}
+      onKeyDown={handleKeyDown}
+      role="button"
+      tabIndex={0}
+      aria-label={isMobile ? `${revealed ? "Hide" : "View"} details for ${service.title}` : `Explore ${service.title}`}
+      aria-expanded={isMobile ? revealed : undefined}
+    >
+      <img
+        src={service.image}
+        alt={service.title}
+        className="vsg-card-image"
+        loading={isMobile && index < 2 ? "eager" : "lazy"}
+        decoding="async"
+      />
+
+      <div className="vsg-card-hint" aria-hidden="true">
+        <Eye size={14} />
+        <span>{isMobile ? "Tap to explore" : "Hover to explore"}</span>
+        <Sparkles size={12} />
+      </div>
+
+      <div className="vsg-card-overlay">
+        <h3 className="vsg-card-title">{service.title}</h3>
+        <p className="vsg-card-desc">{service.description}</p>
+
+        <div className="vsg-card-info">
+          <div>
+            <span className="vsg-info-label">Processing</span>
+            <span className="vsg-info-value">{service.processingTime}</span>
+          </div>
+          <div>
+            <span className="vsg-info-label">Success Rate</span>
+            <span className="vsg-info-value success">{service.successRate}</span>
+          </div>
+        </div>
+
+        <button
+          className="vsg-cta-button"
+          onClick={handleButtonClick}
+          type="button"
+          aria-label={`Explore ${service.title} visa services`}
+        >
+          <span>Explore Visa</span>
+          <ChevronRight size={16} className="vsg-cta-arrow" />
+        </button>
+      </div>
+    </motion.div>
+  );
+};
+
+// ══════════════════════════════════════════════════════════════════════════
+// MOBILE CAROUSEL COMPONENT
+// ══════════════════════════════════════════════════════════════════════════
+const MobileVisaCarousel = ({ services, onNavigate }) => {
+  const [current, setCurrent] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const [touchStart, setTouchStart] = useState(null);
+  const [touchEnd, setTouchEnd] = useState(null);
+  const timerRef = useRef(null);
+  const prefersReducedMotion = useReducedMotion();
+  const total = services.length;
+
+  const startTimer = useCallback(() => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    if (isPaused || prefersReducedMotion) return;
+    timerRef.current = setInterval(() => setCurrent(prev => (prev + 1) % total), AUTOPLAY_MS);
+  }, [isPaused, prefersReducedMotion, total]);
+
+  useEffect(() => {
+    startTimer();
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [startTimer]);
+
+  const prev = useCallback(() => setCurrent(p => (p - 1 + total) % total), [total]);
+  const next = useCallback(() => setCurrent(p => (p + 1) % total), [total]);
+  const goTo = useCallback((i) => { setCurrent(i); startTimer(); }, [startTimer]);
+
+  const handleTouchStart = useCallback((e) => {
+    setTouchStart(e.touches[0].clientX);
+    setIsPaused(true);
+  }, []);
+  
+  const handleTouchMove = useCallback((e) => {
+    setTouchEnd(e.touches[0].clientX);
+  }, []);
+  
+  const handleTouchEnd = useCallback(() => {
+    setIsPaused(false);
+    if (!touchStart || !touchEnd) return;
+    const diff = touchStart - touchEnd;
+    if (diff > SWIPE_THRESHOLD) next();
+    else if (diff < -SWIPE_THRESHOLD) prev();
+    setTouchStart(null);
+    setTouchEnd(null);
+    startTimer();
+  }, [touchStart, touchEnd, next, prev, startTimer]);
+
+  useEffect(() => {
+    const handleKey = (e) => {
+      if (e.key === "ArrowLeft") { e.preventDefault(); prev(); startTimer(); }
+      if (e.key === "ArrowRight") { e.preventDefault(); next(); startTimer(); }
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [next, prev, startTimer]);
+
+  return (
+    <div 
+      className="vsg-mobile-carousel"
+      role="region"
+      aria-label="Visa services carousel"
+      aria-roledescription="carousel"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
+      <div className="sr-only" role="status" aria-live="polite">
+        Showing service {current + 1} of {total}: {services[current].title}
+      </div>
+
+      <motion.div 
+        className="vsg-mobile-track"
+        animate={{ x: `${-current * 100}%` }}
+        transition={prefersReducedMotion ? { duration: 0 } : { 
+          type: "spring", 
+          stiffness: 280, 
+          damping: 35,
+          mass: 1,
+        }}
       >
         {services.map((service, i) => (
-          <div key={service.id} className="visa-mobile-slide">
+          <div key={service.id} className="vsg-mobile-slide">
             <VisaCard
               service={service}
               index={i}
@@ -893,159 +1003,110 @@ function MobileVisaCarousel({ services, onNavigate }) {
             />
           </div>
         ))}
-      </div>
+      </motion.div>
 
-      <div className="visa-mobile-nav">
-        <button className="visa-mobile-btn" onClick={prev} aria-label="Previous visa service" type="button">
-          <ChevronLeft size={18} />
+      <div className="vsg-mobile-nav">
+        <button className="vsg-mobile-btn" onClick={() => { prev(); startTimer(); }} aria-label="Previous visa service" type="button">
+          <ChevronLeft size={20} />
         </button>
-        <div className="visa-mobile-dots">
+        <div className="vsg-mobile-dots" role="tablist" aria-label="Visa service navigation">
           {services.map((service, i) => (
             <button
               key={service.id}
-              className={`visa-mobile-dot${i === current ? " visa-mobile-dot-active" : ""}`}
+              className={`vsg-mobile-dot${i === current ? " vsg-mobile-dot-active" : ""}`}
               onClick={() => goTo(i)}
+              role="tab"
+              aria-selected={i === current}
               aria-label={`Go to ${service.title}`}
-              aria-current={i === current ? "true" : "false"}
               type="button"
             />
           ))}
         </div>
-        <button className="visa-mobile-btn" onClick={next} aria-label="Next visa service" type="button">
-          <ChevronRight size={18} />
+        <button className="vsg-mobile-btn" onClick={() => { next(); startTimer(); }} aria-label="Next visa service" type="button">
+          <ChevronRight size={20} />
         </button>
       </div>
+
+      <div className="vsg-swipe-indicator" aria-hidden="true">← Swipe to navigate →</div>
+      <style>{`.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}`}</style>
     </div>
   );
-}
+};
 
 // ══════════════════════════════════════════════════════════════════════════
-//  VISA CARD
+// MAIN COMPONENT
 // ══════════════════════════════════════════════════════════════════════════
-function VisaCard({ service, index = 0, onHoverStart, onHoverEnd, onNavigate, isMobile = false, isActive = true }) {
-  const cardRef = useRef(null);
-  const [isInView, setIsInView] = useState(false);
-  // Mobile-only: the overlay starts hidden so the image stays fully
-  // visible; tapping the image or the hint chip reveals it (mirrors the
-  // desktop :hover state). The "Explore Visa" button always navigates.
-  const [revealed, setRevealed] = useState(false);
+export default function VisaServicesGrid() {
+  const headerRef = useRef(null);
+  const isHeaderInView = useInView(headerRef, { once: true, margin: "-60px" });
+  const navigate = useNavigate();
+  const prefersReducedMotion = useReducedMotion();
+  const [hoveredId, setHoveredId] = useState(null);
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsInView(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.1 }
-    );
-    if (cardRef.current) observer.observe(cardRef.current);
-    return () => observer.disconnect();
-  }, []);
-
-  // Collapse the overlay back down when this slide scrolls out of view
-  // (swiped away or carousel auto-advances) so it doesn't stay open and
-  // cover the image next time the user returns to it.
-  useEffect(() => {
-    if (isMobile && !isActive) setRevealed(false);
-  }, [isMobile, isActive]);
-
-  const cardVariants = {
-    hidden: { opacity: 0, y: 50 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.7, delay: index * 0.1, ease: [0.22, 1, 0.36, 1] },
-    },
-  };
-
-  const handleCardClick = (e) => {
-    if (isMobile) {
-      setRevealed((prev) => !prev);
-      return;
+  const handleNavigate = useCallback((route, e) => {
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
     }
-    onNavigate(service.route, e);
-  };
+    window.scrollTo({ top: 0, behavior: prefersReducedMotion ? "auto" : "smooth" });
+    setTimeout(() => navigate(route), 300);
+  }, [navigate, prefersReducedMotion]);
 
-  const handleButtonClick = (e) => {
-    e.stopPropagation();
-    e.preventDefault();
-    onNavigate(service.route, e);
-  };
-
-  const mobileRevealed = isMobile && revealed;
+  const headerVariants = useMemo(() => ({
+    hidden: { opacity: 0, y: 30 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] } },
+  }), []);
 
   return (
-    <motion.div
-      ref={cardRef}
-      className={`visa-card${mobileRevealed ? " visa-card-revealed" : ""}`}
-      variants={!isMobile ? cardVariants : {}}
-      initial={!isMobile ? "hidden" : {}}
-      animate={!isMobile && isInView ? "visible" : {}}
-      onMouseEnter={onHoverStart}
-      onMouseLeave={onHoverEnd}
-      onClick={handleCardClick}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          if (isMobile) {
-            setRevealed((prev) => !prev);
-          } else {
-            onNavigate(service.route, e);
-          }
-        }
-      }}
-      aria-label={
-        isMobile
-          ? `${revealed ? "Hide" : "View"} details for ${service.title}`
-          : `Explore ${service.title}`
-      }
-      aria-expanded={isMobile ? revealed : undefined}
-    >
-      <img
-        src={service.image}
-        alt={service.title}
-        className="visa-card-image"
-        loading={isMobile && index === 0 ? "eager" : "lazy"}
-        decoding="async"
-      />
+    <>
+      <style>{CSS}</style>
 
-      <div className="visa-card-hint">
-        <Eye size={14} />
-        <span>{isMobile ? "Tap to view details" : "Hover to explore"}</span>
-        <Sparkles size={12} />
-      </div>
+      <section className="vsg-section" aria-label="Premium visa services">
+        <div className="vsg-container">
+          {/* Header with RASOAF Typography */}
+          <motion.div 
+            ref={headerRef}
+            className="vsg-header"
+            variants={headerVariants}
+            initial="hidden"
+            animate={isHeaderInView ? "visible" : "hidden"}
+          >
+            <div className="vsg-eyebrow">
+              <Compass size={14} />
+              <span>Premium Visa Solutions</span>
+              <Sparkles size={14} />
+            </div>
+            
+            <h1 className="vsg-title">
+              Your Gateway{" "}
+              <span className="vsg-title-accent">to the World</span>
+            </h1>
+            
+            <p className="vsg-subtitle">
+              RASOAF Travels and Tours Limited orchestrates extraordinary travel experiences 
+              with white-glove service. Complimentary consultation, meticulous documentation, 
+              and unwavering support because your journey deserves nothing less than perfection.
+            </p>
+          </motion.div>
 
-      <div className="visa-card-overlay">
-        <h3 className="visa-card-title">{service.title}</h3>
-        <p className="visa-card-desc">{service.description}</p>
-
-        <div className="visa-card-info">
-          <div className="visa-info-item">
-            <span className="visa-info-label">Processing</span>
-            <span className="visa-info-value">{service.processingTime}</span>
+          {/* Desktop Grid */}
+          <div className="vsg-grid" role="list" aria-label="Visa services">
+            {services.map((service, index) => (
+              <VisaCard
+                key={service.id}
+                service={service}
+                index={index}
+                onHoverStart={() => setHoveredId(service.id)}
+                onHoverEnd={() => setHoveredId(null)}
+                onNavigate={handleNavigate}
+              />
+            ))}
           </div>
-          <div className="visa-info-item">
-            <span className="visa-info-label">Success Rate</span>
-            <span className="visa-info-value success">{service.successRate}</span>
-          </div>
+
+          {/* Mobile Carousel */}
+          <MobileVisaCarousel services={services} onNavigate={handleNavigate} />
         </div>
-
-        <button
-          className="visa-cta-button"
-          onClick={handleButtonClick}
-          type="button"
-          aria-label={`Explore ${service.title} visa services`}
-        >
-          <span>
-            Explore Visa
-            <ChevronRight size={16} className="visa-cta-arrow" />
-          </span>
-        </button>
-      </div>
-    </motion.div>
+      </section>
+    </>
   );
 }

@@ -1,11 +1,11 @@
-// src/pages/travel/Home.jsx (OPTIMIZED)
+// src/pages/travel/Home.jsx
 // ─────────────────────────────────────────────────────────────────────────────
 // RASOAF TRAVELS AND TOURS LIMITED — Travel Home Page
-// Premium Layout · Optimized Component Order · LCP Optimized
+// Premium Layout · Optimized Component Order
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { lazy, Suspense } from "react";
 import {
+  TravelHeroSection,
   CountryTicker,
   VisaServicesGrid,
   FeaturedDestinations,
@@ -23,64 +23,24 @@ import {
   ContactNewsletter,
 } from "../../components/travel";
 
-// LAZY LOAD HERO — Prevents it from blocking heading render
-const TravelHeroSection = lazy(() => import("../../components/travel/HeroSection"));
-
-// Fast fallback while hero loads
-const TravelHeroFallback = () => (
-  <div
-    style={{
-      minHeight: "100vh",
-      background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      padding: "20px",
-    }}
-  >
-    <div style={{ textAlign: "center", color: "white" }}>
-      <h1
-        style={{
-          fontFamily: "'Manrope', sans-serif",
-          fontSize: "clamp(2rem, 5vw, 4.75rem)",
-          fontWeight: 700,
-          margin: "0 0 16px 0",
-          letterSpacing: "-0.02em",
-        }}
-      >
-        Your Gateway to the World
-      </h1>
-      <p
-        style={{
-          fontFamily: "'Inter', sans-serif",
-          fontSize: "clamp(1rem, 2vw, 1.25rem)",
-          fontWeight: 400,
-          margin: 0,
-          opacity: 0.9,
-        }}
-      >
-        Premium visa services, flight bookings, and curated experiences
-      </p>
-    </div>
-  </div>
-);
-
 export default function TravelHome() {
   return (
     <div style={{ minHeight: "100vh", background: "#050A14" }}>
       {/* ═══════════════════════════════════════════════════════════
-          1. HERO SECTION — Lazy loaded with Suspense
-          Shows fallback immediately to fix LCP
+          1. HERO SECTION — "Capture attention"
       ═══════════════════════════════════════════════════════════ */}
-      <Suspense fallback={<TravelHeroFallback />}>
-        <TravelHeroSection
-          badge="RASOAF Travel & Tours"
-          title="Your Gateway to the World"
-          subtitle="Premium visa services, flight bookings, and curated travel experiences. Explore the globe with confidence."
-          ctaText="Explore Services"
-          onCtaClick={() => document.getElementById("premium-travel-services")?.scrollIntoView({ behavior: "smooth" })}
-        />
-      </Suspense>
+      <TravelHeroSection
+        badge="RASOAF Travel & Tours"
+        title="Your Gateway to the World"
+        subtitle="Premium visa services, flight bookings, and curated travel experiences. Explore the globe with confidence."
+        ctaText="Explore Services"
+        onCtaClick={() => {
+          const el = document.getElementById("visa-services-grid");
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        }}
+      />
 
       {/* ═══════════════════════════════════════════════════════════
           2. COUNTRY TICKER — "Worldwide coverage"
@@ -102,7 +62,9 @@ export default function TravelHome() {
       {/* ═══════════════════════════════════════════════════════════
           5. VISA SERVICES GRID — "Core offerings"
       ═══════════════════════════════════════════════════════════ */}
-      <VisaServicesGrid />
+      <div id="visa-services-grid">
+        <VisaServicesGrid />
+      </div>
 
       {/* ═══════════════════════════════════════════════════════════
           6. TRAVEL PROCESS — "How it works"

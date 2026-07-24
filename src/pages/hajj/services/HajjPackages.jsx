@@ -1,7 +1,7 @@
 // src/pages/services/HajjPackages.jsx
 // ─────────────────────────────────────────────────────────────────────────────
 // RASOAF TRAVELS AND TOURS LIMITED — Hajj Packages Page
-// v2.2: Fixed packages grid visibility · 100% Responsive · All content preserved
+// v2.6: Fixed grid · Rating instead of price · Scroll-to-form · Full content
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useState, useCallback, useEffect } from "react";
@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
-// Rasoaf Brand Colors
 const brand = {
   gold: "#D4A017", goldLight: "#F7C948", goldDark: "#B8860B",
   goldBg: "rgba(212, 160, 23, 0.08)", goldBorder: "rgba(212, 160, 23, 0.2)",
@@ -36,19 +35,19 @@ const COUNTRY_CODES = [
 
 const packages = [
   {
-    name: "Economy Hajj", price: "₦3,500,000", duration: "30 Days",
+    name: "Economy Hajj", rating: "4.5/5", reviewCount: "120+ Reviews", duration: "30 Days",
     description: "Comfortable Hajj experience with essential services and 3-star accommodations.",
     features: ["3-Star Hotels in Makkah & Madinah", "Shared Room (4-6 persons)", "Group Transportation", "Basic Meal Plan", "Visa Processing", "Group Guide"],
     color: "#059669", bgLight: "rgba(5, 150, 105, 0.08)",
   },
   {
-    name: "Premium Hajj", price: "₦5,800,000", duration: "35 Days",
+    name: "Premium Hajj", rating: "4.8/5", reviewCount: "250+ Reviews", duration: "35 Days",
     description: "Enhanced Hajj package with 4-star hotels and personalized services.",
     features: ["4-Star Hotels near Haram", "Triple Sharing Room", "Private Bus Transport", "Full Board Meals", "Premium Visa Service", "Dedicated Guide", "Zamzam Water (5L)", "Welcome Kit"],
     color: "#D4A017", bgLight: "rgba(212, 160, 23, 0.08)", popular: true,
   },
   {
-    name: "VIP Hajj", price: "₦9,500,000", duration: "25-40 Days",
+    name: "VIP Hajj", rating: "4.9/5", reviewCount: "180+ Reviews", duration: "25-40 Days",
     description: "Ultimate Hajj experience with 5-star luxury and exclusive services.",
     features: ["5-Star Luxury Hotels", "Double Sharing Room", "Private Car Service", "Gourmet Dining", "Express Visa Processing", "Personal Guide", "Zamzam Water (10L)", "Luxury Welcome Kit", "Private Tent in Mina", "Fast-Track Services"],
     color: "#991B1B", bgLight: "rgba(153, 27, 27, 0.08)",
@@ -57,7 +56,7 @@ const packages = [
 
 const hajjFields = [
   { name: "packageType", label: "Preferred Package", type: "select", required: true,
-    options: [{ value: "economy", label: "Economy Hajj - ₦3.5M" }, { value: "premium", label: "Premium Hajj - ₦5.8M" }, { value: "vip", label: "VIP Hajj - ₦9.5M" }]
+    options: [{ value: "economy", label: "Economy Hajj" }, { value: "premium", label: "Premium Hajj" }, { value: "vip", label: "VIP Hajj" }]
   },
   { name: "nationality", label: "Nationality", type: "text", required: true, placeholder: "e.g., Nigerian" },
 ];
@@ -116,31 +115,21 @@ const s = {
   journeyContent: { flex: 1 },
   journeyTitle: { fontSize: "clamp(14px, 1.3vw, 16px)", fontWeight: 700, color: brand.dark, fontFamily: "'Manrope', sans-serif", marginBottom: "clamp(2px, 0.4vw, 4px)" },
   journeyDesc: { fontSize: "clamp(11px, 1vw, 13px)", color: brand.gray500, lineHeight: 1.6 },
-
-  // ── FIXED PACKAGES GRID ──────────────────────────────────────────────────
-  // Uses smaller min width so 3 cards fit on tablet, and stacks on mobile
-  packagesGrid: { 
-    display: "grid", 
-    gridTemplateColumns: "repeat(auto-fit, minmax(clamp(240px, 30vw, 320px), 1fr))", 
-    gap: "clamp(16px, 2vw, 24px)", 
-    marginBottom: "clamp(40px, 6vh, 80px)",
-    alignItems: "stretch",
-  },
   packageCard: { background: brand.white, borderRadius: "clamp(18px, 2vw, 24px)", overflow: "hidden", boxShadow: "0 8px 32px rgba(0,0,0,0.06)", border: `1px solid ${brand.gray200}`, transition: "all 0.4s ease", position: "relative", display: "flex", flexDirection: "column", height: "100%" },
   packageCardPopular: { background: brand.white, borderRadius: "clamp(18px, 2vw, 24px)", overflow: "hidden", boxShadow: "0 12px 40px rgba(212,160,23,0.15)", border: `2px solid ${brand.gold}`, transition: "all 0.4s ease", position: "relative", display: "flex", flexDirection: "column", height: "100%" },
   popularBadge: { position: "absolute", top: "clamp(10px, 1.5vw, 16px)", right: "clamp(10px, 1.5vw, 16px)", background: `linear-gradient(135deg, ${brand.goldLight}, ${brand.gold})`, color: brand.dark, padding: "clamp(4px, 0.6vw, 6px) clamp(10px, 1.2vw, 14px)", borderRadius: "50px", fontSize: "clamp(10px, 0.9vw, 12px)", fontWeight: 700, letterSpacing: "0.02em", zIndex: 2, boxShadow: `0 2px 8px rgba(212,160,23,0.3)` },
   packageContent: { padding: "clamp(20px, 3vw, 32px) clamp(18px, 2.5vw, 28px)", display: "flex", flexDirection: "column", flex: 1 },
   packageName: { fontSize: "clamp(20px, 2vw, 24px)", fontWeight: 700, color: brand.dark, fontFamily: "'Manrope', sans-serif", marginBottom: "clamp(4px, 0.8vw, 8px)" },
   packageDesc: { fontSize: "clamp(12px, 1.1vw, 14px)", color: brand.gray500, lineHeight: 1.6, marginBottom: "clamp(12px, 2vw, 20px)" },
-  packagePriceRow: { display: "flex", alignItems: "baseline", gap: "6px", marginBottom: "clamp(12px, 2vw, 20px)" },
-  packagePrice: { fontSize: "clamp(28px, 3vw, 38px)", fontWeight: 700, color: brand.dark, fontFamily: "'Manrope', sans-serif", lineHeight: 1 },
-  packagePerPerson: { fontSize: "clamp(11px, 1vw, 14px)", color: brand.gray500 },
+  packageRatingRow: { display: "flex", alignItems: "center", gap: "8px", marginBottom: "clamp(12px, 2vw, 20px)" },
+  packageRating: { fontSize: "clamp(22px, 2.5vw, 28px)", fontWeight: 700, color: brand.goldDark, fontFamily: "'Manrope', sans-serif", lineHeight: 1 },
+  packageStars: { display: "flex", gap: "2px" },
+  packageReviews: { fontSize: "clamp(11px, 0.9vw, 13px)", color: brand.gray500, marginLeft: "4px" },
   packageDuration: { display: "flex", alignItems: "center", gap: "8px", fontSize: "clamp(12px, 1.1vw, 14px)", color: brand.gray600, marginBottom: "clamp(12px, 2vw, 20px)", paddingBottom: "clamp(12px, 2vw, 20px)", borderBottom: `1px solid ${brand.gray200}` },
   featuresList: { display: "flex", flexDirection: "column", gap: "clamp(6px, 0.8vw, 10px)", marginBottom: "clamp(16px, 2vw, 24px)", flex: 1 },
   featureItem: { display: "flex", alignItems: "flex-start", gap: "clamp(6px, 0.8vw, 10px)", fontSize: "clamp(11px, 1vw, 13px)", color: brand.gray600, lineHeight: 1.5 },
   featureCheck: { color: brand.green, flexShrink: 0, marginTop: "1px" },
-  selectBtn: { display: "block", width: "100%", padding: "clamp(10px, 1.2vw, 14px)", borderRadius: "12px", border: "none", fontSize: "clamp(13px, 1.1vw, 15px)", fontWeight: 600, color: brand.white, cursor: "pointer", textAlign: "center", textDecoration: "none", fontFamily: "'Inter', sans-serif", transition: "all 0.3s ease", minHeight: "44px", marginTop: "auto" },
-
+  selectBtn: { display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", width: "100%", padding: "clamp(10px, 1.2vw, 14px)", borderRadius: "12px", border: "none", fontSize: "clamp(13px, 1.1vw, 15px)", fontWeight: 600, color: brand.white, cursor: "pointer", fontFamily: "'Inter', sans-serif", transition: "all 0.3s ease", minHeight: "44px", marginTop: "auto" },
   sectionHeader: { textAlign: "center", marginBottom: "clamp(28px, 4vw, 48px)" },
   sectionBadge: { display: "inline-flex", alignItems: "center", gap: "6px", padding: "clamp(4px, 0.8vw, 6px) clamp(10px, 1.5vw, 16px)", background: brand.goldBg, color: brand.goldDark, borderRadius: "50px", fontSize: "clamp(11px, 1vw, 13px)", fontWeight: 600, marginBottom: "clamp(10px, 1.5vw, 16px)", letterSpacing: "0.02em" },
   sectionTitle: { fontSize: "clamp(22px, 4vw, 36px)", fontWeight: 700, color: brand.dark, fontFamily: "'Manrope', sans-serif", marginBottom: "clamp(6px, 1vw, 12px)" },
@@ -211,6 +200,12 @@ const keyframes = `
   .form-image-side { width: 100% !important; min-height: clamp(160px, 25vh, 220px) !important; padding: clamp(16px, 3vw, 28px) clamp(12px, 2vw, 20px) !important; }
   .form-form-side { padding: clamp(16px, 2.5vw, 24px) clamp(12px, 2vw, 18px) !important; max-height: none !important; }
 }
+@media (max-width: 900px) {
+  .pkg-grid { grid-template-columns: repeat(2, 1fr) !important; }
+}
+@media (max-width: 600px) {
+  .pkg-grid { grid-template-columns: 1fr !important; }
+}
 @media (max-width: 480px) {
   .form-image-side { min-height: clamp(120px, 20vh, 180px) !important; padding: clamp(12px, 2.5vw, 20px) clamp(10px, 2vw, 16px) !important; }
   .form-form-side { padding: clamp(12px, 2vw, 20px) clamp(10px, 2vw, 14px) !important; }
@@ -259,7 +254,7 @@ function HajjBookingForm({ additionalFields = [] }) {
   if (submitted) return (
     <div style={s.successWrapper} className="form-flex-container">
       <div style={s.successImgSide} className="form-image-side"><img src="https://images.unsplash.com/photo-1591604129939-f1efa4d9f7fa?w=600&h=900&fit=crop" alt="" style={{ ...s.formImageBg, opacity: 0.35 }} /><div style={s.formImageOverlay} /><div style={{ position: "relative", zIndex: 2, textAlign: "center" }}><CheckCircle size={48} color={brand.green} style={{ marginBottom: "16px" }} /><h3 style={{ fontSize: "clamp(16px,2vw,22px)", fontWeight: 700, color: brand.white, fontFamily: "'Manrope',sans-serif" }}>Enquiry Sent!</h3></div></div>
-      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }} style={s.successContent}><div style={s.successIcon}><CheckCircle size={36} color={brand.green} /></div><h3 style={s.successTitle}>Enquiry Submitted!</h3><p style={s.successMsg}>Thank you! Our Hajj specialist will contact you within <strong>24 hours</strong>.</p><div style={s.successDetails}><div style={s.successDetail}><Clock size={14} color={brand.gold} /><span>Response within 24h</span></div><div style={s.successDetail}><Users size={14} color={brand.gold} /><span>Consultant assigned</span></div><div style={s.successDetail}><Shield size={14} color={brand.gold} /><span>NAHCON approved</span></div></div><button onClick={() => setSubmitted(false)} style={s.successBtn} onMouseEnter={e => { e.target.style.borderColor = brand.gold; e.target.style.color = brand.goldDark; e.target.style.background = brand.goldBg; }} onMouseLeave={e => { e.target.style.borderColor = brand.gray200; e.target.style.color = brand.gray600; e.target.style.background = brand.white; }}>Submit Another</button></motion.div>
+      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }} style={s.successContent}><div style={s.successIcon}><CheckCircle size={36} color={brand.green} /></div><h3 style={s.successTitle}>Enquiry Submitted!</h3><p style={s.successMsg}>Thank you! Our Hajj specialist will contact you within <strong>24 hours</strong>.</p><div style={s.successDetails}><div style={s.successDetail}><Clock size={14} color={brand.gold} /><span>Response within 24h</span></div><div style={s.successDetail}><Users size={14} color={brand.gold} /><span>Consultant assigned</span></div><div style={s.successDetail}><Shield size={14} color={brand.gold} /><span>NAHCON approved</span></div></div><button onClick={() => setSubmitted(false)} style={s.successBtn} onMouseEnter={e => { e.currentTarget.style.borderColor = brand.gold; e.currentTarget.style.color = brand.goldDark; e.currentTarget.style.background = brand.goldBg; }} onMouseLeave={e => { e.currentTarget.style.borderColor = brand.gray200; e.currentTarget.style.color = brand.gray600; e.currentTarget.style.background = brand.white; }}>Submit Another</button></motion.div>
     </div>
   );
 
@@ -274,6 +269,18 @@ function HajjBookingForm({ additionalFields = [] }) {
 export default function HajjPackages() {
   const { isMobile } = useResponsive();
   const scrollToPackages = useCallback(() => { const el = document.getElementById("packages-section"); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); }, []);
+  const scrollToForm = useCallback(() => {
+    const el = document.getElementById("booking-form");
+    if (el) {
+      const offset = isMobile ? 60 : 80;
+      const top = el.getBoundingClientRect().top + window.scrollY - offset;
+      window.scrollTo({ top, behavior: "smooth" });
+    }
+  }, [isMobile]);
+
+  const renderStars = (count) => Array.from({ length: 5 }, (_, i) => (
+    <Star key={i} size={isMobile ? 12 : 14} color={i < Math.floor(count) ? brand.gold : brand.gray200} fill={i < Math.floor(count) ? brand.gold : "none"} />
+  ));
 
   return (
     <div style={s.page}>
@@ -305,25 +312,37 @@ export default function HajjPackages() {
           <div style={s.journeyGrid}>{journeySteps.map((step, idx) => { const Icon = step.icon; return (<motion.div key={idx} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.08 }} viewport={{ once: true }} style={s.journeyCard} whileHover={!isMobile ? { transform: "translateY(-4px)", boxShadow: "0 12px 32px rgba(0,0,0,0.08)", borderColor: brand.gold } : {}}><div style={s.journeyIconWrap}><Icon size={isMobile ? 18 : 22} color={brand.goldDark} /></div><div style={s.journeyContent}><h4 style={s.journeyTitle}>{step.title}</h4><p style={s.journeyDesc}>{step.desc}</p></div></motion.div>); })}</div>
         </motion.div>
 
-        {/* ── PACKAGES (FIXED GRID) ── */}
+        {/* ── FIXED PACKAGES GRID — 3 columns always visible ── */}
         <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} transition={{ duration: 0.6 }} viewport={{ once: true }} id="packages-section">
           <div style={s.sectionHeader}><span style={s.sectionBadge}><Star size={14} />Our Packages</span><h2 style={s.sectionTitle}>Choose Your Hajj Package</h2><p style={s.sectionSubtitle}>Three carefully designed packages to suit every budget and preference.</p></div>
-          <div style={s.packagesGrid}>
-            {packages.map((pkg, idx) => (
-              <motion.div key={idx} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 + idx * 0.1 }} viewport={{ once: true }}
-                style={pkg.popular ? s.packageCardPopular : s.packageCard}
-                whileHover={!isMobile ? { transform: pkg.popular ? "scale(1.03) translateY(-6px)" : "translateY(-6px)", boxShadow: "0 20px 48px rgba(0,0,0,0.12)" } : {}}>
-                {pkg.popular && <div style={s.popularBadge}>✦ Most Popular</div>}
-                <div style={s.packageContent}>
-                  <h3 style={s.packageName}>{pkg.name}</h3>
-                  <p style={s.packageDesc}>{pkg.description}</p>
-                  <div style={s.packagePriceRow}><span style={s.packagePrice}>{pkg.price}</span><span style={s.packagePerPerson}>/person</span></div>
-                  <div style={s.packageDuration}><Clock size={isMobile ? 14 : 16} color={brand.gray400} /><span>{pkg.duration}</span></div>
-                  <div style={s.featuresList}>{pkg.features.map((feature, i) => (<div key={i} style={s.featureItem}><CheckCircle size={isMobile ? 14 : 16} style={s.featureCheck} /><span>{feature}</span></div>))}</div>
-                  <a href="#booking-form" style={{ ...s.selectBtn, background: `linear-gradient(135deg, ${pkg.color}, ${pkg.color}dd)` }} onMouseEnter={e => { if (!isMobile) { e.target.style.transform = "translateY(-2px)"; e.target.style.boxShadow = `0 8px 24px ${pkg.color}40`; } }} onMouseLeave={e => { if (!isMobile) { e.target.style.transform = "translateY(0)"; e.target.style.boxShadow = "none"; } }}>Select Package</a>
-                </div>
-              </motion.div>
-            ))}
+          <div className="pkg-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "clamp(16px, 2vw, 24px)", marginBottom: "clamp(40px, 6vh, 80px)", alignItems: "stretch" }}>
+            {packages.map((pkg, idx) => {
+              const ratingNum = parseFloat(pkg.rating);
+              return (
+                <motion.div key={idx} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 + idx * 0.1 }} viewport={{ once: true }}
+                  style={pkg.popular ? s.packageCardPopular : s.packageCard}
+                  whileHover={!isMobile ? { transform: pkg.popular ? "scale(1.03) translateY(-6px)" : "translateY(-6px)", boxShadow: "0 20px 48px rgba(0,0,0,0.12)" } : {}}>
+                  {pkg.popular && <div style={s.popularBadge}>✦ Most Popular</div>}
+                  <div style={s.packageContent}>
+                    <h3 style={s.packageName}>{pkg.name}</h3>
+                    <p style={s.packageDesc}>{pkg.description}</p>
+                    <div style={s.packageRatingRow}>
+                      <span style={s.packageRating}>{pkg.rating}</span>
+                      <div style={s.packageStars}>{renderStars(ratingNum)}</div>
+                      <span style={s.packageReviews}>{pkg.reviewCount}</span>
+                    </div>
+                    <div style={s.packageDuration}><Clock size={isMobile ? 14 : 16} color={brand.gray400} /><span>{pkg.duration}</span></div>
+                    <div style={s.featuresList}>{pkg.features.map((feature, i) => (<div key={i} style={s.featureItem}><CheckCircle size={isMobile ? 14 : 16} style={s.featureCheck} /><span>{feature}</span></div>))}</div>
+                    <button type="button" onClick={scrollToForm}
+                      style={{ ...s.selectBtn, background: `linear-gradient(135deg, ${pkg.color}, ${pkg.color}dd)` }}
+                      onMouseEnter={e => { if (!isMobile) { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = `0 8px 24px ${pkg.color}40`; } }}
+                      onMouseLeave={e => { if (!isMobile) { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; } }}>
+                      Select Package <ArrowDown size={16} />
+                    </button>
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
         </motion.div>
 

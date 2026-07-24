@@ -1,14 +1,5 @@
 // src/App.jsx (CLEAN - NO LOADING OVERLAYS)
 // ─────────────────────────────────────────────────────────────────────────────
-// Removed:
-// - SmartNavigationOverlay (no more loading screen on every navigation)
-// - useAggressivePreloader (no more background preloading)
-// 
-// Result:
-// - Fast navigation without loading overlay
-// - Pages load on-demand
-// - Clean, fast user experience
-// ─────────────────────────────────────────────────────────────────────────────
 
 import { lazy, Suspense } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
@@ -35,6 +26,8 @@ const WorkVisa = lazy(() => import("./pages/travel/WorkVisa"));
 const TouristVisa = lazy(() => import("./pages/travel/TouristVisa"));
 const BusinessVisa = lazy(() => import("./pages/travel/BusinessVisa"));
 const FamilyVisa = lazy(() => import("./pages/travel/FamilyVisa"));
+const DiplomaticVisa = lazy(() => import("./pages/travel/DiplomaticVisa"));
+const ResidenceVisa = lazy(() => import("./pages/travel/ResidenceVisa"));
 const TravelFlightBooking = lazy(() => import("./pages/travel/FlightBooking"));
 const Training = lazy(() => import("./components/travel/Training"));
 const TrainingDetail = lazy(() => import("./pages/travel/TrainingDetail"));
@@ -61,7 +54,6 @@ export default function App() {
   return (
     <EarthProvider>
       <Router>
-        {/* NO SmartNavigationOverlay — no loading screen on navigation */}
         <Navbar />
         <main style={{ minHeight: "100vh" }}>
           <AnimatePresence mode="wait">
@@ -84,6 +76,8 @@ export default function App() {
                 <Route path="/travel/tourist-visa" element={<TouristVisa />} />
                 <Route path="/travel/business-visa" element={<BusinessVisa />} />
                 <Route path="/travel/family-visa" element={<FamilyVisa />} />
+                <Route path="/travel/diplomatic-visa" element={<DiplomaticVisa />} />
+                <Route path="/travel/residence-visa" element={<ResidenceVisa />} />
                 <Route path="/travel/flights" element={<TravelFlightBooking />} />
                 <Route path="/travel/training" element={<Training />} />
                 <Route path="/travel/training/:id" element={<TrainingDetail />} />

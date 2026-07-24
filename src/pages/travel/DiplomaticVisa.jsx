@@ -1,15 +1,15 @@
-// src/pages/visa/TouristVisa.jsx
+// src/pages/visa/DiplomaticVisa.jsx
 // ─────────────────────────────────────────────────────────────────────────────
-// RASOAF TRAVELS AND TOURS LIMITED — Tourist Visa Page
-// v3: Updated content · All original features preserved · Responsive
+// RASOAF TRAVELS AND TOURS LIMITED — Diplomatic Visa Page
+// v1: Premium design · Responsive · Collapsible sections · Touch optimized
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useState, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Plane, MapPin, Camera, ArrowRight, Sun, Shield, Globe,
-  Clock, Users, Loader2, Sparkles, ChevronRight, ArrowDown, Send,
-  ChevronDown, CheckCircle, Umbrella, Building2, Heart
+  Building2, Shield, Globe, Users, Award, ArrowRight, AlertCircle,
+  Clock, Loader2, Sparkles, ChevronRight, ArrowDown, Send,
+  ChevronDown, CheckCircle, Crown, FileCheck, Star, Flag
 } from "lucide-react";
 
 // ── Rasoaf Brand Colors ──────────────────────────────────────────────────
@@ -32,23 +32,57 @@ const countryCodes = [
 ];
 
 const destinations = ["United Kingdom", "United States", "Canada", "Australia", "Schengen Area", "United Arab Emirates", "Saudi Arabia", "Other"];
-const travelPurposes = ["Holiday / Vacation", "Sightseeing & Tours", "Cultural Exploration", "Family Visit", "Honeymoon", "Amusement Parks", "Other"];
+const applicantTypes = ["Ambassador", "Embassy Staff", "Consular Officer", "Head of State", "Government Official", "Diplomatic Mission Member", "International Organization Representative", "Family Member of Diplomat", "Other"];
 
-const tourFeaturesData = [
-  { icon: MapPin, title: "Sightseeing Tours" }, 
-  { icon: Camera, title: "Cultural Attractions" },
-  { icon: Sun, title: "Holiday & Vacation" }, 
-  { icon: Umbrella, title: "Amusement Parks" },
-];
-
-// ── UPDATED TOURIST VISA DATA ────────────────────────────────────────────
-const TOURIST_VISA = {
-  heading: "Tourist Visa Services",
-  intro: "Professional assistance and guidance for tourist visa applications — holidays, vacations, sightseeing tours, and leisure destinations.",
-  description: "RASOAF Travels and Tours Limited offers professional assistance and guidance for tourist visa applications. Whether you are planning a holiday, vacation, sightseeing tour, or visits to amusement parks, cultural attractions, and other leisure destinations, our team is committed to helping make your travel experience smooth and enjoyable.",
-  description2: "Whether you are traveling individually, with family, or as part of a group, we provide support throughout the visa application process and travel planning stages. Our goal is to help you prepare for your journey with confidence and ensure you have the information and assistance needed to reach your destination successfully.",
-  closing: "Contact RASOAF Travels and Tours Limited today to learn more about our tourist visa and travel support services.",
+// ── DIPLOMATIC VISA DATA ─────────────────────────────────────────────────
+const DIPLOMATIC_VISA = {
+  heading: "Diplomatic Visa Services",
+  intro: "Specialized visa processing for government officials, diplomats, and representatives of international organizations traveling on official business.",
+  description: "A Diplomatic Visa is a special type of visa issued to government officials, diplomats, and representatives of international organizations who are traveling to another country on official government business.",
+  
+  whoCanApply: "Who Can Apply for a Diplomatic Visa?",
+  whoCanApplyDesc: "Diplomatic visas are typically granted to:",
+  eligibleApplicants: [
+    { text: "Ambassadors and embassy staff", icon: Crown },
+    { text: "Consular officers", icon: Building2 },
+    { text: "Heads of state and government officials", icon: Flag },
+    { text: "Members of diplomatic missions", icon: Shield },
+    { text: "Representatives of international organizations such as the United Nations", icon: Globe },
+    { text: "Immediate family members accompanying eligible diplomats", icon: Users },
+  ],
+  
+  purpose: "Purpose of a Diplomatic Visa",
+  purposeDesc: "A diplomatic visa allows the holder to:",
+  purposes: [
+    { text: "Attend official government meetings and negotiations", icon: Building2 },
+    { text: "Represent their country abroad", icon: Flag },
+    { text: "Participate in international conferences and diplomatic events", icon: Globe },
+    { text: "Carry out official duties assigned by their government", icon: FileCheck },
+  ],
+  
+  benefits: "Benefits of a Diplomatic Visa",
+  benefitsDesc: "Depending on the host country's laws and international agreements, holders may enjoy:",
+  benefitList: [
+    { text: "Expedited visa processing", icon: Clock },
+    { text: "Certain diplomatic privileges and immunities", icon: Shield },
+    { text: "Simplified entry and exit procedures", icon: CheckCircle },
+    { text: "Access to diplomatic channels and services", icon: Star },
+  ],
+  
+  importantNote: "A diplomatic visa is not intended for tourism, employment, business, or study purposes. It is issued strictly for official diplomatic or governmental assignments. Individuals traveling for tourism, business, work, or education generally need the appropriate visa category, such as a tourist visa, business visa, work visa, or study permit.",
+  
+  simpleDefinition: "A diplomatic visa is a visa issued to diplomats and government officials traveling abroad to perform official duties on behalf of their country.",
+  
+  closing: "RASOAF Travels and Tours Limited plays a very vital role in supporting and guiding you all through the entire process. We will guide you and support you to any length.",
 };
+
+// ── Feature Highlights ───────────────────────────────────────────────────
+const featureHighlights = [
+  { icon: Crown, title: "Official Government Travel", desc: "For diplomats and officials" },
+  { icon: Shield, title: "Diplomatic Privileges", desc: "Special immunities & access" },
+  { icon: Clock, title: "Expedited Processing", desc: "Priority visa handling" },
+  { icon: Globe, title: "International Recognition", desc: "Valid across host nations" },
+];
 
 // ── Responsive Hook ──────────────────────────────────────────────────────
 function useResponsive() {
@@ -80,14 +114,31 @@ const s = {
   // Cards
   card: { backgroundColor: brand.white, borderRadius: "clamp(16px, 2vw, 24px)", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)", border: `1px solid ${brand.borderLight}`, padding: "clamp(20px, 3vw, 48px)", marginBottom: "clamp(20px, 3vw, 32px)" },
   sectionTitle: { fontSize: "clamp(20px, 3vw, 32px)", fontWeight: 700, color: brand.dark, fontFamily: "'Manrope', sans-serif", marginBottom: "clamp(12px, 2vw, 20px)", letterSpacing: "-0.02em" },
+  subTitle: { fontSize: "clamp(16px, 1.8vw, 20px)", fontWeight: 700, color: brand.goldDark, fontFamily: "'Manrope', sans-serif", marginBottom: "clamp(10px, 1.5vw, 16px)", marginTop: "clamp(20px, 3vw, 28px)" },
   text: { fontSize: "clamp(0.85rem, 1.1vw, 15px)", color: brand.mutedText, lineHeight: 1.8, marginBottom: "clamp(12px, 1.5vw, 20px)" },
   collapseToggle: { display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", padding: "clamp(8px, 1.5vw, 12px) 0", background: "none", border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", color: brand.goldDark, fontSize: "clamp(12px, 1vw, 14px)", fontWeight: 600, minHeight: "44px" },
 
-  // Features
-  featureGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(clamp(140px, 22vw, 200px), 1fr))", gap: "clamp(10px, 1.5vw, 16px)", marginTop: "clamp(16px, 2.5vw, 24px)" },
+  // Feature Grid
+  featureGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(clamp(220px, 28vw, 250px), 1fr))", gap: "clamp(12px, 2vw, 20px)", marginTop: "clamp(16px, 2.5vw, 24px)" },
   featureCard: { background: brand.cream, borderRadius: "clamp(14px, 1.5vw, 16px)", padding: "clamp(18px, 2.5vw, 24px)", textAlign: "center", border: `1px solid ${brand.borderLight}`, transition: "all 0.3s ease" },
-  featureIcon: { width: "clamp(40px, 5vw, 48px)", height: "clamp(40px, 5vw, 48px)", borderRadius: "clamp(10px, 1.5vw, 12px)", background: "rgba(212,160,23,0.12)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto clamp(8px, 1vw, 12px)" },
-  featureTitle: { fontSize: "clamp(13px, 1.2vw, 15px)", fontWeight: 600, color: brand.dark, fontFamily: "'Manrope', sans-serif" },
+  featureIcon: { width: "clamp(44px, 5vw, 52px)", height: "clamp(44px, 5vw, 52px)", borderRadius: "clamp(10px, 1.5vw, 14px)", background: "rgba(212,160,23,0.12)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto clamp(8px, 1vw, 12px)" },
+  featureTitle: { fontSize: "clamp(14px, 1.2vw, 16px)", fontWeight: 700, color: brand.dark, fontFamily: "'Manrope', sans-serif", marginBottom: "4px" },
+  featureDesc: { fontSize: "clamp(11px, 0.9vw, 13px)", color: brand.mutedText },
+
+  // List Styles
+  listContainer: { display: "flex", flexDirection: "column", gap: "clamp(8px, 1vw, 12px)", marginTop: "clamp(10px, 1.5vw, 16px)" },
+  listItem: { display: "flex", alignItems: "center", gap: "clamp(8px, 1vw, 12px)", padding: "clamp(10px, 1.2vw, 14px) clamp(12px, 1.5vw, 18px)", background: brand.cream, borderRadius: "clamp(8px, 0.8vw, 10px)", fontSize: "clamp(12px, 1vw, 14px)", color: brand.mutedText, border: `1px solid ${brand.borderLight}`, transition: "all 0.3s ease" },
+  listIcon: { color: brand.goldDark, flexShrink: 0 },
+
+  // Note Box
+  noteBox: { background: brand.goldBg, border: `1px solid ${brand.goldBorder}`, borderRadius: "clamp(12px, 1.5vw, 14px)", padding: "clamp(14px, 2vw, 20px)", marginTop: "clamp(16px, 2.5vw, 24px)", display: "flex", gap: "clamp(8px, 1vw, 12px)", alignItems: "flex-start" },
+  noteIcon: { color: brand.goldDark, flexShrink: 0, marginTop: "2px" },
+  noteText: { fontSize: "clamp(12px, 1vw, 14px)", color: brand.mutedText, lineHeight: 1.6 },
+
+  // Definition Box
+  definitionBox: { background: `linear-gradient(135deg, ${brand.goldBg}, rgba(247,201,72,0.04))`, border: `1px solid ${brand.goldBorder}`, borderRadius: "clamp(14px, 1.5vw, 16px)", padding: "clamp(16px, 2.5vw, 24px)", marginTop: "clamp(16px, 2.5vw, 24px)" },
+  definitionTitle: { fontSize: "clamp(13px, 1.2vw, 15px)", fontWeight: 700, color: brand.goldDark, fontFamily: "'Manrope', sans-serif", marginBottom: "clamp(4px, 0.6vw, 8px)", display: "flex", alignItems: "center", gap: "8px" },
+  definitionText: { fontSize: "clamp(12px, 1vw, 14px)", color: brand.mutedText, lineHeight: 1.7, fontStyle: "italic", margin: 0 },
 
   // CTA Box
   ctaBox: { background: `linear-gradient(135deg, ${brand.goldDark}, ${brand.gold})`, borderRadius: "clamp(16px, 2vw, 24px)", padding: "clamp(24px, 4vw, 40px)", textAlign: "center", color: brand.white, marginTop: "clamp(20px, 3vw, 32px)", position: "relative", overflow: "hidden" },
@@ -102,11 +153,11 @@ const s = {
   backLink: { textAlign: "center", paddingBottom: "clamp(24px, 4vh, 40px)" },
   backLinkAnchor: { display: "inline-flex", alignItems: "center", gap: "8px", color: brand.gray500, fontSize: "clamp(12px, 1.1vw, 14px)", textDecoration: "none", transition: "color 0.2s ease", minHeight: "44px", padding: "8px 0" },
 
-  // Form Styles (unchanged)
+  // Form Styles
   formWrapper: { display: "flex", background: brand.white, borderRadius: "clamp(16px, 2vw, 24px)", overflow: "hidden", boxShadow: "0 20px 60px rgba(0,0,0,0.08)", border: `1px solid ${brand.borderLight}`, minHeight: "clamp(500px, 60vh, 650px)" },
-  formImageSide: { width: "42%", position: "relative", overflow: "hidden", background: `linear-gradient(180deg, ${brand.dark} 0%, #1a1207 100%)`, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", padding: "clamp(20px, 4vw, 48px) clamp(16px, 3vw, 36px)", flexShrink: 0 },
-  formImageBg: { position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.4 },
-  formImageOverlay: { position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(17,17,17,0.9) 0%, rgba(17,17,17,0.7) 40%, rgba(212,160,23,0.2) 100%)" },
+  formImageSide: { width: "42%", position: "relative", overflow: "hidden", background: `linear-gradient(180deg, ${brand.dark} 0%, #1a0f00 100%)`, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", padding: "clamp(20px, 4vw, 48px) clamp(16px, 3vw, 36px)", flexShrink: 0 },
+  formImageBg: { position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.35 },
+  formImageOverlay: { position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(17,17,17,0.92) 0%, rgba(17,17,17,0.7) 40%, rgba(212,160,23,0.2) 100%)" },
   formImageContent: { position: "relative", zIndex: 2, textAlign: "center", color: brand.white, width: "100%" },
   formImageBadge: { display: "inline-flex", alignItems: "center", gap: "6px", padding: "clamp(4px, 0.6vw, 6px) clamp(10px, 1.2vw, 14px)", background: "rgba(212,160,23,0.15)", backdropFilter: "blur(8px)", border: `1px solid ${brand.goldBorder}`, borderRadius: "50px", marginBottom: "clamp(12px, 2vw, 20px)", fontSize: "clamp(10px, 0.9vw, 12px)", fontWeight: 600, color: brand.goldLight, letterSpacing: "0.04em" },
   formImageIcon: { width: "clamp(48px, 6vw, 72px)", height: "clamp(48px, 6vw, 72px)", borderRadius: "clamp(14px, 2vw, 20px)", background: "rgba(212,160,23,0.12)", backdropFilter: "blur(12px)", border: `1px solid ${brand.goldBorder}`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto clamp(12px, 2vw, 20px)" },
@@ -185,10 +236,10 @@ function CollapsibleText({ text, isMobile }) {
 }
 
 // ══════════════════════════════════════════════════════════════════════════
-//  TOURIST VISA FORM (unchanged)
+//  DIPLOMATIC VISA FORM
 // ══════════════════════════════════════════════════════════════════════════
-function TouristVisaForm() {
-  const [formData, setFormData] = useState({ firstName: "", lastName: "", email: "", phoneCode: "+234", phone: "", destination: "", travelPurpose: "", departureDate: "", returnDate: "", adults: "1", children: "0", message: "" });
+function DiplomaticVisaForm() {
+  const [formData, setFormData] = useState({ firstName: "", lastName: "", email: "", phoneCode: "+234", phone: "", destination: "", applicantType: "", organization: "", position: "", message: "" });
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formError, setFormError] = useState(null);
@@ -199,28 +250,28 @@ function TouristVisaForm() {
     e.preventDefault(); setLoading(true); setFormError(null);
     try {
       const fp = `${formData.phoneCode} ${formData.phone}`;
-      const sd = { _subject: `New Tourist Visa - ${formData.firstName} ${formData.lastName}`, "First Name": formData.firstName, "Last Name": formData.lastName, "Email": formData.email, "Phone": fp, "Destination": formData.destination, "Purpose": formData.travelPurpose || "N/S", "Departure": formData.departureDate, "Return": formData.returnDate || "N/S", "Adults": formData.adults, "Children": formData.children, "Message": formData.message || "N/A", "Submitted At": new Date().toLocaleString(), "Page": window.location.href };
+      const sd = { _subject: `New Diplomatic Visa - ${formData.firstName} ${formData.lastName}`, "First Name": formData.firstName, "Last Name": formData.lastName, "Email": formData.email, "Phone": fp, "Destination": formData.destination, "Applicant Type": formData.applicantType, "Organization": formData.organization || "N/P", "Position": formData.position || "N/P", "Message": formData.message || "N/A", "Submitted At": new Date().toLocaleString(), "Page": window.location.href };
       const r = await fetch(FORMSPREE_ENDPOINT, { method: "POST", headers: { "Content-Type": "application/json", "Accept": "application/json" }, body: JSON.stringify(sd) });
       if (!r.ok) { const ed = await r.json().catch(() => ({})); throw new Error(ed.error || "Failed to submit."); }
       setLoading(false); setSubmitted(true);
-      setTimeout(() => { setSubmitted(false); setFormData({ firstName: "", lastName: "", email: "", phoneCode: "+234", phone: "", destination: "", travelPurpose: "", departureDate: "", returnDate: "", adults: "1", children: "0", message: "" }); }, 6000);
+      setTimeout(() => { setSubmitted(false); setFormData({ firstName: "", lastName: "", email: "", phoneCode: "+234", phone: "", destination: "", applicantType: "", organization: "", position: "", message: "" }); }, 6000);
     } catch (err) { setLoading(false); setFormError(err.message || "Something went wrong."); setTimeout(() => setFormError(null), 8000); }
   };
 
-  const inp = (n) => ({ ...s.input, ...(focused === n ? s.focusInput : {}), ...(formError && !formData[n] && ["firstName","lastName","email","phone","destination","departureDate"].includes(n) ? s.errorInput : {}) });
+  const inp = (n) => ({ ...s.input, ...(focused === n ? s.focusInput : {}), ...(formError && !formData[n] && ["firstName","lastName","email","phone","destination","applicantType"].includes(n) ? s.errorInput : {}) });
   const phn = (n) => ({ ...s.phoneInput, ...(focused === n ? s.focusInput : {}) });
 
   if (submitted) return (
     <div style={s.successWrapper} className="form-flex-container">
-      <div style={s.successImgSide} className="form-image-side"><img src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=600&h=900&fit=crop" alt="" style={{ ...s.formImageBg, opacity: 0.35 }} /><div style={s.formImageOverlay} /><div style={{ position: "relative", zIndex: 2, textAlign: "center" }}><CheckCircle size={48} color={brand.green} style={{ marginBottom: "16px" }} /><h3 style={{ fontSize: "clamp(16px,2vw,22px)", fontWeight: 700, color: brand.white, fontFamily: "'Manrope',sans-serif" }}>Enquiry Sent!</h3></div></div>
-      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }} style={s.successContent}><div style={s.successIcon}><CheckCircle size={36} color={brand.green} /></div><h3 style={s.successTitle}>Trip Planned!</h3><p style={s.successMsg}>Your enquiry has been received. Our travel consultant will contact you within <strong>24 hours</strong>.</p><div style={s.successDetails}><div style={s.successDetail}><Clock size={14} color={brand.gold} /><span>Response within 24h</span></div><div style={s.successDetail}><Shield size={14} color={brand.gold} /><span>Data secure</span></div></div><button onClick={() => setSubmitted(false)} style={s.successBtn} onMouseEnter={e => { e.target.style.borderColor = brand.gold; e.target.style.color = brand.goldDark; e.target.style.background = brand.goldBg; }} onMouseLeave={e => { e.target.style.borderColor = brand.borderLight; e.target.style.color = brand.gray600; e.target.style.background = brand.white; }}>Submit Another</button></motion.div>
+      <div style={s.successImgSide} className="form-image-side"><img src="https://images.unsplash.com/photo-1541872703-74c5e44368f9?w=600&h=900&fit=crop" alt="" style={{ ...s.formImageBg, opacity: 0.35 }} /><div style={s.formImageOverlay} /><div style={{ position: "relative", zIndex: 2, textAlign: "center" }}><CheckCircle size={48} color={brand.green} style={{ marginBottom: "16px" }} /><h3 style={{ fontSize: "clamp(16px,2vw,22px)", fontWeight: 700, color: brand.white, fontFamily: "'Manrope',sans-serif" }}>Enquiry Sent!</h3></div></div>
+      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }} style={s.successContent}><div style={s.successIcon}><CheckCircle size={36} color={brand.green} /></div><h3 style={s.successTitle}>Diplomatic Enquiry Submitted!</h3><p style={s.successMsg}>Your enquiry has been received. Our diplomatic specialist will contact you within <strong>24 hours</strong>.</p><div style={s.successDetails}><div style={s.successDetail}><Clock size={14} color={brand.gold} /><span>Priority response within 24h</span></div><div style={s.successDetail}><Shield size={14} color={brand.gold} /><span>Confidential & secure</span></div></div><button onClick={() => setSubmitted(false)} style={s.successBtn} onMouseEnter={e => { e.target.style.borderColor = brand.gold; e.target.style.color = brand.goldDark; e.target.style.background = brand.goldBg; }} onMouseLeave={e => { e.target.style.borderColor = brand.borderLight; e.target.style.color = brand.gray600; e.target.style.background = brand.white; }}>Submit Another</button></motion.div>
     </div>
   );
 
   return (
     <div style={s.formWrapper} className="form-flex-container">
-      <div style={s.formImageSide} className="form-image-side"><img src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=600&h=900&fit=crop" alt="Travel" style={s.formImageBg} /><div style={s.formImageOverlay} /><motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} style={s.formImageContent}><div style={s.formImageBadge}><Sparkles size={12} color={brand.gold} /><span>DISCOVER THE WORLD</span></div><div style={s.formImageIcon}><Plane size={34} color={brand.gold} /></div><h2 style={s.formImageTitle}>Tourist <span style={s.formImageGold}>Visa</span><br />Request</h2><p style={s.formImageSubtitle}>Holiday, sightseeing, or family visits – we make it smooth.</p><div style={s.formDivider} /><div style={s.formImageFeatures}>{[{ icon: Shield, text: "Licensed Consultants" },{ icon: Camera, text: "Custom Itineraries" },{ icon: Globe, text: "Multi‑destination" }].map((item, i) => { const I = item.icon; return <div key={i} style={s.formImageFeatItem}><div style={s.formImageFeatIcon}><I size={13} color={brand.gold} /></div>{item.text}</div>; })}</div></motion.div></div>
-      <div style={s.formSide} className="form-form-side"><motion.form initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }} onSubmit={handleSubmit}><div style={s.formHeaderStyle}><div style={s.formHeaderIcon}><Send size={20} color={brand.gold} /></div><div><div style={s.formHeaderTitle}>Plan Your Trip</div><div style={s.formHeaderSub}>Fill the form below</div></div></div>{formError && <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} style={s.errorMessage}><span style={{ fontSize: "16px", flexShrink: 0 }}>⚠️</span><span>{formError}</span></motion.div>}<div style={s.formRow}><div style={s.formGroup}><label style={s.label}>First Name <span style={s.required}>*</span></label><input type="text" name="firstName" value={formData.firstName} onChange={handleChange} required placeholder="Taofik" style={inp("firstName")} onFocus={() => setFocused("firstName")} onBlur={() => setFocused(null)} /></div><div style={s.formGroup}><label style={s.label}>Last Name <span style={s.required}>*</span></label><input type="text" name="lastName" value={formData.lastName} onChange={handleChange} required placeholder="Muyideen" style={inp("lastName")} onFocus={() => setFocused("lastName")} onBlur={() => setFocused(null)} /></div></div><div style={s.formRow}><div style={s.formGroup}><label style={s.label}>Email <span style={s.required}>*</span></label><input type="email" name="email" value={formData.email} onChange={handleChange} required placeholder="muyideen@email.com" style={inp("email")} onFocus={() => setFocused("email")} onBlur={() => setFocused(null)} /></div></div><div style={s.formRow}><div style={s.formGroup}><label style={s.label}>Phone <span style={s.required}>*</span></label><div style={s.phoneRow}><select name="phoneCode" value={formData.phoneCode} onChange={handleChange} style={s.phoneCode}>{countryCodes.map(c => <option key={c.code} value={c.code}>{c.code} {c.country}</option>)}</select><input type="tel" name="phone" value={formData.phone} onChange={handleChange} required placeholder="800 123 4567" style={phn("phone")} onFocus={() => setFocused("phone")} onBlur={() => setFocused(null)} /></div></div></div><div style={s.formRow}><div style={s.formGroup}><label style={s.label}>Destination <span style={s.required}>*</span></label><select name="destination" value={formData.destination} onChange={handleChange} required style={s.select}><option value="">Select...</option>{destinations.map(d => <option key={d} value={d}>{d}</option>)}</select></div><div style={s.formGroup}><label style={s.label}>Purpose</label><select name="travelPurpose" value={formData.travelPurpose} onChange={handleChange} style={s.select}><option value="">Select...</option>{travelPurposes.map(p => <option key={p} value={p}>{p}</option>)}</select></div></div><div style={s.formRow}><div style={s.formGroup}><label style={s.label}>Departure <span style={s.required}>*</span></label><input type="date" name="departureDate" value={formData.departureDate} onChange={handleChange} required style={inp("departureDate")} onFocus={() => setFocused("departureDate")} onBlur={() => setFocused(null)} /></div><div style={s.formGroup}><label style={s.label}>Return</label><input type="date" name="returnDate" value={formData.returnDate} onChange={handleChange} style={inp("returnDate")} onFocus={() => setFocused("returnDate")} onBlur={() => setFocused(null)} /></div></div><div style={s.formRow}><div style={s.formGroup}><label style={s.label}>Adults <span style={s.required}>*</span></label><select name="adults" value={formData.adults} onChange={handleChange} style={s.select}>{[1,2,3,4,5,6,7,8,9,10].map(n => <option key={n} value={n}>{n}</option>)}</select></div><div style={s.formGroup}><label style={s.label}>Children</label><select name="children" value={formData.children} onChange={handleChange} style={s.select}>{[0,1,2,3,4,5].map(n => <option key={n} value={n}>{n}</option>)}</select></div></div><div style={s.formRow}><div style={s.formGroup}><label style={s.label}>Message</label><textarea name="message" value={formData.message} onChange={handleChange} rows={3} placeholder="Any special requests..." style={s.textarea} onFocus={() => setFocused("message")} onBlur={() => setFocused(null)} /></div></div><motion.button type="submit" disabled={loading} whileHover={!loading ? { scale: 1.01 } : {}} whileTap={!loading ? { scale: 0.98 } : {}} style={{ ...s.submitBtn, ...(loading ? { opacity: 0.75, cursor: "not-allowed" } : {}) }}><div style={s.btnShine} />{loading ? <><Loader2 size={18} style={{ animation: "spin 1s linear infinite" }} />Submitting...</> : <><Send size={18} style={{ position: "relative", zIndex: 1 }} /><span style={{ position: "relative", zIndex: 1 }}>Submit Enquiry</span></>}</motion.button><p style={s.terms}>By submitting, you agree to our privacy policy.</p></motion.form></div>
+      <div style={s.formImageSide} className="form-image-side"><img src="https://images.unsplash.com/photo-1541872703-74c5e44368f9?w=600&h=900&fit=crop" alt="Diplomatic" style={s.formImageBg} /><div style={s.formImageOverlay} /><motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} style={s.formImageContent}><div style={s.formImageBadge}><Sparkles size={12} color={brand.gold} /><span>OFFICIAL GOVERNMENT TRAVEL</span></div><div style={s.formImageIcon}><Crown size={34} color={brand.gold} /></div><h2 style={s.formImageTitle}>Diplomatic <span style={s.formImageGold}>Visa</span><br />Application</h2><p style={s.formImageSubtitle}>For government officials, diplomats, and international representatives.</p><div style={s.formDivider} /><div style={s.formImageFeatures}>{[{ icon: Shield, text: "Confidential Handling" },{ icon: Clock, text: "Priority Processing" },{ icon: Globe, text: "Global Recognition" }].map((item, i) => { const I = item.icon; return <div key={i} style={s.formImageFeatItem}><div style={s.formImageFeatIcon}><I size={13} color={brand.gold} /></div>{item.text}</div>; })}</div></motion.div></div>
+      <div style={s.formSide} className="form-form-side"><motion.form initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }} onSubmit={handleSubmit}><div style={s.formHeaderStyle}><div style={s.formHeaderIcon}><Send size={20} color={brand.gold} /></div><div><div style={s.formHeaderTitle}>Diplomatic Visa Enquiry</div><div style={s.formHeaderSub}>Fill the form below</div></div></div>{formError && <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} style={s.errorMessage}><span style={{ fontSize: "16px", flexShrink: 0 }}>⚠️</span><span>{formError}</span></motion.div>}<div style={s.formRow}><div style={s.formGroup}><label style={s.label}>First Name <span style={s.required}>*</span></label><input type="text" name="firstName" value={formData.firstName} onChange={handleChange} required placeholder="Enter first name" style={inp("firstName")} onFocus={() => setFocused("firstName")} onBlur={() => setFocused(null)} /></div><div style={s.formGroup}><label style={s.label}>Last Name <span style={s.required}>*</span></label><input type="text" name="lastName" value={formData.lastName} onChange={handleChange} required placeholder="Enter last name" style={inp("lastName")} onFocus={() => setFocused("lastName")} onBlur={() => setFocused(null)} /></div></div><div style={s.formRow}><div style={s.formGroup}><label style={s.label}>Email <span style={s.required}>*</span></label><input type="email" name="email" value={formData.email} onChange={handleChange} required placeholder="email@example.com" style={inp("email")} onFocus={() => setFocused("email")} onBlur={() => setFocused(null)} /></div></div><div style={s.formRow}><div style={s.formGroup}><label style={s.label}>Phone <span style={s.required}>*</span></label><div style={s.phoneRow}><select name="phoneCode" value={formData.phoneCode} onChange={handleChange} style={s.phoneCode}>{countryCodes.map(c => <option key={c.code} value={c.code}>{c.code} {c.country}</option>)}</select><input type="tel" name="phone" value={formData.phone} onChange={handleChange} required placeholder="800 123 4567" style={phn("phone")} onFocus={() => setFocused("phone")} onBlur={() => setFocused(null)} /></div></div></div><div style={s.formRow}><div style={s.formGroup}><label style={s.label}>Destination <span style={s.required}>*</span></label><select name="destination" value={formData.destination} onChange={handleChange} required style={s.select}><option value="">Select...</option>{destinations.map(d => <option key={d} value={d}>{d}</option>)}</select></div></div><div style={s.formRow}><div style={s.formGroup}><label style={s.label}>Applicant Type <span style={s.required}>*</span></label><select name="applicantType" value={formData.applicantType} onChange={handleChange} required style={s.select}><option value="">Select...</option>{applicantTypes.map(t => <option key={t} value={t}>{t}</option>)}</select></div></div><div style={s.formRow}><div style={s.formGroup}><label style={s.label}>Organization / Ministry</label><input type="text" name="organization" value={formData.organization} onChange={handleChange} placeholder="Ministry, Embassy, or Organization" style={inp("organization")} onFocus={() => setFocused("organization")} onBlur={() => setFocused(null)} /></div><div style={s.formGroup}><label style={s.label}>Position / Title</label><input type="text" name="position" value={formData.position} onChange={handleChange} placeholder="Ambassador, Officer, etc." style={inp("position")} onFocus={() => setFocused("position")} onBlur={() => setFocused(null)} /></div></div><div style={s.formRow}><div style={s.formGroup}><label style={s.label}>Additional Notes</label><textarea name="message" value={formData.message} onChange={handleChange} rows={3} placeholder="Any special requirements or notes..." style={s.textarea} onFocus={() => setFocused("message")} onBlur={() => setFocused(null)} /></div></div><motion.button type="submit" disabled={loading} whileHover={!loading ? { scale: 1.01 } : {}} whileTap={!loading ? { scale: 0.98 } : {}} style={{ ...s.submitBtn, ...(loading ? { opacity: 0.75, cursor: "not-allowed" } : {}) }}><div style={s.btnShine} />{loading ? <><Loader2 size={18} style={{ animation: "spin 1s linear infinite" }} />Submitting...</> : <><Send size={18} style={{ position: "relative", zIndex: 1 }} /><span style={{ position: "relative", zIndex: 1 }}>Submit Enquiry</span></>}</motion.button><p style={s.terms}>By submitting, you agree to our privacy policy. All information is handled confidentially.</p></motion.form></div>
     </div>
   );
 }
@@ -228,7 +279,7 @@ function TouristVisaForm() {
 // ══════════════════════════════════════════════════════════════════════════
 //  MAIN PAGE
 // ══════════════════════════════════════════════════════════════════════════
-export default function TouristVisa() {
+export default function DiplomaticVisa() {
   const { isMobile } = useResponsive();
   const scrollToForm = useCallback(() => { const e = document.getElementById("visa-booking-form"); if (e) { const o = isMobile ? 60 : 80; const t = e.getBoundingClientRect().top + window.scrollY - o; window.scrollTo({ top: t, behavior: "smooth" }); } }, [isMobile]);
 
@@ -238,53 +289,109 @@ export default function TouristVisa() {
 
       {/* HERO */}
       <section style={s.heroSection}>
-        <div style={s.heroBg}><img src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=1920&h=800&fit=crop" alt="Travel" style={s.heroImg} loading="eager" /></div>
+        <div style={s.heroBg}><img src="https://images.unsplash.com/photo-1541872703-74c5e44368f9?w=1920&h=800&fit=crop" alt="Diplomatic" style={s.heroImg} loading="eager" /></div>
         <div style={s.heroOverlay} />
-        <div style={s.heroContent}><motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}><span style={s.badge}><Plane size={14} color={brand.gold} /><span style={s.badgeText}>LEISURE TRAVEL</span></span><h1 style={s.heroTitle}>{TOURIST_VISA.heading}</h1><p style={s.heroSubtitle}>{TOURIST_VISA.intro}</p><div style={s.heroBtnRow}><button onClick={scrollToForm} style={s.heroBtn} onMouseEnter={e => { e.currentTarget.style.backgroundColor = "#FFE082"; e.currentTarget.style.boxShadow = "0 6px 28px rgba(247,201,72,0.5)"; }} onMouseLeave={e => { e.currentTarget.style.backgroundColor = brand.goldLight; e.currentTarget.style.boxShadow = "0 4px 20px rgba(247,201,72,0.35)"; }}><MapPin size={20} />Plan My Trip<ArrowDown size={18} /></button></div></motion.div></div>
+        <div style={s.heroContent}><motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}><span style={s.badge}><Crown size={14} color={brand.gold} /><span style={s.badgeText}>OFFICIAL GOVERNMENT TRAVEL</span></span><h1 style={s.heroTitle}>{DIPLOMATIC_VISA.heading}</h1><p style={s.heroSubtitle}>{DIPLOMATIC_VISA.intro}</p><div style={s.heroBtnRow}><button onClick={scrollToForm} style={s.heroBtn} onMouseEnter={e => { e.currentTarget.style.backgroundColor = "#FFE082"; e.currentTarget.style.boxShadow = "0 6px 28px rgba(247,201,72,0.5)"; }} onMouseLeave={e => { e.currentTarget.style.backgroundColor = brand.goldLight; e.currentTarget.style.boxShadow = "0 4px 20px rgba(247,201,72,0.35)"; }}><Shield size={20} />Submit Enquiry<ArrowDown size={18} /></button></div></motion.div></div>
       </section>
 
       {/* CONTENT */}
       <section style={s.contentSection}>
-        {/* Explore the World */}
+        {/* Feature Highlights */}
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} viewport={{ once: true }} style={s.card}>
-          <h2 style={s.sectionTitle}>Explore the World with Confidence</h2>
-          <CollapsibleText text={TOURIST_VISA.description} isMobile={isMobile} />
-          <CollapsibleText text={TOURIST_VISA.description2} isMobile={isMobile} />
+          <h2 style={s.sectionTitle}>Diplomatic Visa Overview</h2>
+          <CollapsibleText text={DIPLOMATIC_VISA.description} isMobile={isMobile} />
           <div style={s.featureGrid}>
-            {tourFeaturesData.map((feat, idx) => { 
+            {featureHighlights.map((feat, idx) => { 
               const Icon = feat.icon; 
               return (
-                <motion.div 
-                  key={idx} 
-                  initial={{ opacity: 0, scale: 0.9 }} 
-                  whileInView={{ opacity: 1, scale: 1 }} 
-                  transition={{ delay: idx * 0.08 }} 
-                  viewport={{ once: true }} 
-                  style={s.featureCard} 
-                  whileHover={!isMobile ? { borderColor: brand.gold, boxShadow: "0 8px 24px rgba(0,0,0,0.06)" } : {}}
-                >
+                <motion.div key={idx} initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} transition={{ delay: idx * 0.08 }} viewport={{ once: true }} style={s.featureCard} whileHover={!isMobile ? { borderColor: brand.gold, boxShadow: "0 8px 24px rgba(0,0,0,0.06)" } : {}}>
                   <div style={s.featureIcon}><Icon size={22} color={brand.goldDark} /></div>
                   <h4 style={s.featureTitle}>{feat.title}</h4>
+                  <p style={s.featureDesc}>{feat.desc}</p>
                 </motion.div>
               );
             })}
           </div>
         </motion.div>
 
+        {/* Who Can Apply */}
+        <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} transition={{ duration: 0.5 }} viewport={{ once: true }} style={s.card}>
+          <h2 style={s.sectionTitle}>{DIPLOMATIC_VISA.whoCanApply}</h2>
+          <CollapsibleText text={DIPLOMATIC_VISA.whoCanApplyDesc} isMobile={isMobile} />
+          <div style={s.listContainer}>
+            {DIPLOMATIC_VISA.eligibleApplicants.map((item, idx) => {
+              const Icon = item.icon;
+              return (
+                <motion.div key={idx} initial={{ opacity: 0, x: -10 }} whileInView={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.06 }} viewport={{ once: true }} style={s.listItem} whileHover={!isMobile ? { borderColor: brand.gold, transform: "translateX(4px)" } : {}}>
+                  <Icon size={16} style={s.listIcon} />
+                  <span>{item.text}</span>
+                </motion.div>
+              );
+            })}
+          </div>
+        </motion.div>
+
+        {/* Purpose & Benefits */}
+        <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} transition={{ duration: 0.5 }} viewport={{ once: true }} style={s.card}>
+          <h2 style={s.sectionTitle}>{DIPLOMATIC_VISA.purpose}</h2>
+          <CollapsibleText text={DIPLOMATIC_VISA.purposeDesc} isMobile={isMobile} />
+          <div style={s.listContainer}>
+            {DIPLOMATIC_VISA.purposes.map((item, idx) => {
+              const Icon = item.icon;
+              return (
+                <motion.div key={idx} initial={{ opacity: 0, x: -10 }} whileInView={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.06 }} viewport={{ once: true }} style={s.listItem} whileHover={!isMobile ? { borderColor: brand.gold, transform: "translateX(4px)" } : {}}>
+                  <Icon size={16} style={s.listIcon} />
+                  <span>{item.text}</span>
+                </motion.div>
+              );
+            })}
+          </div>
+
+          <h3 style={s.subTitle}>{DIPLOMATIC_VISA.benefits}</h3>
+          <CollapsibleText text={DIPLOMATIC_VISA.benefitsDesc} isMobile={isMobile} />
+          <div style={s.listContainer}>
+            {DIPLOMATIC_VISA.benefitList.map((item, idx) => {
+              const Icon = item.icon;
+              return (
+                <motion.div key={idx} initial={{ opacity: 0, x: -10 }} whileInView={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.06 }} viewport={{ once: true }} style={s.listItem} whileHover={!isMobile ? { borderColor: brand.gold, transform: "translateX(4px)" } : {}}>
+                  <Icon size={16} style={s.listIcon} />
+                  <span>{item.text}</span>
+                </motion.div>
+              );
+            })}
+          </div>
+        </motion.div>
+
+        {/* Important Note & Definition */}
+        <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} transition={{ duration: 0.5 }} viewport={{ once: true }} style={s.card}>
+          <h2 style={s.sectionTitle}>Important Information</h2>
+          <div style={s.noteBox}>
+            <AlertCircle size={20} style={s.noteIcon} />
+            <p style={s.noteText}>{DIPLOMATIC_VISA.importantNote}</p>
+          </div>
+          <div style={s.definitionBox}>
+            <h4 style={s.definitionTitle}>
+              <FileCheck size={16} color={brand.goldDark} />
+              Simple Definition
+            </h4>
+            <p style={s.definitionText}>{DIPLOMATIC_VISA.simpleDefinition}</p>
+          </div>
+        </motion.div>
+
         {/* Closing */}
         <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} transition={{ duration: 0.5 }} viewport={{ once: true }} style={s.card}>
-          <CollapsibleText text={TOURIST_VISA.closing} isMobile={isMobile} />
+          <CollapsibleText text={DIPLOMATIC_VISA.closing} isMobile={isMobile} />
         </motion.div>
 
         {/* CTA */}
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} viewport={{ once: true }} style={s.ctaBox}>
           <div style={s.ctaOrb1} /><div style={s.ctaOrb2} />
-          <div style={s.ctaContent}><h3 style={s.ctaTitle}>Plan Your Dream Vacation</h3><p style={s.ctaText}>Contact us today. Call {CONTACT_INFO.phone} or email {CONTACT_INFO.email}</p><button onClick={scrollToForm} style={s.ctaButton} onMouseEnter={!isMobile ? e => e.target.style.backgroundColor = "#FFE082" : undefined} onMouseLeave={!isMobile ? e => e.target.style.backgroundColor = brand.white : undefined}>Plan My Trip <ArrowRight size={16} /></button></div>
+          <div style={s.ctaContent}><h3 style={s.ctaTitle}>Begin Your Diplomatic Visa Process</h3><p style={s.ctaText}>Contact us today for confidential assistance. Call {CONTACT_INFO.phone} or email {CONTACT_INFO.email}</p><button onClick={scrollToForm} style={s.ctaButton} onMouseEnter={!isMobile ? e => e.target.style.backgroundColor = "#FFE082" : undefined} onMouseLeave={!isMobile ? e => e.target.style.backgroundColor = brand.white : undefined}>Submit Enquiry <ArrowRight size={16} /></button></div>
         </motion.div>
 
         {/* FORM */}
         <div id="visa-booking-form" style={{ marginTop: "clamp(24px, 4vw, 40px)" }}>
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} viewport={{ once: true }}><TouristVisaForm /></motion.div>
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} viewport={{ once: true }}><DiplomaticVisaForm /></motion.div>
         </div>
       </section>
 

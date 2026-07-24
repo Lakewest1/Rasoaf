@@ -1,7 +1,7 @@
 // src/pages/visa/StudentVisa.jsx
 // ─────────────────────────────────────────────────────────────────────────────
 // RASOAF TRAVELS AND TOURS LIMITED — Student Visa Page
-// v2: 100% Responsive · Collapsible sections · Touch optimized · All content preserved
+// v3: Updated content · All original features preserved · Responsive
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useState, useCallback, useEffect } from "react";
@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   GraduationCap, CheckCircle, ArrowRight, Send, Plane, Shield, Clock,
   Globe, Phone, Mail, MapPin, Loader2, Sparkles, ChevronRight, ArrowDown,
-  ChevronDown
+  ChevronDown, FileText, BookOpen, Building2, Users, Star
 } from "lucide-react";
 
 // ── Rasoaf Brand Colors ──────────────────────────────────────────────────
@@ -31,22 +31,62 @@ function useResponsive() {
   return { isMobile: w < 640, isTablet: w >= 640 && w < 1024, isDesktop: w >= 1024 };
 }
 
-// ── Data ─────────────────────────────────────────────────────────────────
+// ── UPDATED DATA ─────────────────────────────────────────────────────────
 const STUDENT_VISA = {
   heading: "Student Visa Services",
   intro: "Realise your dream of studying abroad with our expert visa guidance. We simplify the process so you can focus on your future.",
-  description: "RASOAF Travels and Tours Limited provides comprehensive student visa support for Nigerian students aspiring to study in top destinations around the world. From document preparation to visa interview coaching, our experienced consultants are with you every step of the way.",
-  financialGuidance: "We also assist with proof of funds documentation, scholarship applications, and guidance on maintaining the required bank balance for your chosen destination.",
-  closing: "Whether you are pursuing a bachelor's, master's, or doctoral degree, our team ensures that your visa application is accurate, complete, and submitted on time. Let us handle the paperwork while you prepare for your academic journey.",
+  description: "RASOAF Travels and Tours Limited has successfully assisted numerous applicants in obtaining study visas for destinations such as Canada, the United States, the United Kingdom, Australia, and several European countries. With a proven track record of success, our experienced immigration consultants are committed to guiding you through every stage of the application process.",
+  description2: "Our team provides professional support and expert advice to ensure that you understand all requirements and procedures necessary to achieve your study-abroad goals. We strive to make the process as smooth and stress-free as possible.",
+  servicesTitle: "Our Services Include:",
+  financialGuidance: "Where required, we can provide professional guidance regarding your Proof of Funds (POF) and financial documentation to help strengthen your application. This service is optional and subject to individual circumstances.",
+  closing: "At RASOAF Travels and Tours Limited, we are dedicated to helping students achieve their educational aspirations abroad through reliable, professional, and personalized immigration support.",
+  closing2: "Take the first step today. Contact RASOAF Travels and Tours Limited and let us help you turn your international education dreams into reality.",
   countries: [
-    { name: "United Kingdom", services: ["Tier 4 (General) Student Visa", "CAS & University Admission Support", "NHS Surcharge Assistance", "Dependants Visa Guidance"] },
-    { name: "Canada", services: ["Study Permit & SDS Stream", "Designated Learning Institution (DLI) Verification", "Proof of Funds Documentation", "Post‑Graduation Work Permit Info"] },
-    { name: "United States", services: ["F‑1 & M‑1 Student Visas", "SEVIS Fee Payment Assistance", "DS‑160 Form Completion", "Visa Interview Preparation"] },
-    { name: "Australia", services: ["Subclass 500 Student Visa", "Genuine Temporary Entrant (GTE) Statement", "Overseas Student Health Cover (OSHC)", "eCoE Verification"] }
+    { 
+      name: "Canada", 
+      icon: Globe,
+      services: [
+        "School admissions",
+        "Letter of Acceptance (LOA)",
+        "Provincial Attestation Letter (PAL), where applicable",
+        "Study permit application preparation",
+        "Visa application submission and processing support"
+      ] 
+    },
+    { 
+      name: "United States of America", 
+      icon: Building2,
+      services: [
+        "School admissions",
+        "Form I-20 processing",
+        "DS-160 application guidance",
+        "Student visa application preparation and submission"
+      ] 
+    },
+    { 
+      name: "United Kingdom", 
+      icon: BookOpen,
+      services: [
+        "School admissions",
+        "Offer Letter acquisition",
+        "Confirmation of Acceptance for Studies (CAS)",
+        "Student visa application preparation and submission"
+      ] 
+    },
+    { 
+      name: "Australia and Other Countries", 
+      icon: Plane,
+      services: [
+        "Comprehensive assistance with admissions",
+        "Student visa applications in accordance with destination requirements",
+        "Documentation preparation and verification",
+        "Application submission and follow-up support"
+      ] 
+    }
   ]
 };
 
-const CONTACT_INFO = { phone: "+234 800 123 4567", email: "study@rasoaf.com" };
+const CONTACT_INFO = { phone: "+234 903 770 7888", email: "info@rasoaf.com" };
 
 const countryCodes = [
   { code: "+234", country: "Nigeria" }, { code: "+1", country: "USA" },
@@ -79,6 +119,7 @@ const s = {
   // Cards
   card: { backgroundColor: brand.white, borderRadius: "clamp(16px, 2vw, 24px)", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.05)", border: `1px solid ${brand.borderLight}`, padding: "clamp(20px, 3vw, 48px)", marginBottom: "clamp(20px, 3vw, 32px)" },
   sectionTitle: { fontSize: "clamp(20px, 3vw, 32px)", fontWeight: 700, color: brand.dark, fontFamily: "'Manrope', sans-serif", marginBottom: "clamp(12px, 2vw, 20px)", letterSpacing: "-0.02em" },
+  servicesTitle: { fontSize: "clamp(16px, 2vw, 20px)", fontWeight: 700, color: brand.goldDark, fontFamily: "'Manrope', sans-serif", marginBottom: "clamp(12px, 2vw, 18px)", marginTop: "clamp(12px, 2vw, 18px)" },
   text: { fontSize: "clamp(0.85rem, 1.1vw, 15px)", color: brand.mutedText, lineHeight: 1.8, marginBottom: "clamp(12px, 1.5vw, 20px)" },
   collapseToggle: { display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", padding: "clamp(8px, 1.5vw, 12px) 0", background: "none", border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", color: brand.goldDark, fontSize: "clamp(12px, 1vw, 14px)", fontWeight: 600, minHeight: "44px" },
 
@@ -89,6 +130,11 @@ const s = {
   featureList: { display: "flex", flexDirection: "column", gap: "clamp(6px, 0.8vw, 8px)" },
   featureItem: { display: "flex", alignItems: "flex-start", gap: "clamp(6px, 0.8vw, 8px)", fontSize: "clamp(11px, 1vw, 13px)", color: brand.mutedText, lineHeight: 1.5 },
   featureCheck: { color: brand.green, flexShrink: 0, marginTop: "2px" },
+
+  // Financial Guidance Box
+  financialBox: { background: brand.goldBg, border: `1px solid ${brand.goldBorder}`, borderRadius: "clamp(14px, 1.5vw, 16px)", padding: "clamp(16px, 2vw, 24px)", marginTop: "clamp(16px, 2.5vw, 24px)", marginBottom: "clamp(12px, 1.5vw, 20px)" },
+  financialTitle: { fontSize: "clamp(14px, 1.3vw, 16px)", fontWeight: 700, color: brand.goldDark, fontFamily: "'Manrope', sans-serif", marginBottom: "clamp(6px, 0.8vw, 10px)", display: "flex", alignItems: "center", gap: "clamp(6px, 0.8vw, 8px)" },
+  financialText: { fontSize: "clamp(0.82rem, 1vw, 14px)", color: brand.mutedText, lineHeight: 1.7, margin: 0 },
 
   // CTA Box
   ctaBox: { background: `linear-gradient(135deg, ${brand.goldDark}, ${brand.gold})`, borderRadius: "clamp(16px, 2vw, 24px)", padding: "clamp(24px, 4vw, 40px)", textAlign: "center", color: brand.white, marginTop: "clamp(20px, 3vw, 32px)", position: "relative", overflow: "hidden" },
@@ -103,7 +149,7 @@ const s = {
   backLink: { textAlign: "center", paddingBottom: "clamp(24px, 4vh, 40px)" },
   backLinkAnchor: { display: "inline-flex", alignItems: "center", gap: "8px", color: brand.gray500, fontSize: "clamp(12px, 1.1vw, 14px)", textDecoration: "none", transition: "color 0.2s ease", minHeight: "44px", padding: "8px 0" },
 
-  // Form Styles
+  // Form Styles (unchanged from original)
   formWrapper: { display: "flex", background: brand.white, borderRadius: "clamp(16px, 2vw, 24px)", overflow: "hidden", boxShadow: "0 20px 60px rgba(0,0,0,0.08)", border: `1px solid ${brand.borderLight}`, minHeight: "clamp(500px, 60vh, 650px)" },
   formImageSide: { width: "42%", position: "relative", overflow: "hidden", background: `linear-gradient(180deg, ${brand.dark} 0%, #1a1207 100%)`, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", padding: "clamp(20px, 4vw, 48px) clamp(16px, 3vw, 36px)", flexShrink: 0 },
   formImageBg: { position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.4 },
@@ -186,7 +232,7 @@ function CollapsibleText({ text, isMobile }) {
 }
 
 // ══════════════════════════════════════════════════════════════════════════
-//  STUDENT VISA FORM
+//  STUDENT VISA FORM (unchanged from original)
 // ══════════════════════════════════════════════════════════════════════════
 function StudentVisaForm() {
   const [formData, setFormData] = useState({ firstName: "", lastName: "", email: "", phoneCode: "+234", phone: "", destinationCountry: "", studyLevel: "", preferredIntake: "", message: "" });
@@ -221,7 +267,7 @@ function StudentVisaForm() {
   return (
     <div style={s.formWrapper} className="form-flex-container">
       <div style={s.formImageSide} className="form-image-side"><img src="https://images.unsplash.com/photo-1523050854058-8df90910e683?w=600&h=900&fit=crop" alt="Students" style={s.formImageBg} /><div style={s.formImageOverlay} /><motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} style={s.formImageContent}><div style={s.formImageBadge}><Sparkles size={12} color={brand.gold} /><span>YOUR FUTURE STARTS HERE</span></div><div style={s.formImageIcon}><GraduationCap size={34} color={brand.gold} /></div><h2 style={s.formImageTitle}>Student <span style={s.formImageGold}>Visa</span><br />Application</h2><p style={s.formImageSubtitle}>Expert guidance for top study destinations worldwide.</p><div style={s.formDivider} /><div style={s.formImageFeatures}>{[{ icon: Shield, text: "Licensed Consultants" },{ icon: Globe, text: "Global Partnerships" },{ icon: Clock, text: "End-to-End Support" }].map((item, i) => { const I = item.icon; return <div key={i} style={s.formImageFeatItem}><div style={s.formImageFeatIcon}><I size={13} color={brand.gold} /></div>{item.text}</div>; })}</div></motion.div></div>
-      <div style={s.formSide} className="form-form-side"><motion.form initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }} onSubmit={handleSubmit}><div style={s.formHeaderStyle}><div style={s.formHeaderIcon}><Send size={20} color={brand.gold} /></div><div><div style={s.formHeaderTitle}>Start Your Application</div><div style={s.formHeaderSub}>Fill the form below</div></div></div>{formError && <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} style={s.errorMessage}><span style={{ fontSize: "16px", flexShrink: 0 }}>⚠️</span><span>{formError}</span></motion.div>}<div style={s.formRow}><div style={s.formGroup}><label style={s.label}>First Name <span style={s.required}>*</span></label><input type="text" name="firstName" value={formData.firstName} onChange={handleChange} required placeholder="Taofik" style={inp("firstName")} onFocus={() => setFocused("firstName")} onBlur={() => setFocused(null)} /></div><div style={s.formGroup}><label style={s.label}>Last Name <span style={s.required}>*</span></label><input type="text" name="lastName" value={formData.lastName} onChange={handleChange} required placeholder="Muyideen" style={inp("lastName")} onFocus={() => setFocused("lastName")} onBlur={() => setFocused(null)} /></div></div><div style={s.formRow}><div style={s.formGroup}><label style={s.label}>Email <span style={s.required}>*</span></label><input type="email" name="email" value={formData.email} onChange={handleChange} required placeholder="muyideen@email.com" style={inp("email")} onFocus={() => setFocused("email")} onBlur={() => setFocused(null)} /></div></div><div style={s.formRow}><div style={s.formGroup}><label style={s.label}>Phone <span style={s.required}>*</span></label><div style={s.phoneRow}><select name="phoneCode" value={formData.phoneCode} onChange={handleChange} style={s.phoneCode}>{countryCodes.map(c => <option key={c.code} value={c.code}>{c.code} {c.country}</option>)}</select><input type="tel" name="phone" value={formData.phone} onChange={handleChange} required placeholder="800 123 4567" style={phn("phone")} onFocus={() => setFocused("phone")} onBlur={() => setFocused(null)} /></div></div></div><div style={s.formRow}><div style={s.formGroup}><label style={s.label}>Destination <span style={s.required}>*</span></label><select name="destinationCountry" value={formData.destinationCountry} onChange={handleChange} required style={s.select}><option value="">Select...</option><option value="uk">UK</option><option value="canada">Canada</option><option value="usa">USA</option><option value="australia">Australia</option><option value="ireland">Ireland</option><option value="germany">Germany</option><option value="others">Others</option></select></div></div><div style={s.formRow}><div style={s.formGroup}><label style={s.label}>Study Level <span style={s.required}>*</span></label><select name="studyLevel" value={formData.studyLevel} onChange={handleChange} required style={s.select}><option value="">Select...</option>{studyLevels.map(l => <option key={l} value={l}>{l}</option>)}</select></div><div style={s.formGroup}><label style={s.label}>Intake</label><select name="preferredIntake" value={formData.preferredIntake} onChange={handleChange} style={s.select}><option value="">Select...</option>{intakeOptions.map(o => <option key={o} value={o}>{o}</option>)}</select></div></div><div style={s.formRow}><div style={s.formGroup}><label style={s.label}>Message</label><textarea name="message" value={formData.message} onChange={handleChange} rows={3} placeholder="Any questions..." style={s.textarea} onFocus={() => setFocused("message")} onBlur={() => setFocused(null)} /></div></div><motion.button type="submit" disabled={loading} whileHover={!loading ? { scale: 1.01 } : {}} whileTap={!loading ? { scale: 0.98 } : {}} style={{ ...s.submitBtn, ...(loading ? { opacity: 0.75, cursor: "not-allowed" } : {}) }}><div style={s.btnShine} />{loading ? <><Loader2 size={18} style={{ animation: "spin 1s linear infinite" }} />Submitting...</> : <><Send size={18} style={{ position: "relative", zIndex: 1 }} /><span style={{ position: "relative", zIndex: 1 }}>Submit Application</span></>}</motion.button><p style={s.terms}>By submitting, you agree to our privacy policy.</p></motion.form></div>
+      <div style={s.formSide} className="form-form-side"><motion.form initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }} onSubmit={handleSubmit}><div style={s.formHeaderStyle}><div style={s.formHeaderIcon}><Send size={20} color={brand.gold} /></div><div><div style={s.formHeaderTitle}>Start Your Application</div><div style={s.formHeaderSub}>Fill the form below</div></div></div>{formError && <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} style={s.errorMessage}><span style={{ fontSize: "16px", flexShrink: 0 }}>⚠️</span><span>{formError}</span></motion.div>}<div style={s.formRow}><div style={s.formGroup}><label style={s.label}>First Name <span style={s.required}>*</span></label><input type="text" name="firstName" value={formData.firstName} onChange={handleChange} required placeholder="Taofik" style={inp("firstName")} onFocus={() => setFocused("firstName")} onBlur={() => setFocused(null)} /></div><div style={s.formGroup}><label style={s.label}>Last Name <span style={s.required}>*</span></label><input type="text" name="lastName" value={formData.lastName} onChange={handleChange} required placeholder="Muyideen" style={inp("lastName")} onFocus={() => setFocused("lastName")} onBlur={() => setFocused(null)} /></div></div><div style={s.formRow}><div style={s.formGroup}><label style={s.label}>Email <span style={s.required}>*</span></label><input type="email" name="email" value={formData.email} onChange={handleChange} required placeholder="muyideen@email.com" style={inp("email")} onFocus={() => setFocused("email")} onBlur={() => setFocused(null)} /></div></div><div style={s.formRow}><div style={s.formGroup}><label style={s.label}>Phone <span style={s.required}>*</span></label><div style={s.phoneRow}><select name="phoneCode" value={formData.phoneCode} onChange={handleChange} style={s.phoneCode}>{countryCodes.map(c => <option key={c.code} value={c.code}>{c.code} {c.country}</option>)}</select><input type="tel" name="phone" value={formData.phone} onChange={handleChange} required placeholder="800 123 4567" style={phn("phone")} onFocus={() => setFocused("phone")} onBlur={() => setFocused(null)} /></div></div></div><div style={s.formRow}><div style={s.formGroup}><label style={s.label}>Destination <span style={s.required}>*</span></label><select name="destinationCountry" value={formData.destinationCountry} onChange={handleChange} required style={s.select}><option value="">Select...</option><option value="canada">Canada</option><option value="usa">USA</option><option value="uk">UK</option><option value="australia">Australia</option><option value="ireland">Ireland</option><option value="germany">Germany</option><option value="others">Others</option></select></div></div><div style={s.formRow}><div style={s.formGroup}><label style={s.label}>Study Level <span style={s.required}>*</span></label><select name="studyLevel" value={formData.studyLevel} onChange={handleChange} required style={s.select}><option value="">Select...</option>{studyLevels.map(l => <option key={l} value={l}>{l}</option>)}</select></div><div style={s.formGroup}><label style={s.label}>Intake</label><select name="preferredIntake" value={formData.preferredIntake} onChange={handleChange} style={s.select}><option value="">Select...</option>{intakeOptions.map(o => <option key={o} value={o}>{o}</option>)}</select></div></div><div style={s.formRow}><div style={s.formGroup}><label style={s.label}>Message</label><textarea name="message" value={formData.message} onChange={handleChange} rows={3} placeholder="Any questions..." style={s.textarea} onFocus={() => setFocused("message")} onBlur={() => setFocused(null)} /></div></div><motion.button type="submit" disabled={loading} whileHover={!loading ? { scale: 1.01 } : {}} whileTap={!loading ? { scale: 0.98 } : {}} style={{ ...s.submitBtn, ...(loading ? { opacity: 0.75, cursor: "not-allowed" } : {}) }}><div style={s.btnShine} />{loading ? <><Loader2 size={18} style={{ animation: "spin 1s linear infinite" }} />Submitting...</> : <><Send size={18} style={{ position: "relative", zIndex: 1 }} /><span style={{ position: "relative", zIndex: 1 }}>Submit Application</span></>}</motion.button><p style={s.terms}>By submitting, you agree to our privacy policy.</p></motion.form></div>
     </div>
   );
 }
@@ -246,17 +292,59 @@ export default function StudentVisa() {
 
       {/* CONTENT */}
       <section style={s.contentSection}>
-        {/* Services */}
+        {/* Main Description */}
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} viewport={{ once: true }} style={s.card}>
           <h2 style={s.sectionTitle}>Our Student Visa Services</h2>
           <CollapsibleText text={STUDENT_VISA.description} isMobile={isMobile} />
-          <div style={s.countryGrid}>{STUDENT_VISA.countries.map((country, idx) => (<motion.div key={idx} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.1 }} viewport={{ once: true }} style={s.countryCard} whileHover={!isMobile ? { borderColor: brand.gold, boxShadow: "0 8px 24px rgba(0,0,0,0.06)" } : {}}><h3 style={s.countryName}><GraduationCap size={18} color={brand.goldDark} />{country.name}</h3><div style={s.featureList}>{country.services.map((service, i) => (<div key={i} style={s.featureItem}><CheckCircle size={14} style={s.featureCheck} /><span>{service}</span></div>))}</div></motion.div>))}</div>
-          <CollapsibleText text={STUDENT_VISA.financialGuidance} isMobile={isMobile} />
+          <CollapsibleText text={STUDENT_VISA.description2} isMobile={isMobile} />
+          
+          <h3 style={s.servicesTitle}>{STUDENT_VISA.servicesTitle}</h3>
+          
+          {/* Country Services Grid */}
+          <div style={s.countryGrid}>
+            {STUDENT_VISA.countries.map((country, idx) => {
+              const Icon = country.icon;
+              return (
+                <motion.div 
+                  key={idx} 
+                  initial={{ opacity: 0, y: 20 }} 
+                  whileInView={{ opacity: 1, y: 0 }} 
+                  transition={{ delay: idx * 0.1 }} 
+                  viewport={{ once: true }} 
+                  style={s.countryCard} 
+                  whileHover={!isMobile ? { borderColor: brand.gold, boxShadow: "0 8px 24px rgba(0,0,0,0.06)" } : {}}
+                >
+                  <h3 style={s.countryName}>
+                    <Icon size={18} color={brand.goldDark} />
+                    {country.name}
+                  </h3>
+                  <div style={s.featureList}>
+                    {country.services.map((service, i) => (
+                      <div key={i} style={s.featureItem}>
+                        <CheckCircle size={14} style={s.featureCheck} />
+                        <span>{service}</span>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+          
+          {/* Financial Documentation Guidance */}
+          <div style={s.financialBox}>
+            <h4 style={s.financialTitle}>
+              <FileText size={18} color={brand.goldDark} />
+              Financial Documentation Guidance
+            </h4>
+            <p style={s.financialText}>{STUDENT_VISA.financialGuidance}</p>
+          </div>
         </motion.div>
 
-        {/* Closing */}
+        {/* Closing Statement */}
         <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} transition={{ duration: 0.5 }} viewport={{ once: true }} style={s.card}>
           <CollapsibleText text={STUDENT_VISA.closing} isMobile={isMobile} />
+          <CollapsibleText text={STUDENT_VISA.closing2} isMobile={isMobile} />
         </motion.div>
 
         {/* CTA */}

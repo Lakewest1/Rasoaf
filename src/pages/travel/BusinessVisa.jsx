@@ -1,7 +1,7 @@
 // src/pages/visa/BusinessVisa.jsx
 // ─────────────────────────────────────────────────────────────────────────────
 // RASOAF TRAVELS AND TOURS LIMITED — Business Visa Page
-// v2: 100% Responsive · Collapsible sections · Touch optimized · All content preserved
+// v3: Updated content · All original features preserved · Responsive
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useState, useCallback, useEffect } from "react";
@@ -9,9 +9,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Globe, Briefcase, Users, Presentation, ArrowRight, AlertCircle,
   Shield, Clock, Loader2, Sparkles, ChevronRight, ArrowDown, Send,
-  ChevronDown
+  ChevronDown, CheckCircle, Building2, FileText, Plane
 } from "lucide-react";
-import { BUSINESS_VISA, CONTACT_INFO } from "../../data/visaContent";
 
 // ── Rasoaf Brand Colors ──────────────────────────────────────────────────
 const brand = {
@@ -25,6 +24,8 @@ const brand = {
 
 const FORMSPREE_ENDPOINT = "https://formspree.io/f/your-form-id-here";
 
+const CONTACT_INFO = { phone: "+234 903 770 7888", email: "info@rasoaf.com" };
+
 const countryCodes = [
   { code: "+234", country: "Nigeria" }, { code: "+1", country: "USA" },
   { code: "+44", country: "UK" }, { code: "+971", country: "UAE" }, { code: "+966", country: "Saudi Arabia" },
@@ -32,6 +33,29 @@ const countryCodes = [
 
 const businessPurposes = ["Meetings / Conferences", "Trade Exhibitions", "Client Visits", "Contract Negotiations", "Training / Workshops", "Market Research", "Other"];
 const destinations = ["United Kingdom", "United States", "Canada", "Australia", "Schengen Area", "United Arab Emirates", "Saudi Arabia", "Other"];
+
+// ── UPDATED BUSINESS VISA DATA ───────────────────────────────────────────
+const BUSINESS_VISA = {
+  heading: "Business Visa Services",
+  intro: "Professional guidance and support throughout the business visa application process for conferences, meetings, trade shows, and more.",
+  description: "At RASOAF Travels and Tours Limited, we provide professional guidance and support throughout the business visa application process. We assist clients in preparing and organizing the necessary documentation required for various business-related travel purposes, including:",
+  
+  purposes: [
+    { text: "Attending conferences", icon: Presentation },
+    { text: "Participating in business meetings or trade shows", icon: Users },
+    { text: "Attending seminars and workshops", icon: Building2 },
+    { text: "Conducting market research", icon: Globe },
+    { text: "Participating in international training programs or short-term business visits", icon: Plane },
+  ],
+  
+  importantNote: "Please note that a business visa does not authorize employment in the destination country. Individuals intending to work abroad are generally required to obtain a work or employment visa, depending on the immigration regulations of the country concerned.",
+  
+  expertGuidance: "Our experienced team will guide you through each stage of the application process, ensuring that your documentation is properly prepared and submitted to maximize your chances of a successful outcome.",
+  
+  usInfo: "For travel to the United States, business visitors typically apply for a B-1 Business Visitor Visa, which permits eligible travelers to engage in approved business activities such as meetings, conferences, negotiations, and training programs. However, visa categories vary from country to country, and our consultants will advise you on the appropriate visa type based on your destination and purpose of travel.",
+  
+  closing: "At RASOAF Travels and Tours Limited, we are committed to providing reliable guidance and support until your visa application process is completed.",
+};
 
 // ── Responsive Hook ──────────────────────────────────────────────────────
 function useResponsive() {
@@ -67,8 +91,8 @@ const s = {
   collapseToggle: { display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", padding: "clamp(8px, 1.5vw, 12px) 0", background: "none", border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", color: brand.goldDark, fontSize: "clamp(12px, 1vw, 14px)", fontWeight: 600, minHeight: "44px" },
 
   // Purpose List
-  purposeList: { display: "flex", flexDirection: "column", gap: "clamp(6px, 1vw, 10px)", marginTop: "clamp(10px, 1.5vw, 16px)" },
-  purposeItem: { display: "flex", alignItems: "center", gap: "clamp(6px, 1vw, 10px)", padding: "clamp(10px, 1.2vw, 12px) clamp(12px, 1.5vw, 16px)", background: brand.cream, borderRadius: "clamp(8px, 0.8vw, 10px)", fontSize: "clamp(12px, 1vw, 14px)", color: brand.mutedText, border: `1px solid ${brand.borderLight}` },
+  purposeList: { display: "flex", flexDirection: "column", gap: "clamp(8px, 1vw, 12px)", marginTop: "clamp(10px, 1.5vw, 16px)" },
+  purposeItem: { display: "flex", alignItems: "center", gap: "clamp(8px, 1vw, 12px)", padding: "clamp(10px, 1.2vw, 14px) clamp(12px, 1.5vw, 18px)", background: brand.cream, borderRadius: "clamp(8px, 0.8vw, 10px)", fontSize: "clamp(12px, 1vw, 14px)", color: brand.mutedText, border: `1px solid ${brand.borderLight}`, transition: "all 0.3s ease" },
   purposeIcon: { color: brand.goldDark, flexShrink: 0 },
 
   // Note Box
@@ -89,7 +113,7 @@ const s = {
   backLink: { textAlign: "center", paddingBottom: "clamp(24px, 4vh, 40px)" },
   backLinkAnchor: { display: "inline-flex", alignItems: "center", gap: "8px", color: brand.gray500, fontSize: "clamp(12px, 1.1vw, 14px)", textDecoration: "none", transition: "color 0.2s ease", minHeight: "44px", padding: "8px 0" },
 
-  // Form Styles
+  // Form Styles (unchanged)
   formWrapper: { display: "flex", background: brand.white, borderRadius: "clamp(16px, 2vw, 24px)", overflow: "hidden", boxShadow: "0 20px 60px rgba(0,0,0,0.08)", border: `1px solid ${brand.borderLight}`, minHeight: "clamp(500px, 60vh, 650px)" },
   formImageSide: { width: "42%", position: "relative", overflow: "hidden", background: `linear-gradient(180deg, ${brand.dark} 0%, #1a1207 100%)`, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", padding: "clamp(20px, 4vw, 48px) clamp(16px, 3vw, 36px)", flexShrink: 0 },
   formImageBg: { position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.4 },
@@ -172,7 +196,7 @@ function CollapsibleText({ text, isMobile }) {
 }
 
 // ══════════════════════════════════════════════════════════════════════════
-//  BUSINESS VISA FORM
+//  BUSINESS VISA FORM (unchanged)
 // ══════════════════════════════════════════════════════════════════════════
 function BusinessVisaForm() {
   const [formData, setFormData] = useState({ firstName: "", lastName: "", email: "", phoneCode: "+234", phone: "", destination: "", purpose: "", company: "", message: "" });
@@ -206,7 +230,7 @@ function BusinessVisaForm() {
 
   return (
     <div style={s.formWrapper} className="form-flex-container">
-      <div style={s.formImageSide} className="form-image-side"><img src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=600&h=900&fit=crop" alt="Business" style={s.formImageBg} /><div style={s.formImageOverlay} /><motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} style={s.formImageContent}><div style={s.formImageBadge}><Sparkles size={12} color={brand.gold} /><span>CORPORATE TRAVEL</span></div><div style={s.formImageIcon}><Briefcase size={34} color={brand.gold} /></div><h2 style={s.formImageTitle}>Business <span style={s.formImageGold}>Visa</span><br />Application</h2><p style={s.formImageSubtitle}>Conferences, meetings, trade shows – we handle your business visa.</p><div style={s.formDivider} /><div style={s.formImageFeatures}>{[{ icon: Shield, text: "Licensed Advisers" },{ icon: Users, text: "Group Support" },{ icon: Globe, text: "Multi‑country" }].map((item, i) => { const I = item.icon; return <div key={i} style={s.formImageFeatItem}><div style={s.formImageFeatIcon}><I size={13} color={brand.gold} /></div>{item.text}</div>; })}</div></motion.div></div>
+      <div style={s.formImageSide} className="form-image-side"><img src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=600&h=900&fit=crop" alt="Business" style={s.formImageBg} /><div style={s.formImageOverlay} /><motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} style={s.formImageContent}><div style={s.formImageBadge}><Sparkles size={12} color={brand.gold} /><span>CORPORATE TRAVEL</span></div><div style={s.formImageIcon}><Briefcase size={34} color={brand.gold} /></div><h2 style={s.formImageTitle}>Business <span style={s.formImageGold}>Visa</span><br />Application</h2><p style={s.formImageSubtitle}>Conferences, meetings, trade shows – we handle your business visa.</p><div style={s.formDivider} /><div style={s.formImageFeatures}>{[{ icon: Shield, text: "Licensed Advisers" },{ icon: Users, text: "Expert Guidance" },{ icon: Globe, text: "Multi‑country" }].map((item, i) => { const I = item.icon; return <div key={i} style={s.formImageFeatItem}><div style={s.formImageFeatIcon}><I size={13} color={brand.gold} /></div>{item.text}</div>; })}</div></motion.div></div>
       <div style={s.formSide} className="form-form-side"><motion.form initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }} onSubmit={handleSubmit}><div style={s.formHeaderStyle}><div style={s.formHeaderIcon}><Send size={20} color={brand.gold} /></div><div><div style={s.formHeaderTitle}>Start Your Business Visa</div><div style={s.formHeaderSub}>Fill the form below</div></div></div>{formError && <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} style={s.errorMessage}><span style={{ fontSize: "16px", flexShrink: 0 }}>⚠️</span><span>{formError}</span></motion.div>}<div style={s.formRow}><div style={s.formGroup}><label style={s.label}>First Name <span style={s.required}>*</span></label><input type="text" name="firstName" value={formData.firstName} onChange={handleChange} required placeholder="Taofik" style={inp("firstName")} onFocus={() => setFocused("firstName")} onBlur={() => setFocused(null)} /></div><div style={s.formGroup}><label style={s.label}>Last Name <span style={s.required}>*</span></label><input type="text" name="lastName" value={formData.lastName} onChange={handleChange} required placeholder="Muyideen" style={inp("lastName")} onFocus={() => setFocused("lastName")} onBlur={() => setFocused(null)} /></div></div><div style={s.formRow}><div style={s.formGroup}><label style={s.label}>Email <span style={s.required}>*</span></label><input type="email" name="email" value={formData.email} onChange={handleChange} required placeholder="muyideen@email.com" style={inp("email")} onFocus={() => setFocused("email")} onBlur={() => setFocused(null)} /></div></div><div style={s.formRow}><div style={s.formGroup}><label style={s.label}>Phone <span style={s.required}>*</span></label><div style={s.phoneRow}><select name="phoneCode" value={formData.phoneCode} onChange={handleChange} style={s.phoneCode}>{countryCodes.map(c => <option key={c.code} value={c.code}>{c.code} {c.country}</option>)}</select><input type="tel" name="phone" value={formData.phone} onChange={handleChange} required placeholder="800 123 4567" style={phn("phone")} onFocus={() => setFocused("phone")} onBlur={() => setFocused(null)} /></div></div></div><div style={s.formRow}><div style={s.formGroup}><label style={s.label}>Destination <span style={s.required}>*</span></label><select name="destination" value={formData.destination} onChange={handleChange} required style={s.select}><option value="">Select...</option>{destinations.map(d => <option key={d} value={d}>{d}</option>)}</select></div></div><div style={s.formRow}><div style={s.formGroup}><label style={s.label}>Purpose <span style={s.required}>*</span></label><select name="purpose" value={formData.purpose} onChange={handleChange} required style={s.select}><option value="">Select...</option>{businessPurposes.map(p => <option key={p} value={p}>{p}</option>)}</select></div><div style={s.formGroup}><label style={s.label}>Company</label><input type="text" name="company" value={formData.company} onChange={handleChange} placeholder="Your company" style={inp("company")} onFocus={() => setFocused("company")} onBlur={() => setFocused(null)} /></div></div><div style={s.formRow}><div style={s.formGroup}><label style={s.label}>Message</label><textarea name="message" value={formData.message} onChange={handleChange} rows={3} placeholder="Any special requirements..." style={s.textarea} onFocus={() => setFocused("message")} onBlur={() => setFocused(null)} /></div></div><motion.button type="submit" disabled={loading} whileHover={!loading ? { scale: 1.01 } : {}} whileTap={!loading ? { scale: 0.98 } : {}} style={{ ...s.submitBtn, ...(loading ? { opacity: 0.75, cursor: "not-allowed" } : {}) }}><div style={s.btnShine} />{loading ? <><Loader2 size={18} style={{ animation: "spin 1s linear infinite" }} />Submitting...</> : <><Send size={18} style={{ position: "relative", zIndex: 1 }} /><span style={{ position: "relative", zIndex: 1 }}>Submit Enquiry</span></>}</motion.button><p style={s.terms}>By submitting, you agree to our privacy policy.</p></motion.form></div>
     </div>
   );
@@ -232,17 +256,39 @@ export default function BusinessVisa() {
 
       {/* CONTENT */}
       <section style={s.contentSection}>
-        {/* Purposes */}
+        {/* Business Travel Purposes */}
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} viewport={{ once: true }} style={s.card}>
           <h2 style={s.sectionTitle}>Business Travel Purposes</h2>
-          <CollapsibleText text="We assist clients in preparing and organizing the necessary documentation required for various business-related travel purposes, including:" isMobile={isMobile} />
-          <div style={s.purposeList}>{BUSINESS_VISA.purposes.map((purpose, idx) => { const icons = [Presentation, Users, Globe, Briefcase, Users]; const Icon = icons[idx % icons.length]; return (<motion.div key={idx} initial={{ opacity: 0, x: -10 }} whileInView={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.06 }} viewport={{ once: true }} style={s.purposeItem}><Icon size={16} style={s.purposeIcon} /><span>{purpose}</span></motion.div>); })}</div>
+          <CollapsibleText text={BUSINESS_VISA.description} isMobile={isMobile} />
+          <div style={s.purposeList}>
+            {BUSINESS_VISA.purposes.map((purpose, idx) => {
+              const Icon = purpose.icon;
+              return (
+                <motion.div 
+                  key={idx} 
+                  initial={{ opacity: 0, x: -10 }} 
+                  whileInView={{ opacity: 1, x: 0 }} 
+                  transition={{ delay: idx * 0.06 }} 
+                  viewport={{ once: true }} 
+                  style={s.purposeItem}
+                  whileHover={!isMobile ? { borderColor: brand.gold, transform: "translateX(4px)" } : {}}
+                >
+                  <Icon size={16} style={s.purposeIcon} />
+                  <span>{purpose.text}</span>
+                </motion.div>
+              );
+            })}
+          </div>
         </motion.div>
 
-        {/* Important Info */}
+        {/* Important Information */}
         <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} transition={{ duration: 0.5 }} viewport={{ once: true }} style={s.card}>
           <h2 style={s.sectionTitle}>Important Information</h2>
-          <div style={s.noteBox}><AlertCircle size={20} style={s.noteIcon} /><p style={s.noteText}>{BUSINESS_VISA.importantNote}</p></div>
+          <div style={s.noteBox}>
+            <AlertCircle size={20} style={s.noteIcon} />
+            <p style={s.noteText}>{BUSINESS_VISA.importantNote}</p>
+          </div>
+          <CollapsibleText text={BUSINESS_VISA.expertGuidance} isMobile={isMobile} />
           <CollapsibleText text={BUSINESS_VISA.usInfo} isMobile={isMobile} />
         </motion.div>
 
