@@ -1,25 +1,30 @@
 // src/components/gateway/three/Earth.jsx
 // ─────────────────────────────────────────────────────────────────────────────
-// RASOAF Gateway — Photorealistic Earth
-// All hooks called unconditionally. Renders null when textures aren't ready,
-// but hooks always execute in the same order.
-// Texture configuration runs ONCE per texture set (useEffect), not on every
-// render — mutating filter/colorSpace and flagging needsUpdate every render
-// forces the renderer to re-upload the texture to the GPU every time this
-// component re-renders (e.g. whenever a sibling like SunRig updates state),
-// which is unnecessary and can visibly hitch on lower-end devices.
+// RASOAF Gateway — Photorealistic Earth (v2.0)
+// Optimized: Stable frame callback · Memoized geometry · Proper cleanup
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
-import { SRGBColorSpace, NoColorSpace, LinearMipmapLinearFilter, LinearFilter } from "three";
+import {
+  SRGBColorSpace,
+  NoColorSpace,
+  LinearMipmapLinearFilter,
+  LinearFilter,
+  SphereGeometry,
+} from "three";
 
+// ══════════════════════════════════════════════════════════════════════════
+// Constants — Module scope
+// ══════════════════════════════════════════════════════════════════════════
 const EARTH_RADIUS = 2.5;
 const EARTH_SEGMENTS = 128;
 const EARTH_ROTATION_SPEED = 0.08;
 const INITIAL_ROTATION = 3.8;
 
-// Shared filter/anisotropy config applied to every Earth texture map.
+// ══════════════════════════════════════════════════════════════════════════
+// Shared texture configuration — applied once per texture set
+// ══════════════════════════════════════════════════════════════════════════
 function configureTexture(texture, colorSpace) {
   if (!texture) return;
   texture.colorSpace = colorSpace;
@@ -27,25 +32,40 @@ function configureTexture(texture, colorSpace) {
   texture.minFilter = LinearMipmapLinearFilter;
   texture.magFilter = LinearFilter;
   texture.generateMipmaps = true;
-  // Required after changing colorSpace/filtering — without this the GPU
-  // keeps using the texture's previous upload state until something else
-  // happens to trigger a re-upload.
+  // Required after changing colorSpace/filtering — triggers GPU re-upload
   texture.needsUpdate = true;
 }
 
+// ══════════════════════════════════════════════════════════════════════════
+// Earth Component
+// ══════════════════════════════════════════════════════════════════════════
 export default function Earth({ textures }) {
   const meshRef = useRef(null);
   const materialRef = useRef(null);
 
-  // ── Hooks must always be called — never conditional ───────────────────
+  // ── Memoized geometry — created once, shared across renders ──────────
+  const geometry = useMemo(
+    () => new SphereGeometry(EARTH_RADIUS, EARTH_SEGMENTS, EARTH_SEGMENTS),
+    []
+  );
+
+  // ── Stable rotation speed ref — avoids recreating useFrame callback ──
+  const rotationSpeedRef = useRef(EARTH_ROTATION_SPEED);
+
+  // Update rotation speed ref if constant ever changes (hot-reload safety)
+  useEffect(() => {
+    rotationSpeedRef.current = EARTH_ROTATION_SPEED;
+  }, []);
+
+  // ── Stable useFrame callback — never recreated ───────────────────────
   useFrame((_, delta) => {
-    if (meshRef.current) {
-      meshRef.current.rotation.y += EARTH_ROTATION_SPEED * delta;
+    const mesh = meshRef.current;
+    if (mesh) {
+      mesh.rotation.y += rotationSpeedRef.current * delta;
     }
   });
 
-  // Configure textures once, when the texture set changes — not on every
-  // render of this component.
+  // ── Configure textures once when texture set changes ──────────────────
   useEffect(() => {
     if (!textures) return;
     configureTexture(textures.day, SRGBColorSpace);
@@ -53,24 +73,32 @@ export default function Earth({ textures }) {
     configureTexture(textures.specular, NoColorSpace);
   }, [textures]);
 
+  // ── Cleanup — dispose geometry + material (textures managed by parent) ─
   useEffect(() => {
-    return () => {
-      materialRef.current?.dispose();
-      meshRef.current?.geometry?.dispose();
-    };
-  }, []);
+    const material = materialRef.current;
+    const mesh = meshRef.current;
 
-  // ── Early return AFTER all hooks ──────────────────────────────────────
-  // Guard each map individually — a partially-populated textures object
-  // (e.g. one failed load that didn't throw) shouldn't render a mesh with
-  // undefined maps.
+    return () => {
+      material?.dispose();
+      mesh?.geometry?.dispose();
+      // Dispose the memoized geometry if mesh already cleaned up
+      geometry.dispose();
+    };
+  }, [geometry]);
+
+  // ── Early return AFTER all hooks — never conditional ──────────────────
   if (!textures?.day || !textures?.bump || !textures?.specular) return null;
 
   const { day, bump, specular } = textures;
 
   return (
-    <mesh ref={meshRef} rotation={[0, INITIAL_ROTATION, 0]} castShadow receiveShadow>
-      <sphereGeometry args={[EARTH_RADIUS, EARTH_SEGMENTS, EARTH_SEGMENTS]} />
+    <mesh
+      ref={meshRef}
+      geometry={geometry}
+      rotation={[0, INITIAL_ROTATION, 0]}
+      castShadow
+      receiveShadow
+    >
       <meshPhysicalMaterial
         ref={materialRef}
         map={day}

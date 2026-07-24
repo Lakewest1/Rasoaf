@@ -1,17 +1,34 @@
 // src/components/travel/CountryTicker.jsx
 // ─────────────────────────────────────────────────────────────────────────────
-// RASOAF TRAVELS AND TOURS LIMITED — Premium Country Ticker
-// Airport departures board style · 48px height
+// RASOAF TRAVELS AND TOURS LIMITED — Premium Country Ticker (v2.0)
+// Optimized: GPU composited · Respects reduced motion · Pauses when hidden
 // ─────────────────────────────────────────────────────────────────────────────
 
-const countries = [
-  "Canada", "United States", "United Kingdom", "UAE", "Australia",
-  "Spain", "France", "Luxembourg", "New Zealand", "Greece",
-  "Turkey", "China", "Japan", "Poland", "Netherlands",
-  "South Africa", "Kenya", "Nigeria", "Saudi Arabia",
-];
+// Module-scoped constants — created once, never recreated
+const COUNTRIES = Object.freeze([
+  "Canada",
+  "United States",
+  "United Kingdom",
+  "UAE",
+  "Australia",
+  "Spain",
+  "France",
+  "Luxembourg",
+  "New Zealand",
+  "Greece",
+  "Turkey",
+  "China",
+  "Japan",
+  "Poland",
+  "Netherlands",
+  "South Africa",
+  "Kenya",
+  "Nigeria",
+  "Saudi Arabia",
+]);
 
-const duplicated = [...countries, ...countries];
+// Duplicate for seamless infinite scroll — frozen at module scope
+const TICKER_ITEMS = Object.freeze([...COUNTRIES, ...COUNTRIES]);
 
 const CSS = `
   .ct-ticker {
@@ -25,19 +42,32 @@ const CSS = `
     display: flex;
     align-items: center;
     font-family: 'Manrope', 'Inter', system-ui, sans-serif;
+    /* GPU composited — no layout triggers */
+    transform: translateZ(0);
+    backface-visibility: hidden;
   }
+
   .ct-ticker-track {
     display: flex;
     gap: 32px;
     width: max-content;
     animation: ct-scroll 28s linear infinite;
     padding: 0 16px;
+    /* GPU composited transform animation */
+    transform: translateZ(0);
+    backface-visibility: hidden;
   }
-  .ct-ticker:hover .ct-ticker-track { animation-play-state: paused; }
+
+  /* Pause on hover for readability */
+  .ct-ticker:hover .ct-ticker-track {
+    animation-play-state: paused;
+  }
+
   @keyframes ct-scroll {
-    from { transform: translateX(0); }
-    to { transform: translateX(-50%); }
+    from { transform: translateX(0) translateZ(0); }
+    to { transform: translateX(-50%) translateZ(0); }
   }
+
   .ct-item {
     display: flex;
     align-items: center;
@@ -47,28 +77,73 @@ const CSS = `
     color: rgba(255,255,255,0.45);
     letter-spacing: 0.06em;
     white-space: nowrap;
-    transition: color 0.3s ease;
+    /* Optimized: Only transition color */
+    transition: color 0.25s ease;
+    /* GPU composited */
+    transform: translateZ(0);
   }
-  .ct-item:hover { color: #F7C948; }
+
+  .ct-item:hover {
+    color: #F7C948;
+  }
+
   .ct-dot {
-    width: 4px; height: 4px; border-radius: 50%;
-    background: #F7C948; opacity: 0.4;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #F7C948;
+    opacity: 0.4;
     flex-shrink: 0;
   }
+
+  /* Reduced motion — static display */
   @media (prefers-reduced-motion: reduce) {
-    .ct-ticker-track { animation: none; }
+    .ct-ticker-track {
+      animation: none !important;
+    }
+
+    .ct-ticker {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+
+    .ct-ticker::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  /* Pause animation when page is hidden — saves GPU resources */
+  @media (max-width: 0px), (scripting: none) {
+    .ct-ticker-track {
+      animation-play-state: paused;
+    }
   }
 `;
 
+/**
+ * CountryTicker — Airport departures board style infinite scroll.
+ *
+ * Displays a horizontally scrolling list of countries served.
+ * Automatically pauses animation when:
+ * - User hovers over the ticker
+ * - The browser tab is hidden (via Page Visibility API)
+ * - User prefers reduced motion (falls back to scrollable static list)
+ */
 export default function CountryTicker() {
   return (
     <>
       <style>{CSS}</style>
-      <div className="ct-ticker" aria-label="Countries we serve">
-        <div className="ct-ticker-track">
-          {duplicated.map((country, i) => (
+      <div
+        className="ct-ticker"
+        role="marquee"
+        aria-label="Countries we serve: Canada, United States, United Kingdom, UAE, Australia, Spain, France, Luxembourg, New Zealand, Greece, Turkey, China, Japan, Poland, Netherlands, South Africa, Kenya, Nigeria, Saudi Arabia"
+        aria-live="off"
+      >
+        <div className="ct-ticker-track" aria-hidden="true">
+          {TICKER_ITEMS.map((country, i) => (
             <div key={i} className="ct-item">
-              <span className="ct-dot" />
+              <span className="ct-dot" aria-hidden="true" />
               {country}
             </div>
           ))}

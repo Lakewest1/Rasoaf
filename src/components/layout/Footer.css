@@ -1,17 +1,11 @@
 /* ─────────────────────────────────────────────────────────────────────────
-   Footer.css — RASOAF Travels and Tours
-   Visual output is byte-for-byte identical to the previous inline-style
-   version. Only the architecture changed: variables, semantic classes,
-   CSS-driven hover/focus states instead of JS-driven ones.
+   Footer.css — RASOAF Travels and Tours (v3.0)
+   Fonts loaded via <link> in HTML head for performance.
    Verified overflow-free at: 320 · 360 · 375 · 390 · 414 · 430 · 480 · 600 ·
    768 · 820 · 912 · 1024 · 1280 · 1440 · 1600 · 1920 · 2560
    ───────────────────────────────────────────────────────────────────────── */
 
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;450;500;600;700;800&display=swap');
-
-/* ── Design tokens (scoped to the footer so nothing leaks into the rest
-   of the app) ───────────────────────────────────────────────────────── */
+/* ── Design tokens (scoped to the footer) ─────────────────────────────── */
 .footer-section {
   --font-display: 'Manrope', system-ui, sans-serif;
   --font-body: 'Inter', system-ui, sans-serif;
@@ -45,19 +39,21 @@
 }
 
 .footer-section,
-.footer-section * ,
+.footer-section *,
 .footer-section *::before,
 .footer-section *::after {
   box-sizing: border-box;
 }
 
-/* ── Section shell ───────────────────────────────────────────────────── */
+/* ── Section shell — GPU composited ──────────────────────────────────── */
 .footer-section {
   background: var(--color-bg);
   position: relative;
   overflow-x: clip;
   overflow-y: visible;
   width: 100%;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 .footer-section::before {
@@ -94,12 +90,7 @@
   font-family: var(--font-body);
 }
 
-/* ── Utility: shared reveal-on-scroll animation for every column.
-   All four columns observe the same `is-inview` toggle on the parent
-   grid, so there is exactly one IntersectionObserver for the whole
-   footer instead of one per column. Stagger is a static per-column
-   delay (never changes at runtime), so it lives in CSS, not inline
-   style. ─────────────────────────────────────────────────────────────── */
+/* ── Reveal-on-scroll ────────────────────────────────────────────────── */
 .footer-col {
   opacity: 0;
   transform: translateY(20px);
@@ -113,14 +104,11 @@
 }
 
 .footer-col:nth-child(1) { transition-delay: 0s; }
-.footer-col:nth-child(2) { transition-delay: 0.1s; }
-.footer-col:nth-child(3) { transition-delay: 0.2s; }
-.footer-col:nth-child(4) { transition-delay: 0.3s; }
+.footer-col:nth-child(2) { transition-delay: 0.08s; }
+.footer-col:nth-child(3) { transition-delay: 0.16s; }
+.footer-col:nth-child(4) { transition-delay: 0.24s; }
 
-/* ── Grid ─────────────────────────────────────────────────────────────
-   Desktop (>1024px): 4 columns
-   Tablet + large phone (600–1024px): 2 columns
-   Small phone (<600px): 1 column                                       */
+/* ── Grid ────────────────────────────────────────────────────────────── */
 .footer-grid {
   display: grid;
   grid-template-columns: 1.2fr 1fr 1fr 1.2fr;
@@ -129,7 +117,7 @@
   border-bottom: 1px solid var(--color-border);
 }
 
-/* ── Bottom bar ───────────────────────────────────────────────────────── */
+/* ── Bottom bar ──────────────────────────────────────────────────────── */
 .footer-bottom {
   display: flex;
   flex-wrap: wrap;
@@ -156,7 +144,7 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   COLUMN TITLES (shared)
+   COLUMN TITLES
    ═══════════════════════════════════════════════════════════════════════ */
 .footer-col-title {
   font-family: var(--font-body);
@@ -252,19 +240,19 @@
   color: var(--color-text-faint);
   transition: background var(--transition-hover), color var(--transition-hover),
               transform var(--transition-hover), box-shadow var(--transition-hover);
-  transform: scale(1);
+  transform: scale(1) translateZ(0);
 }
 
 .footer-social-link:hover,
 .footer-social-link:focus-visible {
   background: var(--social-color, rgba(255, 255, 255, 0.06));
   color: #fff;
-  transform: scale(1.12) translateY(-2px);
+  transform: scale(1.12) translateY(-2px) translateZ(0);
   box-shadow: 0 4px 20px var(--social-shadow, transparent);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   QUICK LINKS / SERVICES (shared list styles)
+   QUICK LINKS / SERVICES
    ═══════════════════════════════════════════════════════════════════════ */
 .footer-nav-list {
   list-style: none;
@@ -287,7 +275,7 @@
   min-height: var(--min-touch);
   padding: var(--space-1) 0;
   transition: color var(--transition-hover), transform var(--transition-hover);
-  transform: translateX(0);
+  transform: translateX(0) translateZ(0);
   max-width: 100%;
 }
 
@@ -302,13 +290,13 @@
 .footer-link:hover,
 .footer-link:focus-visible {
   color: var(--color-gold);
-  transform: translateX(4px);
+  transform: translateX(4px) translateZ(0);
 }
 
 .footer-service-link:hover,
 .footer-service-link:focus-visible {
   color: var(--color-gold);
-  transform: translateX(4px);
+  transform: translateX(4px) translateZ(0);
 }
 
 .footer-link-chevron {
@@ -338,7 +326,7 @@
    CONTACT COLUMN
    ═══════════════════════════════════════════════════════════════════════ */
 .footer-contact-info {
-  font-style: normal; /* reset default <address> italics */
+  font-style: normal;
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
@@ -414,6 +402,7 @@
   position: relative;
   overflow: hidden;
   white-space: nowrap;
+  transform: translateZ(0);
 }
 
 .footer-btn-whatsapp {
@@ -421,13 +410,13 @@
   color: #fff;
   background: #25D366;
   box-shadow: 0 4px 16px rgba(37, 211, 102, 0.25);
-  transform: translateY(0) scale(1);
+  transform: translateY(0) scale(1) translateZ(0);
 }
 
 .footer-btn-whatsapp:hover,
 .footer-btn-whatsapp:focus-visible {
   box-shadow: 0 4px 24px rgba(37, 211, 102, 0.45);
-  transform: translateY(-2px) scale(1.02);
+  transform: translateY(-2px) scale(1.02) translateZ(0);
 }
 
 .footer-btn-consult {
@@ -439,7 +428,7 @@
     0 7px 0 #6A4500,
     0 9px 0 rgba(0, 0, 0, 0.40),
     0 9px 22px rgba(215, 169, 23, 0.30);
-  transform: translateY(0);
+  transform: translateY(0) translateZ(0);
 }
 
 .footer-btn-consult:hover,
@@ -449,7 +438,7 @@
     0 10px 0 #6A4500,
     0 14px 0 rgba(0, 0, 0, 0.35),
     0 20px 40px rgba(212, 160, 23, 0.45);
-  transform: translateY(-3px);
+  transform: translateY(-3px) translateZ(0);
 }
 
 .footer-btn-consult-label {
@@ -465,7 +454,7 @@
 
 .footer-btn-consult:hover .footer-btn-consult-arrow,
 .footer-btn-consult:focus-visible .footer-btn-consult-arrow {
-  transform: translateX(4px);
+  transform: translateX(4px) translateZ(0);
 }
 
 .footer-btn-consult-shine {
@@ -477,7 +466,7 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   ACCESSIBILITY — focus-visible everywhere interactive
+   ACCESSIBILITY
    ═══════════════════════════════════════════════════════════════════════ */
 .footer-section a:focus-visible,
 .footer-section button:focus-visible {
@@ -488,26 +477,20 @@
 
 /* ═══════════════════════════════════════════════════════════════════════
    RESPONSIVE
-   Verified clean at 320 · 360 · 375 · 390 · 414 · 430 · 480 · 600 · 768 ·
-   820 · 912 · 1024 · 1280 · 1440 · 1600 · 1920 · 2560
    ═══════════════════════════════════════════════════════════════════════ */
 
-/* ── Ultra-wide (1920px+) — container gets a touch more room so the
-   4-column grid doesn't feel pinched against a huge viewport ── */
 @media (min-width: 1920px) {
   .footer-container {
     max-width: 1360px;
   }
 }
 
-/* ── Tablet + large phone (≤1024px): 2 columns ── */
 @media (max-width: 1024px) {
   .footer-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
-/* ── Tablet portrait: tighten outer padding, stack the bottom bar ── */
 @media (max-width: 768px) {
   .footer-container {
     padding: clamp(36px, 5vh, 48px) clamp(14px, 3vw, 20px) clamp(24px, 3vh, 32px);
@@ -519,7 +502,6 @@
   }
 }
 
-/* ── Small phone (<600px): 1 column ── */
 @media (max-width: 599px) {
   .footer-grid {
     grid-template-columns: 1fr;
@@ -533,8 +515,6 @@
   }
 }
 
-/* ── Extra-small phones (<360px) — trims a little more so the brand
-   description / address never feel cramped against the viewport edge ── */
 @media (max-width: 359px) {
   .footer-container {
     padding-left: 12px;
@@ -547,7 +527,7 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   MOTION & INPUT PREFERENCES
+   REDUCED MOTION
    ═══════════════════════════════════════════════════════════════════════ */
 @media (prefers-reduced-motion: reduce) {
   .footer-col {
