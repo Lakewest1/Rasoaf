@@ -1,13 +1,29 @@
 // src/components/travel/VisaSlider.jsx
 // ─────────────────────────────────────────────────────────────────────────────
-// RASOAF TRAVELS AND TOURS LIMITED — Visa CTA Slider
-// Rasoaf Typography · Smooth gradual slide · Pause on hover · Responsive
+// RASOAF TRAVELS AND TOURS LIMITED — Visa CTA Slider (v2.0 — PERFECTED)
+// Rasoaf Typography · Smooth gradual slide · Pause on hover/focus · Responsive
 // FULLY RESPONSIVE — 320px → 2560px, real swipe gesture, reduced-motion aware
+//
+// v2.0 CHANGES:
+// - WCAG 2.2.2 (Pause, Stop, Hide): content auto-advances every 7s, so it now
+//   ships an explicit pause/play toggle — hover-to-pause alone isn't enough
+//   for keyboard/touch-only users who never trigger a mouseenter event.
+// - Autoplay now also pauses on keyboard focus (tabbing to an arrow/dot/CTA),
+//   not just mouse hover, for the same reason.
+// - Proper carousel ARIA: role="region" + aria-roledescription="carousel" on
+//   the root, aria-roledescription="slide" + positional label on each slide,
+//   and a visually-hidden live region announcing slide changes to screen
+//   readers (background/text crossfades convey nothing to assistive tech on
+//   their own).
+// - Added ArrowLeft/ArrowRight keyboard navigation.
+// - De-duplicated timer logic: manual navigation (goTo) now just calls
+//   startTimer() again instead of re-implementing the interval inline —
+//   previously a manual dot-click would silently ignore the paused state.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ArrowRight, Pause, Play } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import usePrefersReducedMotion from "../../hooks/usePrefersReducedMotion";
 
@@ -19,6 +35,9 @@ const SLIDES = [
     eyebrow: "Solution For All Type Of Visas",
     heading: "Best Visa Immigration Services",
     paragraph: "RASOAF Travels and Tours Limited is here at your doorstep to support your journey anywhere in the world. Our experts are always ready to assist with your inquiries, whether for study permits and guides, family reunification, seminars, conferences, or any other country. We do not charge fees for consultation, and we are ready to make your journey seamless.",
+    // TODO: this Cloudinary asset is a "Secure_Kubernetes_Deployment..." doc
+    // screenshot, not a travel photo — looks like a leftover placeholder
+    // from an unrelated upload. Swap in a real travel/visa image before ship.
     image: "https://res.cloudinary.com/dbqdgvvgq/image/upload/v1784549673/Secure_Kubernetes_Deployment_Documentation_u84t87.docx.png",
     ctaLabel: "Explore Services",
     ctaTo: "/travel/services",
@@ -49,49 +68,49 @@ const colors = {
 
 // ── SMOOTH GRADUAL SLIDE animation ──────────────────────────────────────
 const slideFromRight = {
-  initial: { 
-    x: "100%", 
+  initial: {
+    x: "100%",
     opacity: 0,
   },
-  animate: { 
-    x: 0, 
-    opacity: 1, 
-    transition: { 
+  animate: {
+    x: 0,
+    opacity: 1,
+    transition: {
       duration: 1.4,           // Slower entry (was 0.7)
       ease: [0.16, 1, 0.3, 1], // Very smooth deceleration curve
-    } 
+    }
   },
-  exit: { 
-    x: "-40%", 
-    opacity: 0, 
-    transition: { 
+  exit: {
+    x: "-40%",
+    opacity: 0,
+    transition: {
       duration: 0.9,           // Slower exit (was 0.4)
       ease: [0.5, 0, 0.75, 0], // Smooth acceleration out
-    } 
+    }
   },
 };
 
 const textFadeUp = {
-  initial: { 
-    opacity: 0, 
+  initial: {
+    opacity: 0,
     y: 40,
   },
-  animate: { 
-    opacity: 1, 
-    y: 0, 
-    transition: { 
+  animate: {
+    opacity: 1,
+    y: 0,
+    transition: {
       duration: 0.9,           // Slower text reveal (was 0.6)
       delay: 0.5,              // Longer delay (was 0.3)
       ease: [0.16, 1, 0.3, 1], // Smooth deceleration
-    } 
+    }
   },
-  exit: { 
-    opacity: 0, 
-    y: -30, 
-    transition: { 
+  exit: {
+    opacity: 0,
+    y: -30,
+    transition: {
       duration: 0.5,           // Slower exit
       ease: [0.5, 0, 0.75, 0],
-    } 
+    }
   },
 };
 
@@ -110,8 +129,9 @@ const fadeOnlyText = {
 };
 
 // Minimal scoped CSS — inline styles can't express :focus-visible, the
-// enlarged invisible dot hit-area, or box-sizing safety, so those live
-// here alongside the rest of the (inline-style-driven) component.
+// enlarged invisible dot hit-area, visually-hidden live-region text, or
+// box-sizing safety, so those live here alongside the inline-style-driven
+// rest of the component.
 const CSS = `
   .visa-slider-root,
   .visa-slider-root * {
@@ -120,16 +140,30 @@ const CSS = `
 
   .visa-slider-arrow:focus-visible,
   .visa-slider-cta:focus-visible,
-  .visa-slider-dot:focus-visible {
+  .visa-slider-dot:focus-visible,
+  .visa-slider-toggle:focus-visible {
     outline: 2px solid ${colors.goldLight};
     outline-offset: 3px;
+  }
+
+  .visa-slider-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 
   @media (prefers-reduced-motion: reduce) {
     .visa-slider-arrow,
     .visa-slider-cta,
     .visa-slider-dot,
-    .visa-slider-dot-pill {
+    .visa-slider-dot-pill,
+    .visa-slider-toggle {
       transition: none !important;
     }
   }
@@ -140,7 +174,9 @@ export default function VisaSlider() {
   const [viewportWidth, setViewportWidth] = useState(
     typeof window !== "undefined" ? window.innerWidth : 1280
   );
-  const [isPaused, setIsPaused] = useState(false);
+  const [isHoverPaused, setIsHoverPaused] = useState(false);
+  const [isFocusPaused, setIsFocusPaused] = useState(false);
+  const [isManuallyPaused, setIsManuallyPaused] = useState(false);
   const timerRef = useRef(null);
   const touchStartRef = useRef(null);
   const navigate = useNavigate();
@@ -158,29 +194,36 @@ export default function VisaSlider() {
   const isMobile = viewportWidth < 640;
   const isXSmall = viewportWidth < 360;
 
+  // Combined pause state: hover, keyboard focus, or the explicit user
+  // toggle all stop autoplay — WCAG 2.2.2 requires a way for the person
+  // to stop auto-advancing content, and hover alone doesn't cover
+  // keyboard or touch-only visitors.
+  const isPaused = isHoverPaused || isFocusPaused || isManuallyPaused;
+
   // Timer logic with pause support - smoother, longer intervals.
   // Also respects prefers-reduced-motion: no forced auto-rotation.
   const startTimer = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current);
     if (isPaused || reducedMotion) return;
     timerRef.current = setInterval(() => {
-      setCurrent(prev => (prev + 1) % SLIDES.length);
+      setCurrent((prev) => (prev + 1) % SLIDES.length);
     }, AUTOPLAY_MS);
   }, [isPaused, reducedMotion]);
 
   useEffect(() => {
     startTimer();
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
   }, [startTimer]);
 
+  // Manual navigation resets the countdown to a fresh window and correctly
+  // respects whatever pause state is currently active (previously this
+  // duplicated the interval logic and always restarted autoplay even while
+  // paused).
   const goTo = (i) => {
     setCurrent(i);
-    if (timerRef.current) clearInterval(timerRef.current);
-    if (reducedMotion) return;
-    // Reset timer on manual navigation with a slightly longer initial wait
-    timerRef.current = setInterval(() => {
-      setCurrent(prev => (prev + 1) % SLIDES.length);
-    }, AUTOPLAY_MS);
+    startTimer();
   };
 
   const prev = () => goTo((current - 1 + SLIDES.length) % SLIDES.length);
@@ -198,6 +241,18 @@ export default function VisaSlider() {
     touchStartRef.current = null;
   };
 
+  // ArrowLeft/ArrowRight navigation whenever focus is anywhere inside the
+  // slider (arrows, dots, CTA, or the toggle).
+  const handleKeyDown = (e) => {
+    if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      prev();
+    } else if (e.key === "ArrowRight") {
+      e.preventDefault();
+      next();
+    }
+  };
+
   const slide = SLIDES[current];
   const bgVariants = reducedMotion ? fadeOnlyBg : slideFromRight;
   const textVariants = reducedMotion ? fadeOnlyText : textFadeUp;
@@ -205,6 +260,9 @@ export default function VisaSlider() {
   return (
     <div
       className="visa-slider-root"
+      role="region"
+      aria-roledescription="carousel"
+      aria-label="Visa services highlights"
       style={{
         width: "100%",
         minHeight: isMobile ? "85vh" : "75vh",
@@ -214,12 +272,27 @@ export default function VisaSlider() {
         fontFamily: typography.body,
         touchAction: "pan-y",
       }}
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
+      onMouseEnter={() => setIsHoverPaused(true)}
+      onMouseLeave={() => setIsHoverPaused(false)}
+      onFocus={() => setIsFocusPaused(true)}
+      onBlur={(e) => {
+        // Only resume autoplay once focus has actually left the slider,
+        // not when it moves between two elements inside it.
+        if (!e.currentTarget.contains(e.relatedTarget)) {
+          setIsFocusPaused(false);
+        }
+      }}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
+      onKeyDown={handleKeyDown}
     >
       <style>{CSS}</style>
+
+      {/* Screen-reader-only announcement of slide changes — the visual
+          crossfade conveys nothing to assistive tech on its own. */}
+      <div className="visa-slider-sr-only" aria-live="polite" aria-atomic="true">
+        {`Slide ${current + 1} of ${SLIDES.length}: ${slide.heading}`}
+      </div>
 
       {/* Background Image - SMOOTH GRADUAL SLIDE from RIGHT (or fade if reduced motion) */}
       <AnimatePresence mode="wait">
@@ -242,18 +315,22 @@ export default function VisaSlider() {
             zIndex: 0,
             willChange: "transform, opacity",
           }}
+          aria-hidden="true"
         />
       </AnimatePresence>
 
       {/* Overlay - Darker on mobile */}
-      <div style={{
-        position: "absolute",
-        top: 0, left: 0, right: 0, bottom: 0,
-        background: isMobile 
-          ? `linear-gradient(180deg, rgba(11,15,23,0.88) 0%, rgba(11,15,23,0.55) 50%, rgba(11,15,23,0.9) 100%)`
-          : `linear-gradient(180deg, rgba(11,15,23,0.78) 0%, rgba(11,15,23,0.45) 40%, rgba(11,15,23,0.82) 100%)`,
-        zIndex: 1,
-      }} />
+      <div
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: isMobile
+            ? `linear-gradient(180deg, rgba(11,15,23,0.88) 0%, rgba(11,15,23,0.55) 50%, rgba(11,15,23,0.9) 100%)`
+            : `linear-gradient(180deg, rgba(11,15,23,0.78) 0%, rgba(11,15,23,0.45) 40%, rgba(11,15,23,0.82) 100%)`,
+          zIndex: 1,
+        }}
+      />
 
       {/* Content */}
       <div style={{
@@ -275,6 +352,9 @@ export default function VisaSlider() {
             initial="initial"
             animate="animate"
             exit="exit"
+            role="group"
+            aria-roledescription="slide"
+            aria-label={`${current + 1} of ${SLIDES.length}`}
             style={{
               maxWidth: isMobile ? "100%" : 760,
               width: "100%",
@@ -309,7 +389,6 @@ export default function VisaSlider() {
               lineHeight: 1.1,
               letterSpacing: "-0.03em",
               color: colors.cream,
-              marginBottom: isMobile ? 12 : 18,
               textShadow: "0 2px 20px rgba(0,0,0,0.5)",
               overflowWrap: "break-word",
               margin: 0,
@@ -466,9 +545,10 @@ export default function VisaSlider() {
         </button>
       )}
 
-      {/* Dots Navigation — visual pill stays the original tiny size, but
-          each button gets transparent padding so the actual tap target
-          is meaningfully larger (was ~8px, now ~32px). */}
+      {/* Bottom control row: pause/play toggle + dots navigation.
+          The pause/play toggle is only rendered when autoplay is actually
+          active (i.e. reduced motion is off) — with reduced motion there's
+          nothing running that needs to be stopped. */}
       <div style={{
         position: "absolute",
         bottom: isXSmall ? 14 : isMobile ? 20 : 30,
@@ -477,57 +557,100 @@ export default function VisaSlider() {
         zIndex: 3,
         display: "flex",
         alignItems: "center",
-        gap: 2,
+        gap: isMobile ? 6 : 10,
       }}>
-        {SLIDES.map((_, i) => (
+        {!reducedMotion && (
           <button
-            key={i}
-            className="visa-slider-dot"
-            onClick={() => goTo(i)}
-            aria-label={`Go to slide ${i + 1}`}
-            aria-current={i === current ? "true" : "false"}
+            className="visa-slider-toggle"
+            onClick={() => setIsManuallyPaused((prev) => !prev)}
+            aria-label={isManuallyPaused ? "Play automatic slideshow" : "Pause automatic slideshow"}
+            aria-pressed={isManuallyPaused}
             style={{
-              background: "transparent",
-              border: "none",
+              width: isMobile ? 26 : 30,
+              height: isMobile ? 26 : 30,
+              borderRadius: "50%",
+              background: "rgba(11, 15, 23, 0.5)",
+              border: `1px solid ${colors.goldLight}66`,
+              color: colors.cream,
               cursor: "pointer",
-              padding: isMobile ? 8 : 10,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
+              backdropFilter: "blur(8px)",
+              WebkitBackdropFilter: "blur(8px)",
+              transition: "all 0.3s cubic-bezier(0.25, 1, 0.5, 1)",
+              flexShrink: 0,
             }}
           >
-            <span
-              className="visa-slider-dot-pill"
-              style={{
-                display: "block",
-                width: i === current ? (isMobile ? 22 : 28) : (isMobile ? 7 : 8),
-                height: isMobile ? 7 : 8,
-                borderRadius: 50,
-                background: i === current
-                  ? `linear-gradient(135deg, ${colors.goldLight}, ${colors.gold})`
-                  : "rgba(255, 253, 248, 0.35)",
-                transition: "all 0.5s cubic-bezier(0.25, 1, 0.5, 1)",
-              }}
-            />
+            {isManuallyPaused ? (
+              <Play size={isMobile ? 11 : 13} />
+            ) : (
+              <Pause size={isMobile ? 11 : 13} />
+            )}
           </button>
-        ))}
+        )}
+
+        {/* Dots Navigation — visual pill stays the original tiny size, but
+            each button gets transparent padding so the actual tap target
+            is meaningfully larger (was ~8px, now ~32px). */}
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 2,
+        }}>
+          {SLIDES.map((_, i) => (
+            <button
+              key={i}
+              className="visa-slider-dot"
+              onClick={() => goTo(i)}
+              aria-label={`Go to slide ${i + 1}`}
+              aria-current={i === current}
+              style={{
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
+                padding: isMobile ? 8 : 10,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <span
+                className="visa-slider-dot-pill"
+                style={{
+                  display: "block",
+                  width: i === current ? (isMobile ? 22 : 28) : (isMobile ? 7 : 8),
+                  height: isMobile ? 7 : 8,
+                  borderRadius: 50,
+                  background: i === current
+                    ? `linear-gradient(135deg, ${colors.goldLight}, ${colors.gold})`
+                    : "rgba(255, 253, 248, 0.35)",
+                  transition: "all 0.5s cubic-bezier(0.25, 1, 0.5, 1)",
+                }}
+              />
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Swipe indicator - Mobile only */}
       {isMobile && (
-        <div style={{
-          position: "absolute",
-          bottom: isXSmall ? 44 : 50,
-          left: "50%",
-          transform: "translateX(-50%)",
-          zIndex: 3,
-          color: "rgba(255,255,255,0.25)",
-          fontSize: "10px",
-          fontFamily: typography.body,
-          fontWeight: 500,
-          letterSpacing: "0.05em",
-          whiteSpace: "nowrap",
-        }}>
+        <div
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            bottom: isXSmall ? 44 : 50,
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 3,
+            color: "rgba(255,255,255,0.25)",
+            fontSize: "10px",
+            fontFamily: typography.body,
+            fontWeight: 500,
+            letterSpacing: "0.05em",
+            whiteSpace: "nowrap",
+          }}
+        >
           Swipe to navigate
         </div>
       )}

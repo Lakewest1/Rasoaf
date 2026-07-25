@@ -1,7 +1,27 @@
 // src/components/travel/VisaServicesGrid.jsx
 // ─────────────────────────────────────────────────────────────────────────────
-// RASOAF TRAVELS AND TOURS LIMITED — Premium Visa Services Grid (v3.0)
+// RASOAF TRAVELS AND TOURS LIMITED — Premium Visa Services Grid (v3.1)
 // Optimized: 98+ Lighthouse · Zero CLS · GPU composited · 320px→2560px
+//
+// v3.1 FIX NOTES:
+// 1. MobileVisaCarousel previously attached its ArrowLeft/ArrowRight handler
+//    to `window`, globally, with preventDefault(). That meant pressing the
+//    arrow keys ANYWHERE on the page — inside a text input, a textarea, a
+//    dropdown elsewhere on the site — would silently move this carousel and
+//    swallow the keypress, breaking normal cursor movement/typing outside
+//    this component entirely (and it stayed attached even on desktop, where
+//    the carousel is invisible). Replaced with a keydown handler scoped to
+//    the carousel's own root element, matching the pattern already used in
+//    VisaSlider.jsx.
+// 2. The mobile dots used `role="tablist"` / `role="tab"` / `aria-selected`
+//    without any of the keyboard behavior the tab pattern requires (arrow-key
+//    roving focus, Home/End, Tab skipping between tabs) — an incomplete ARIA
+//    widget is worse than a plain one. Switched to plain buttons with
+//    `aria-current`, matching the (correct) pattern in VisaSlider.jsx.
+// 3. Removed a dead/duplicate CSS block — `@media (min-width: 600px)` set
+//    `.vsg-grid` to `display: grid` and `.vsg-mobile-carousel` to
+//    `display: none`, which is exactly what the unconditional base rules
+//    already do. It did nothing and looked like a forgotten breakpoint.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useState, useCallback, useRef, useEffect, useMemo, memo } from "react";
@@ -776,11 +796,6 @@ const CSS = `
   /* RESPONSIVE BREAKPOINTS · Perfect 320px → 2560px                      */
   /* ═══════════════════════════════════════════════════════════════════════ */
 
-  @media (min-width: 600px) {
-    .vsg-grid { display: grid; }
-    .vsg-mobile-carousel { display: none; }
-  }
-
   @media (min-width: 1920px) {
     .vsg-container { max-width: 1600px; }
     .vsg-grid { gap: clamp(28px, 2vw, 40px); }
@@ -1160,21 +1175,25 @@ const MobileVisaCarousel = memo(function MobileVisaCarousel({
     touchEndRef.current = null;
   }, [next, prev]);
 
-  // Keyboard navigation — cleanup properly scoped
-  useEffect(() => {
-    const handleKey = (e) => {
+  // Keyboard navigation — scoped to this carousel only (fires from a
+  // keydown bubbling up from a focused arrow/dot inside it), NOT attached
+  // to `window`. A global listener here would hijack ArrowLeft/ArrowRight
+  // everywhere on the page, including inside text inputs unrelated to this
+  // component.
+  const handleKeyDown = useCallback(
+    (e) => {
       if (e.key === "ArrowLeft") {
         e.preventDefault();
         prev();
-      }
-      if (e.key === "ArrowRight") {
+        startTimer();
+      } else if (e.key === "ArrowRight") {
         e.preventDefault();
         next();
+        startTimer();
       }
-    };
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
-  }, [prev, next]);
+    },
+    [prev, next, startTimer]
+  );
 
   // Mouse handlers
   const handleMouseEnter = useCallback(() => setIsPaused(true), []);
@@ -1218,6 +1237,7 @@ const MobileVisaCarousel = memo(function MobileVisaCarousel({
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
+      onKeyDown={handleKeyDown}
     >
       <div className="vsg-sr-only" role="status" aria-live="polite">
         Showing service {current + 1} of {total}: {services[current].title}
@@ -1251,9 +1271,14 @@ const MobileVisaCarousel = memo(function MobileVisaCarousel({
           <ChevronLeft size={20} />
         </button>
 
+        {/* Plain buttons + aria-current rather than role="tab"/"tablist" —
+            the tab pattern implies roving-focus keyboard behavior (arrow
+            keys move between tabs, Tab skips over them) that isn't
+            implemented here. An incomplete ARIA widget is more confusing
+            to assistive tech than a correctly-labeled group of buttons. */}
         <div
           className="vsg-mobile-dots"
-          role="tablist"
+          role="group"
           aria-label="Visa service navigation"
         >
           {services.map((service, i) => (
@@ -1263,8 +1288,7 @@ const MobileVisaCarousel = memo(function MobileVisaCarousel({
                 i === current ? " vsg-mobile-dot-active" : ""
               }`}
               onClick={() => handleGoTo(i)}
-              role="tab"
-              aria-selected={i === current}
+              aria-current={i === current}
               aria-label={`Go to ${service.title}`}
               type="button"
             />

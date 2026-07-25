@@ -1,16 +1,20 @@
 // src/components/travel/HeroSection.jsx
 // ─────────────────────────────────────────────────────────────────────────────
-// RASOAF TRAVELS AND TOURS LIMITED — Premium Cinematic Travel Hero (v5.0)
+// RASOAF TRAVELS AND TOURS LIMITED — Premium Cinematic Travel Hero (v5.1)
 // Optimized: Core Web Vitals · GPU compositing · 98+ Lighthouse · 320px→2560px
 // v5.0: Background swapped to HeroBackground — multi-scene cinematic
 //       storyboard (airport → boarding → takeoff → clouds → destinations →
 //       landing), Cloudinary placeholder-driven, crossfading in a loop.
 //       Travel hero only — does not touch common/EarthScene or Gateway.
+// v5.1: Added a trust/accreditation strip beneath the CTA — CAC registration
+//       number and IATA-approved status, styled to match the badge/microcopy
+//       language already established. Purely additive; no existing layout,
+//       animation, or background logic touched.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useMemo, useCallback, memo, lazy, Suspense } from "react";
 import { motion, useReducedMotion } from "framer-motion";
-import { Star, ArrowRight } from "lucide-react";
+import { Star, ArrowRight, ShieldCheck, BadgeCheck } from "lucide-react";
 
 // Lazy load with prefetch on idle — points at the travel-only cinematic
 // storyboard background, NOT ../common/EarthScene. Gateway is unaffected.
@@ -44,6 +48,9 @@ const TOKENS = Object.freeze({
   badgeBgHover: "rgba(212, 160, 23, 0.09)",
   ctaShadow: "rgba(212, 160, 23, 0.30)",
   ctaShadowHover: "rgba(212, 160, 23, 0.44)",
+  trustText: "rgba(255, 255, 255, 0.46)",
+  trustIcon: "rgba(247, 201, 72, 0.85)",
+  trustDivider: "rgba(255, 255, 255, 0.22)",
 });
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -114,6 +121,20 @@ const CTA_BUTTON_VARIANTS = Object.freeze({
   tap: {
     y: -1,
     transition: { duration: 0.1 },
+  },
+});
+
+// Trust strip fades in last, slightly after everything else has settled
+const TRUST_STRIP_VARIANTS = Object.freeze({
+  hidden: { opacity: 0, y: 10 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5,
+      ease: [0.25, 1, 0.5, 1],
+      delay: 0.2,
+    },
   },
 });
 
@@ -437,6 +458,44 @@ const STYLES = `
   }
 
   /* ═══════════════════════════════════════════════════════════════════════ */
+  /* TRUST / ACCREDITATION STRIP — CAC + IATA                              */
+  /* ═══════════════════════════════════════════════════════════════════════ */
+
+  .th-trust-strip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    row-gap: 6px;
+    column-gap: 14px;
+    margin-top: clamp(22px, 3.5vh, 30px);
+  }
+
+  .th-trust-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--th-body);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    color: ${TOKENS.trustText};
+    white-space: nowrap;
+  }
+
+  .th-trust-icon {
+    display: flex;
+    flex-shrink: 0;
+    color: ${TOKENS.trustIcon};
+  }
+
+  .th-trust-divider {
+    color: ${TOKENS.trustDivider};
+    font-size: 12px;
+    line-height: 1;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════ */
   /* RESPONSIVE — All breakpoints preserved                               */
   /* ═══════════════════════════════════════════════════════════════════════ */
 
@@ -461,6 +520,8 @@ const STYLES = `
     }
     .th-text-atmosphere { height: 42%; }
     .th-badge { padding: 7px 18px; }
+    .th-trust-strip { column-gap: 12px; }
+    .th-trust-item { font-size: 11.5px; }
   }
 
   @media (max-width: 480px) {
@@ -495,6 +556,13 @@ const STYLES = `
       font-size: 11px;
       letter-spacing: 0.08em;
     }
+    .th-trust-strip {
+      flex-direction: column;
+      row-gap: 8px;
+      margin-top: 18px;
+    }
+    .th-trust-divider { display: none; }
+    .th-trust-item { font-size: 11px; }
   }
 
   @media (max-width: 360px) {
@@ -507,6 +575,7 @@ const STYLES = `
       font-size: 14px;
       min-height: 48px;
     }
+    .th-trust-item { font-size: 10.5px; }
   }
 
   /* ═══════════════════════════════════════════════════════════════════════ */
@@ -567,6 +636,9 @@ const STYLES = `
     }
     .th-heading-gold {
       -webkit-text-fill-color: black !important;
+      color: black !important;
+    }
+    .th-trust-item {
       color: black !important;
     }
   }
@@ -689,6 +761,54 @@ const CTAGroup = memo(function CTAGroup({ ctaText, ctaMicrocopy, onCtaClick }) {
 CTAGroup.displayName = "CTAGroup";
 
 // ══════════════════════════════════════════════════════════════════════════
+// TrustStrip — Memoized. Registration + accreditation credentials.
+// Update the `items` array below if additional credentials need to be added
+// (e.g. NIS/immigration licensing, ARC/ATOL numbers) — keep each entry to
+// verified, real registration details only.
+// ══════════════════════════════════════════════════════════════════════════
+const TRUST_ITEMS = Object.freeze([
+  { icon: BadgeCheck, label: "CAC No: 9334024" },
+  { icon: ShieldCheck, label: "IATA Approved" },
+]);
+
+const TrustStrip = memo(function TrustStrip() {
+  const prefersReducedMotion = useReducedMotion();
+
+  const content = (
+    <div
+      className="th-trust-strip"
+      role="group"
+      aria-label="Registration and accreditation details"
+    >
+      {TRUST_ITEMS.map(({ icon: Icon, label }, index) => (
+        <span className="th-trust-item" key={label}>
+          {index > 0 && (
+            <span className="th-trust-divider" aria-hidden="true">
+              •
+            </span>
+          )}
+          <span className="th-trust-icon" aria-hidden="true">
+            <Icon size={13} strokeWidth={2.25} />
+          </span>
+          {label}
+        </span>
+      ))}
+    </div>
+  );
+
+  if (prefersReducedMotion) {
+    return content;
+  }
+
+  return (
+    <motion.div variants={TRUST_STRIP_VARIANTS}>
+      {content}
+    </motion.div>
+  );
+});
+TrustStrip.displayName = "TrustStrip";
+
+// ══════════════════════════════════════════════════════════════════════════
 // Main Hero Section — Memoized
 // ══════════════════════════════════════════════════════════════════════════
 const TravelHeroSection = memo(function TravelHeroSection({
@@ -791,6 +911,8 @@ const TravelHeroSection = memo(function TravelHeroSection({
               onCtaClick={onCtaClick}
             />
           )}
+
+          <TrustStrip />
         </motion.div>
       </section>
     </>
