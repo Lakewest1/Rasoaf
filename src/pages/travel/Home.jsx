@@ -1,9 +1,13 @@
-// src/pages/travel/Home.jsx (FULLY OPTIMIZED)
+// src/pages/travel/Home.jsx (FULLY OPTIMIZED v2.0)
 // ─────────────────────────────────────────────────────────────────────────────
 // RASOAF TRAVELS AND TOURS LIMITED — Travel Home Page (FAST + PREMIUM)
-// 
+//
+// NEW COMPONENTS ADDED:
+// - Partners section (trusted brands marquee)
+// - HeroAirplaneBackground (cinematic aircraft scene)
+//
 // OPTIMIZATIONS:
-// 1. Lazy load 12 below-fold sections (4 load immediately)
+// 1. Lazy load 14 below-fold sections (4 load immediately)
 // 2. Scroll reveal animations on all sections
 // 3. Perfect responsive design
 // 4. Premium styling and interactions
@@ -22,9 +26,10 @@ import {
   AboutRasoaf,
 } from "../../components/travel";
 
-// ─────────────────────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════
 // LAZY LOAD SECTIONS (below fold)
-// ─────────────────────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════
+const Partners = lazy(() => import("../../components/home/Partners"));
 const VisaServicesGrid = lazy(() => import("../../components/travel/VisaServicesGrid"));
 const TravelProcess = lazy(() => import("../../components/travel/TravelProcess"));
 const WhyChooseRasoaf = lazy(() => import("../../components/travel/WhyChooseRasoaf"));
@@ -38,9 +43,9 @@ const FAQSection = lazy(() => import("../../components/travel/FAQSection"));
 const OfficeLocations = lazy(() => import("../../components/travel/OfficeLocations"));
 const ContactNewsletter = lazy(() => import("../../components/travel/ContactNewsletter"));
 
-// ─────────────────────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════
 // ANIMATION VARIANTS
-// ─────────────────────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════
 const fadeInUp = {
   hidden: { opacity: 0, y: 40 },
   visible: {
@@ -50,39 +55,40 @@ const fadeInUp = {
   },
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// LOADING FALLBACK (minimal)
-// ─────────────────────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════
+// LOADING FALLBACK (minimal — prevents layout shift)
+// ══════════════════════════════════════════════════════════════════════════
 const SectionLoader = () => (
   <div
     style={{
-      minHeight: "400px",
+      minHeight: "300px",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      background: "rgba(5, 10, 20, 0.5)",
+      background: "transparent",
     }}
   >
     <div
       style={{
         width: 40,
         height: 40,
-        border: "2px solid #D4A01730",
+        border: "2px solid rgba(212, 160, 23, 0.15)",
         borderTopColor: "#D4A017",
         borderRadius: "50%",
-        animation: "spin 0.8s linear infinite",
+        animation: "travel-spin 0.8s linear infinite",
       }}
+      aria-hidden="true"
     />
-    <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    <style>{`@keyframes travel-spin { to { transform: rotate(360deg); } }`}</style>
   </div>
 );
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SCROLL REVEAL WRAPPER (with animation)
-// ─────────────────────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════
+// SCROLL REVEAL WRAPPER
+// ══════════════════════════════════════════════════════════════════════════
 function ScrollRevealSection({ children, id }) {
   const { ref, inView } = useInView({
-    threshold: 0.1,
+    threshold: 0.08,
     triggerOnce: true,
   });
 
@@ -94,16 +100,14 @@ function ScrollRevealSection({ children, id }) {
       animate={inView ? "visible" : "hidden"}
       variants={fadeInUp}
     >
-      <Suspense fallback={<SectionLoader />}>
-        {children}
-      </Suspense>
+      <Suspense fallback={<SectionLoader />}>{children}</Suspense>
     </motion.div>
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════
 // MAIN COMPONENT
-// ─────────────────────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════
 export default function TravelHome() {
   const handleExploreClick = () => {
     const el = document.getElementById("visa-services-grid");
@@ -116,6 +120,7 @@ export default function TravelHome() {
     <div style={{ minHeight: "100vh", background: "#050A14" }}>
       {/* ═══════════════════════════════════════════════════════════
           SECTION 1: HERO — Loads immediately (critical)
+          Uses HeroAirplaneBackground internally (cinematic aircraft)
           Expected render time: <500ms
       ═══════════════════════════════════════════════════════════ */}
       <TravelHeroSection
@@ -127,7 +132,7 @@ export default function TravelHome() {
       />
 
       {/* ═══════════════════════════════════════════════════════════
-          SECTION 2: COUNTRY TICKER — Loads immediately (fast, important)
+          SECTION 2: COUNTRY TICKER — Loads immediately (brand trust)
           Expected render time: <300ms
       ═══════════════════════════════════════════════════════════ */}
       <CountryTicker />
@@ -146,67 +151,79 @@ export default function TravelHome() {
       ═══════════════════════════════════════════════════════════ */}
       <AboutRasoaf />
 
-      {/* ═══════════════════════════════════════════════════════════
-          SECTIONS 5-16: LAZY LOADED (below fold)
-          Load on-demand as user scrolls, with animations
-      ═══════════════════════════════════════════════════════════ */}
 
-      {/* SECTION 5: VISA SERVICES GRID */}
+        {/* SECTION 6: VISA SERVICES GRID */}
       <ScrollRevealSection id="visa-services-grid">
         <VisaServicesGrid />
       </ScrollRevealSection>
 
-      {/* SECTION 6: TRAVEL PROCESS */}
+      {/* ═══════════════════════════════════════════════════════════
+          SECTION 5: PARTNERS — Trusted travel brands marquee
+          Lazy loaded below fold with scroll reveal
+      ═══════════════════════════════════════════════════════════ */}
+      
+      <ScrollRevealSection id="partners">
+        <Partners />
+      </ScrollRevealSection>
+
+      {/* ═══════════════════════════════════════════════════════════
+          SECTIONS 6-16: LAZY LOADED (below fold)
+          Load on-demand as user scrolls, with animations
+      ═══════════════════════════════════════════════════════════ */}
+
+     
+
+      {/* SECTION 7: TRAVEL PROCESS */}
       <ScrollRevealSection>
         <TravelProcess />
       </ScrollRevealSection>
 
-      {/* SECTION 7: WHY CHOOSE RASOAF */}
+      {/* SECTION 8: WHY CHOOSE RASOAF */}
       <ScrollRevealSection>
         <WhyChooseRasoaf />
       </ScrollRevealSection>
 
-      {/* SECTION 8: TRAVEL EXPERIENCES */}
+      {/* SECTION 9: TRAVEL EXPERIENCES */}
       <ScrollRevealSection>
         <TravelExperience />
       </ScrollRevealSection>
 
-      {/* SECTION 9: FEATURED DESTINATIONS */}
+      {/* SECTION 10: FEATURED DESTINATIONS */}
       <ScrollRevealSection>
         <FeaturedDestinations />
       </ScrollRevealSection>
 
-      {/* SECTION 10: TRAINING */}
+      {/* SECTION 11: TRAINING */}
       <ScrollRevealSection>
         <Training />
       </ScrollRevealSection>
 
-      {/* SECTION 11: VISA SUPPORT */}
+      {/* SECTION 12: VISA SUPPORT */}
       <ScrollRevealSection>
         <VisaSupport />
       </ScrollRevealSection>
 
-      {/* SECTION 12: STATISTICS */}
+      {/* SECTION 13: STATISTICS */}
       <ScrollRevealSection>
         <TravelStatistics />
       </ScrollRevealSection>
 
-      {/* SECTION 13: TESTIMONIALS */}
+      {/* SECTION 14: TESTIMONIALS */}
       <ScrollRevealSection>
         <TestimonialsSection />
       </ScrollRevealSection>
 
-      {/* SECTION 14: FAQ */}
+      {/* SECTION 15: FAQ */}
       <ScrollRevealSection>
         <FAQSection />
       </ScrollRevealSection>
 
-      {/* SECTION 15: OFFICE LOCATIONS */}
+      {/* SECTION 16: OFFICE LOCATIONS */}
       <ScrollRevealSection>
         <OfficeLocations />
       </ScrollRevealSection>
 
-      {/* SECTION 16: CONTACT / NEWSLETTER */}
+      {/* SECTION 17: CONTACT / NEWSLETTER */}
       <ScrollRevealSection>
         <ContactNewsletter />
       </ScrollRevealSection>

@@ -1,19 +1,24 @@
 // src/components/travel/HeroSection.jsx
 // ─────────────────────────────────────────────────────────────────────────────
-// RASOAF TRAVELS AND TOURS LIMITED — Premium Cinematic Travel Hero (v4.1)
+// RASOAF TRAVELS AND TOURS LIMITED — Premium Cinematic Travel Hero (v5.0)
 // Optimized: Core Web Vitals · GPU compositing · 98+ Lighthouse · 320px→2560px
+// v5.0: Background swapped to HeroBackground — multi-scene cinematic
+//       storyboard (airport → boarding → takeoff → clouds → destinations →
+//       landing), Cloudinary placeholder-driven, crossfading in a loop.
+//       Travel hero only — does not touch common/EarthScene or Gateway.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useMemo, useCallback, memo, lazy, Suspense } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { Star, ArrowRight } from "lucide-react";
 
-// Lazy load with prefetch on idle
-const EarthScene = lazy(() =>
+// Lazy load with prefetch on idle — points at the travel-only cinematic
+// storyboard background, NOT ../common/EarthScene. Gateway is unaffected.
+const HeroBackground = lazy(() =>
   import(
     /* webpackPrefetch: true */
-    /* webpackChunkName: "earth-scene" */
-    "../common/EarthScene"
+    /* webpackChunkName: "hero-background" */
+    "./HeroBackground"
   )
 );
 
@@ -177,8 +182,8 @@ const STYLES = `
     outline-offset: 2px;
   }
 
-  /* Earth container — GPU composited */
-  .th-earth-container {
+  /* Background scene container — GPU composited */
+  .th-scene-bg-container {
     position: absolute;
     inset: 0;
     z-index: 2;
@@ -187,15 +192,17 @@ const STYLES = `
     contain: layout paint;
   }
 
-  /* Earth skeleton — static radial gradient */
-  .th-earth-skeleton {
+  /* Skeleton shown while the storyboard chunk loads — warm sunrise tones so
+     there's no color flash between skeleton and the first scene's poster */
+  .th-scene-skeleton {
     position: absolute;
     inset: 0;
     background: radial-gradient(
-      circle at 50% 35%,
-      rgba(212, 160, 23, 0.08) 0%,
-      rgba(1, 6, 18, 0.6) 50%,
-      rgba(1, 6, 18, 1) 100%
+      circle at 50% 30%,
+      rgba(255, 177, 107, 0.35) 0%,
+      rgba(255, 143, 94, 0.25) 35%,
+      rgba(60, 90, 130, 0.9) 75%,
+      rgba(22, 36, 63, 1) 100%
     );
   }
 
@@ -547,7 +554,7 @@ const STYLES = `
       min-height: auto;
       padding: 20px;
     }
-    .th-earth-container,
+    .th-scene-bg-container,
     .th-text-atmosphere,
     .th-badge,
     .th-cta {
@@ -741,13 +748,13 @@ const TravelHeroSection = memo(function TravelHeroSection({
           Skip to main content
         </a>
 
-        <div className="th-earth-container">
+        <div className="th-scene-bg-container">
           <Suspense
             fallback={
-              <div className="th-earth-skeleton" aria-hidden="true" />
+              <div className="th-scene-skeleton" aria-hidden="true" />
             }
           >
-            <EarthScene mode="hero" />
+            <HeroBackground reducedMotion={prefersReducedMotion} />
           </Suspense>
         </div>
 
