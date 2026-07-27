@@ -1,7 +1,7 @@
 // src/pages/visa/BusinessVisa.jsx
 // ─────────────────────────────────────────────────────────────────────────────
 // RASOAF TRAVELS AND TOURS LIMITED — Business Visa Page
-// v3: Updated content · All original features preserved · Responsive
+// v4: Formspree .env integration · Proven payload format · All content preserved
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useState, useCallback, useEffect } from "react";
@@ -12,6 +12,11 @@ import {
   ChevronDown, CheckCircle, Building2, FileText, Plane
 } from "lucide-react";
 
+// ══════════════════════════════════════════════════════════════════════════
+// Formspree Endpoint — from .env file
+// ══════════════════════════════════════════════════════════════════════════
+const FORMSPREE_ENDPOINT = import.meta.env.VITE_FORMSPREE_BUSINESS_VISA || "";
+
 // ── Rasoaf Brand Colors ──────────────────────────────────────────────────
 const brand = {
   gold: "#D4A017", goldLight: "#F7C948", goldDark: "#B8860B",
@@ -21,8 +26,6 @@ const brand = {
   gray500: "#737373", gray600: "#525252", gray700: "#404040",
   green: "#22c55e", greenBg: "rgba(34, 197, 94, 0.1)", red: "#ef4444", redBg: "rgba(239, 68, 68, 0.1)",
 };
-
-const FORMSPREE_ENDPOINT = "https://formspree.io/f/your-form-id-here";
 
 const CONTACT_INFO = { phone: "+234 903 770 7888", email: "info@rasoaf.com" };
 
@@ -113,7 +116,7 @@ const s = {
   backLink: { textAlign: "center", paddingBottom: "clamp(24px, 4vh, 40px)" },
   backLinkAnchor: { display: "inline-flex", alignItems: "center", gap: "8px", color: brand.gray500, fontSize: "clamp(12px, 1.1vw, 14px)", textDecoration: "none", transition: "color 0.2s ease", minHeight: "44px", padding: "8px 0" },
 
-  // Form Styles (unchanged)
+  // Form Styles
   formWrapper: { display: "flex", background: brand.white, borderRadius: "clamp(16px, 2vw, 24px)", overflow: "hidden", boxShadow: "0 20px 60px rgba(0,0,0,0.08)", border: `1px solid ${brand.borderLight}`, minHeight: "clamp(500px, 60vh, 650px)" },
   formImageSide: { width: "42%", position: "relative", overflow: "hidden", background: `linear-gradient(180deg, ${brand.dark} 0%, #1a1207 100%)`, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", padding: "clamp(20px, 4vw, 48px) clamp(16px, 3vw, 36px)", flexShrink: 0 },
   formImageBg: { position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.4 },
@@ -196,7 +199,7 @@ function CollapsibleText({ text, isMobile }) {
 }
 
 // ══════════════════════════════════════════════════════════════════════════
-//  BUSINESS VISA FORM (unchanged)
+//  BUSINESS VISA FORM — With Proven Formspree Integration
 // ══════════════════════════════════════════════════════════════════════════
 function BusinessVisaForm() {
   const [formData, setFormData] = useState({ firstName: "", lastName: "", email: "", phoneCode: "+234", phone: "", destination: "", purpose: "", company: "", message: "" });
@@ -210,7 +213,12 @@ function BusinessVisaForm() {
     e.preventDefault(); setLoading(true); setFormError(null);
     try {
       const fp = `${formData.phoneCode} ${formData.phone}`;
-      const sd = { _subject: `New Business Visa - ${formData.firstName} ${formData.lastName}`, "First Name": formData.firstName, "Last Name": formData.lastName, "Email": formData.email, "Phone": fp, "Destination": formData.destination, "Purpose": formData.purpose, "Company": formData.company || "N/P", "Message": formData.message || "N/A", "Submitted At": new Date().toLocaleString(), "Page": window.location.href };
+      const sd = { 
+        email: formData.email,
+        name: `${formData.firstName} ${formData.lastName}`,
+        phone: fp,
+        message: `Business Visa Enquiry\n\nName: ${formData.firstName} ${formData.lastName}\nEmail: ${formData.email}\nPhone: ${fp}\nDestination: ${formData.destination}\nPurpose: ${formData.purpose}\nCompany: ${formData.company || "N/P"}\nMessage: ${formData.message || "N/A"}`
+      };
       const r = await fetch(FORMSPREE_ENDPOINT, { method: "POST", headers: { "Content-Type": "application/json", "Accept": "application/json" }, body: JSON.stringify(sd) });
       if (!r.ok) { const ed = await r.json().catch(() => ({})); throw new Error(ed.error || "Failed to submit."); }
       setLoading(false); setSubmitted(true);
@@ -224,7 +232,9 @@ function BusinessVisaForm() {
   if (submitted) return (
     <div style={s.successWrapper} className="form-flex-container">
       <div style={s.successImgSide} className="form-image-side"><img src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=600&h=900&fit=crop" alt="" style={{ ...s.formImageBg, opacity: 0.35 }} /><div style={s.formImageOverlay} /><div style={{ position: "relative", zIndex: 2, textAlign: "center" }}><CheckCircle size={48} color={brand.green} style={{ marginBottom: "16px" }} /><h3 style={{ fontSize: "clamp(16px,2vw,22px)", fontWeight: 700, color: brand.white, fontFamily: "'Manrope',sans-serif" }}>Enquiry Sent!</h3></div></div>
-      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }} style={s.successContent}><div style={s.successIcon}><CheckCircle size={36} color={brand.green} /></div><h3 style={s.successTitle}>Business Enquiry Submitted!</h3><p style={s.successMsg}>Your enquiry has been received. Our corporate specialist will contact you within <strong>24 hours</strong>.</p><div style={s.successDetails}><div style={s.successDetail}><Clock size={14} color={brand.gold} /><span>Response within 24h</span></div><div style={s.successDetail}><Shield size={14} color={brand.gold} /><span>Data secure</span></div></div><button onClick={() => setSubmitted(false)} style={s.successBtn} onMouseEnter={e => { e.target.style.borderColor = brand.gold; e.target.style.color = brand.goldDark; e.target.style.background = brand.goldBg; }} onMouseLeave={e => { e.target.style.borderColor = brand.borderLight; e.target.style.color = brand.gray600; e.target.style.background = brand.white; }}>Submit Another</button></motion.div>
+      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }} style={s.successContent}><div style={s.successIcon}><CheckCircle size={36} color={brand.green} /></div><h3 style={s.successTitle}>Business Enquiry Submitted!</h3><p style={s.successMsg}>Your enquiry has been received. Our corporate specialist will contact you within <strong>24 hours</strong>.</p><div style={s.successDetails}><div style={s.successDetail}><Clock size={14} color={brand.gold} /><span>Response within 24h</span></div><div style={s.successDetail}><Shield size={14} color={brand.gold} /><span>Data secure</span></div></div>
+        <button onClick={() => setSubmitted(false)} style={s.successBtn} onMouseEnter={e => { e.currentTarget.style.border = `1px solid ${brand.gold}`; e.currentTarget.style.color = brand.goldDark; e.currentTarget.style.background = brand.goldBg; }} onMouseLeave={e => { e.currentTarget.style.border = `1px solid ${brand.borderLight}`; e.currentTarget.style.color = brand.gray600; e.currentTarget.style.background = brand.white; }}>Submit Another</button>
+      </motion.div>
     </div>
   );
 

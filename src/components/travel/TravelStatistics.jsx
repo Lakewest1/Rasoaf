@@ -1,12 +1,14 @@
 // src/components/travel/TravelStatistics.jsx
 // ─────────────────────────────────────────────────────────────────────────────
-// RASOAF TRAVELS AND TOURS LIMITED — Enterprise Premium Statistics (v11.0)
+// RASOAF TRAVELS AND TOURS LIMITED — Enterprise Premium Statistics (v12.0)
 // Optimized: 99+ Lighthouse · 60fps · GPU composited · 320px→2560px
+// Staggered card reveal · Zero layout thrashing
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useRef, useState, useEffect, useMemo, memo, useCallback } from "react";
 import { motion, useInView, useReducedMotion } from "framer-motion";
 import { Briefcase, Users, Globe, CheckCircle } from "lucide-react";
+import { itemVariants } from "../../pages/travel/Home";
 
 // ══════════════════════════════════════════════════════════════════════════
 // Constants — Module scope, frozen
@@ -69,17 +71,37 @@ const HEADER_VARIANTS = Object.freeze({
   },
 });
 
-const CARD_VARIANTS = Object.freeze({
-  hidden: { opacity: 0, y: 35 },
+// ══════════════════════════════════════════════════════════════════════════
+// Stagger Container Variant — Orchestrates children
+// ══════════════════════════════════════════════════════════════════════════
+const STAGGER_CONTAINER = {
+  hidden: { opacity: 1 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.15, // 150ms between each card
+      delayChildren: 0.2,    // Slight delay before first card starts
+    },
+  },
+};
+
+// Individual card variant (matches Home.jsx itemVariants style)
+const CARD_VARIANT = {
+  hidden: { 
+    opacity: 0, 
+    y: 60,
+    scale: 0.92,
+  },
   visible: {
     opacity: 1,
     y: 0,
+    scale: 1,
     transition: {
-      duration: 0.5,
-      ease: [0.16, 1, 0.3, 1],
+      duration: 0.7,
+      ease: [0.16, 1, 0.3, 1], // Smooth deceleration
     },
   },
-});
+};
 
 // ══════════════════════════════════════════════════════════════════════════
 // AnimatedNumber — Optimized with ref to avoid per-frame re-renders
@@ -112,7 +134,6 @@ const AnimatedNumber = memo(function AnimatedNumber({
         progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
       const newCount = Math.floor(easeOutExpo * target);
 
-      // Only update state when the displayed value changes (not every frame)
       if (newCount !== countRef.current) {
         countRef.current = newCount;
         setCount(newCount);
@@ -273,6 +294,8 @@ const STYLES = `
     display: flex;
     justify-content: center;
     padding: 24px 0;
+    /* CRITICAL: perspective for GPU-accelerated children */
+    perspective: 1000px;
   }
 
   .rts-grid {
@@ -292,6 +315,10 @@ const STYLES = `
     max-width: 280px;
     min-width: 0;
     padding: 16px;
+    /* GPU layer for smooth animation */
+    will-change: transform, opacity;
+    transform: translateZ(0);
+    backface-visibility: hidden;
   }
 
   /* ═══════════════════════════════════════════════════════════════════════ */
@@ -648,16 +675,6 @@ const BadgeCard = memo(function BadgeCard({ stat, index }) {
   const isInView = useInView(cardRef, { once: true, margin: "-50px" });
   const prefersReducedMotion = useReducedMotion();
 
-  // Stable transition delay
-  const customTransition = useMemo(
-    () => ({
-      duration: 0.5,
-      delay: index * 0.08,
-      ease: [0.16, 1, 0.3, 1],
-    }),
-    [index]
-  );
-
   if (prefersReducedMotion) {
     return (
       <div ref={cardRef} className="rts-card-reveal">
@@ -687,17 +704,15 @@ const BadgeCard = memo(function BadgeCard({ stat, index }) {
   }
 
   return (
-    <div ref={cardRef} className="rts-card-reveal">
-      <motion.div
-        className="rts-badge"
-        variants={CARD_VARIANTS}
-        initial="hidden"
-        animate={isInView ? "visible" : "hidden"}
-        transition={customTransition}
-        whileHover={{ y: -6 }}
-        role="article"
-        aria-label={`${stat.label}: ${stat.value}${stat.suffix}`}
-      >
+    <motion.div
+      ref={cardRef}
+      className="rts-card-reveal"
+      variants={CARD_VARIANT}
+      whileHover={{ y: -6 }}
+      role="article"
+      aria-label={`${stat.label}: ${stat.value}${stat.suffix}`}
+    >
+      <div className="rts-badge">
         <div className="rts-shield">
           <div className="rts-shield-icon">
             <Icon color={stat.color} strokeWidth={1.6} aria-hidden="true" />
@@ -713,17 +728,20 @@ const BadgeCard = memo(function BadgeCard({ stat, index }) {
             />
           </div>
         </div>
-      </motion.div>
-    </div>
+      </div>
+    </motion.div>
   );
 });
 
 // ══════════════════════════════════════════════════════════════════════════
-// Main Component — Optimized
+// Main Component — Optimized with Stagger Animation
 // ══════════════════════════════════════════════════════════════════════════
 const TravelStatistics = memo(function TravelStatistics() {
   const headerRef = useRef(null);
+  const gridRef = useRef(null);
   const isHeaderInView = useInView(headerRef, { once: true, margin: "-50px" });
+  const isGridInView = useInView(gridRef, { once: true, margin: "-50px" });
+  const prefersReducedMotion = useReducedMotion();
 
   return (
     <>
@@ -748,11 +766,19 @@ const TravelStatistics = memo(function TravelStatistics() {
             </p>
           </motion.div>
           <div className="rts-grid-wrapper">
-            <div className="rts-grid" role="list" aria-label="Statistics">
+            <motion.div
+              ref={gridRef}
+              className="rts-grid"
+              role="list"
+              aria-label="Statistics"
+              variants={prefersReducedMotion ? {} : STAGGER_CONTAINER}
+              initial="hidden"
+              animate={isGridInView ? "visible" : "hidden"}
+            >
               {STATS.map((stat, i) => (
                 <BadgeCard key={i} stat={stat} index={i} />
               ))}
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>

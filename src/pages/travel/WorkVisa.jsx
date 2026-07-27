@@ -1,7 +1,7 @@
 // src/pages/visa/WorkVisa.jsx
 // ─────────────────────────────────────────────────────────────────────────────
 // RASOAF TRAVELS AND TOURS LIMITED — Work Visa Page
-// v2: 100% Responsive · Collapsible sections · Touch optimized · All content preserved
+// v3: Formspree .env integration · Proven payload format · All content preserved
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useState, useCallback, useEffect } from "react";
@@ -13,6 +13,11 @@ import {
 } from "lucide-react";
 import { WORK_VISA, CONTACT_INFO } from "../../data/visaContent";
 
+// ══════════════════════════════════════════════════════════════════════════
+// Formspree Endpoint — from .env file
+// ══════════════════════════════════════════════════════════════════════════
+const FORMSPREE_ENDPOINT = import.meta.env.VITE_FORMSPREE_WORK_VISA || "";
+
 // ── Rasoaf Brand Colors ──────────────────────────────────────────────────
 const brand = {
   gold: "#D4A017", goldLight: "#F7C948", goldDark: "#B8860B",
@@ -22,8 +27,6 @@ const brand = {
   gray500: "#737373", gray600: "#525252", gray700: "#404040",
   green: "#22c55e", greenBg: "rgba(34, 197, 94, 0.1)", red: "#ef4444", redBg: "rgba(239, 68, 68, 0.1)",
 };
-
-const FORMSPREE_ENDPOINT = "https://formspree.io/f/your-form-id-here";
 
 const countryCodes = [
   { code: "+234", country: "Nigeria" }, { code: "+1", country: "USA" },
@@ -167,7 +170,7 @@ function CollapsibleText({ text, isMobile }) {
 }
 
 // ══════════════════════════════════════════════════════════════════════════
-//  WORK VISA FORM
+//  WORK VISA FORM — With Proven Formspree Integration
 // ══════════════════════════════════════════════════════════════════════════
 function WorkVisaForm() {
   const [formData, setFormData] = useState({ firstName: "", lastName: "", email: "", phoneCode: "+234", phone: "", destinationCountry: "", jobType: "", message: "" });
@@ -181,7 +184,12 @@ function WorkVisaForm() {
     e.preventDefault(); setLoading(true); setFormError(null);
     try {
       const fp = `${formData.phoneCode} ${formData.phone}`;
-      const sd = { _subject: `New Work Visa - ${formData.firstName} ${formData.lastName}`, "First Name": formData.firstName, "Last Name": formData.lastName, "Email": formData.email, "Phone": fp, "Destination": formData.destinationCountry, "Job Type": formData.jobType, "Message": formData.message || "N/A", "Submitted At": new Date().toLocaleString(), "Page": window.location.href };
+      const sd = { 
+        email: formData.email,
+        name: `${formData.firstName} ${formData.lastName}`,
+        phone: fp,
+        message: `Work Visa Enquiry\n\nName: ${formData.firstName} ${formData.lastName}\nEmail: ${formData.email}\nPhone: ${fp}\nDestination: ${formData.destinationCountry}\nJob Type: ${formData.jobType}\nMessage: ${formData.message || "N/A"}`
+      };
       const r = await fetch(FORMSPREE_ENDPOINT, { method: "POST", headers: { "Content-Type": "application/json", "Accept": "application/json" }, body: JSON.stringify(sd) });
       if (!r.ok) { const ed = await r.json().catch(() => ({})); throw new Error(ed.error || "Failed to submit."); }
       setLoading(false); setSubmitted(true);
@@ -195,7 +203,9 @@ function WorkVisaForm() {
   if (submitted) return (
     <div style={s.successWrapper} className="form-flex-container">
       <div style={s.successImgSide} className="form-image-side"><img src="https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=600&h=900&fit=crop" alt="" style={{ ...s.formImageBg, opacity: 0.35 }} /><div style={s.formImageOverlay} /><div style={{ position: "relative", zIndex: 2, textAlign: "center" }}><CheckCircle size={48} color={brand.green} style={{ marginBottom: "16px" }} /><h3 style={{ fontSize: "clamp(16px,2vw,22px)", fontWeight: 700, color: brand.white, fontFamily: "'Manrope',sans-serif" }}>Enquiry Sent!</h3></div></div>
-      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }} style={s.successContent}><div style={s.successIcon}><CheckCircle size={36} color={brand.green} /></div><h3 style={s.successTitle}>Application Submitted!</h3><p style={s.successMsg}>Your enquiry has been received. Our specialist will contact you within <strong>24 hours</strong>.</p><div style={s.successDetails}><div style={s.successDetail}><Clock size={14} color={brand.gold} /><span>Response within 24h</span></div><div style={s.successDetail}><Shield size={14} color={brand.gold} /><span>Data secure</span></div></div><button onClick={() => setSubmitted(false)} style={s.successBtn} onMouseEnter={e => { e.target.style.borderColor = brand.gold; e.target.style.color = brand.goldDark; e.target.style.background = brand.goldBg; }} onMouseLeave={e => { e.target.style.borderColor = brand.borderLight; e.target.style.color = brand.gray600; e.target.style.background = brand.white; }}>Submit Another</button></motion.div>
+      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }} style={s.successContent}><div style={s.successIcon}><CheckCircle size={36} color={brand.green} /></div><h3 style={s.successTitle}>Application Submitted!</h3><p style={s.successMsg}>Your enquiry has been received. Our specialist will contact you within <strong>24 hours</strong>.</p><div style={s.successDetails}><div style={s.successDetail}><Clock size={14} color={brand.gold} /><span>Response within 24h</span></div><div style={s.successDetail}><Shield size={14} color={brand.gold} /><span>Data secure</span></div></div>
+        <button onClick={() => setSubmitted(false)} style={s.successBtn} onMouseEnter={e => { e.currentTarget.style.border = `1px solid ${brand.gold}`; e.currentTarget.style.color = brand.goldDark; e.currentTarget.style.background = brand.goldBg; }} onMouseLeave={e => { e.currentTarget.style.border = `1px solid ${brand.borderLight}`; e.currentTarget.style.color = brand.gray600; e.currentTarget.style.background = brand.white; }}>Submit Another</button>
+      </motion.div>
     </div>
   );
 

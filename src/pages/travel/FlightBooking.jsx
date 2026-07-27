@@ -1,8 +1,8 @@
 // src/pages/travel/FlightBooking.jsx
 // ─────────────────────────────────────────────────────────────────────────────
-// RASOAF TRAVELS AND TOURS LIMITED — Flight Booking Page (v2)
+// RASOAF TRAVELS AND TOURS LIMITED — Flight Booking Page (v3)
 // RASOAF Typography · Booking Form · Contact Details · Premium Design
-// GPU-accelerated · Perfectly responsive 320px → 2560px
+// Formspree Integration · GPU-accelerated · Perfectly responsive 320px→2560px
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useState, useCallback, useMemo } from "react";
@@ -14,6 +14,11 @@ import {
   Send, CheckCircle, Loader2, Navigation
 } from "lucide-react";
 import { TravelHeroSection } from "../../components/travel";
+
+// ══════════════════════════════════════════════════════════════════════════
+// Formspree Endpoint — from .env file
+// ══════════════════════════════════════════════════════════════════════════
+const FORMSPREE_ENDPOINT = import.meta.env.VITE_FORMSPREE_FLIGHT_BOOKING || "";
 
 const COUNTRY_CODES = Object.freeze([
   { code: "+234", country: "Nigeria" }, { code: "+1", country: "USA" },
@@ -280,6 +285,7 @@ export default function TravelFlightBooking() {
   const [formData, setFormData] = useState(INITIAL_FORM);
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const handleChange = useCallback((e) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -288,16 +294,68 @@ export default function TravelFlightBooking() {
   const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
     setLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    setLoading(false);
-    setSubmitted(true);
-    setTimeout(() => {
-      setSubmitted(false);
-      setFormData(INITIAL_FORM);
-    }, 5000);
-  }, []);
+    setError(null);
 
-  const resetForm = useCallback(() => setSubmitted(false), []);
+    try {
+      // Build the full phone number
+      const fullPhone = `${formData.phoneCode} ${formData.phone}`;
+
+      // Send to Formspree
+      const response = await fetch(FORMSPREE_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          // Form data
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phone: fullPhone,
+          tripType: formData.tripType,
+          departureCity: formData.departureCity,
+          destination: formData.destination,
+          departureDate: formData.departureDate,
+          returnDate: formData.returnDate,
+          travelClass: formData.travelClass,
+          adults: formData.adults,
+          children: formData.children,
+          infants: formData.infants,
+          message: formData.message,
+          preferredContact: formData.preferredContact,
+          // Metadata
+          _subject: `New Flight Booking Enquiry from ${formData.firstName} ${formData.lastName}`,
+          _replyto: formData.email,
+          formType: "Flight Booking",
+          submittedAt: new Date().toISOString(),
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.error || "Failed to submit form. Please try again.");
+      }
+
+      setLoading(false);
+      setSubmitted(true);
+
+      // Auto-reset after 8 seconds
+      setTimeout(() => {
+        setSubmitted(false);
+        setFormData(INITIAL_FORM);
+      }, 8000);
+    } catch (err) {
+      console.error("Form submission error:", err);
+      setError(err.message || "Something went wrong. Please try again or contact us directly.");
+      setLoading(false);
+    }
+  }, [formData]);
+
+  const resetForm = useCallback(() => {
+    setSubmitted(false);
+    setError(null);
+  }, []);
 
   return (
     <>
@@ -378,6 +436,18 @@ export default function TravelFlightBooking() {
                     <div className="rfb-form-header-icon"><Send size={20} color="#D4A017" /></div>
                     <div><div className="rfb-form-title">Book Your Flight</div><div className="rfb-form-subtitle">Fill the form to get started</div></div>
                   </div>
+
+                  {/* Error message */}
+                  {error && (
+                    <div style={{
+                      background: "#FEF2F2", border: "1px solid #FECACA",
+                      borderRadius: "12px", padding: "12px 16px", marginBottom: "16px",
+                      fontFamily: TOKENS.body, fontSize: "0.82rem", color: "#DC2626",
+                      lineHeight: 1.5,
+                    }}>
+                      {error}
+                    </div>
+                  )}
 
                   <div className="rfb-row">
                     <div className="rfb-form-group"><label className="rfb-label">First Name <span className="rfb-label-required">*</span></label><input type="text" name="firstName" value={formData.firstName} onChange={handleChange} required className="rfb-input" placeholder="John" /></div>

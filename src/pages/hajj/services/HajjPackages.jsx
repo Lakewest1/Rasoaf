@@ -1,7 +1,7 @@
 // src/pages/services/HajjPackages.jsx
 // ─────────────────────────────────────────────────────────────────────────────
 // RASOAF TRAVELS AND TOURS LIMITED — Hajj Packages Page
-// v2.6: Fixed grid · Rating instead of price · Scroll-to-form · Full content
+// v3.0: Formspree .env integration · Proven payload pattern · All content preserved
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useState, useCallback, useEffect } from "react";
@@ -15,6 +15,15 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
+// ══════════════════════════════════════════════════════════════════════════
+// Formspree Endpoint — from .env file
+// ══════════════════════════════════════════════════════════════════════════
+const FORMSPREE_ENDPOINT = import.meta.env.VITE_FORMSPREE_HAJJ_PACKAGES || "";
+
+if (!FORMSPREE_ENDPOINT) {
+  console.warn("⚠️ VITE_FORMSPREE_HAJJ_PACKAGES is not set in .env file");
+}
+
 const brand = {
   gold: "#D4A017", goldLight: "#F7C948", goldDark: "#B8860B",
   goldBg: "rgba(212, 160, 23, 0.08)", goldBorder: "rgba(212, 160, 23, 0.2)",
@@ -23,8 +32,6 @@ const brand = {
   gray700: "#404040", greenBg: "rgba(34, 197, 94, 0.1)", green: "#22c55e",
   red: "#ef4444", redBg: "rgba(239, 68, 68, 0.1)",
 };
-
-const FORMSPREE_ENDPOINT = "https://formspree.io/f/your-hajj-form-id-here";
 
 const COUNTRY_CODES = [
   { code: "+234", country: "Nigeria" }, { code: "+1", country: "USA" },
@@ -226,6 +233,9 @@ function CollapsibleText({ text, isMobile }) {
   );
 }
 
+// ══════════════════════════════════════════════════════════════════════════
+//  HAJJ BOOKING FORM — With Proven Formspree Integration
+// ══════════════════════════════════════════════════════════════════════════
 function HajjBookingForm({ additionalFields = [] }) {
   const [formData, setFormData] = useState({ firstName: "", lastName: "", email: "", phoneCode: "+234", phone: "", travelDate: "", returnDate: "", adults: "1", children: "0", infants: "0", message: "", preferredContact: "email", ...additionalFields.reduce((acc, f) => ({ ...acc, [f.name]: "" }), {}) });
   const [submitted, setSubmitted] = useState(false);
@@ -235,26 +245,107 @@ function HajjBookingForm({ additionalFields = [] }) {
   const handleChange = (e) => setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
 
   const handleSubmit = async (e) => {
-    e.preventDefault(); setLoading(true); setFormError(null);
+    e.preventDefault();
+
+    if (!FORMSPREE_ENDPOINT) {
+      setFormError("❌ Configuration error: Formspree endpoint not configured. Please contact support.");
+      setTimeout(() => setFormError(null), 8000);
+      return;
+    }
+
+    setLoading(true);
+    setFormError(null);
+
     try {
-      const fp = `${formData.phoneCode} ${formData.phone}`;
-      const sd = { _subject: `New Hajj Package - ${formData.firstName} ${formData.lastName}`, "First Name": formData.firstName, "Last Name": formData.lastName, "Email": formData.email, "Phone": fp, "Phone Code": formData.phoneCode, "Travel Date": formData.travelDate, "Return Date": formData.returnDate || "N/S", "Preferred Contact": formData.preferredContact, "Adults": formData.adults, "Children (2-11)": formData.children, "Infants (0-2)": formData.infants, "Service": "Hajj Package", "Message": formData.message || "N/A", "Submitted At": new Date().toLocaleString(), "Page": window.location.href };
-      additionalFields.forEach(f => { const v = formData[f.name]; if (v) sd[f.label] = f.type === "select" ? f.options.find(o => o.value === v)?.label || v : v; });
-      const r = await fetch(FORMSPREE_ENDPOINT, { method: "POST", headers: { "Content-Type": "application/json", "Accept": "application/json" }, body: JSON.stringify(sd) });
-      if (!r.ok) { const ed = await r.json().catch(() => ({})); throw new Error(ed.error || "Failed to submit."); }
-      setLoading(false); setSubmitted(true);
-      setTimeout(() => { setSubmitted(false); setFormData({ firstName: "", lastName: "", email: "", phoneCode: "+234", phone: "", travelDate: "", returnDate: "", adults: "1", children: "0", infants: "0", message: "", preferredContact: "email", ...additionalFields.reduce((acc, f) => ({ ...acc, [f.name]: "" }), {}) }); }, 6000);
-    } catch (err) { setLoading(false); setFormError(err.message || "Something went wrong."); setTimeout(() => setFormError(null), 8000); }
+      const fullPhone = `${formData.phoneCode} ${formData.phone}`;
+
+      // Build additional fields string
+      let additionalInfo = "";
+      additionalFields.forEach((f) => {
+        const value = formData[f.name];
+        if (value) {
+          const label = f.type === "select"
+            ? f.options.find((o) => o.value === value)?.label || value
+            : value;
+          additionalInfo += `${f.label}: ${label}\n`;
+        }
+      });
+
+      // Proven payload format
+      const payload = {
+        email: formData.email,
+        name: `${formData.firstName} ${formData.lastName}`,
+        phone: fullPhone,
+        message: `Hajj Package Enquiry
+
+Name: ${formData.firstName} ${formData.lastName}
+Email: ${formData.email}
+Phone: ${fullPhone}
+Travel Date: ${formData.travelDate}
+Return Date: ${formData.returnDate || "Not specified"}
+Adults: ${formData.adults}
+Children: ${formData.children}
+Infants: ${formData.infants}
+Preferred Contact: ${formData.preferredContact}
+${additionalInfo}
+Message: ${formData.message || "No additional message"}`,
+      };
+
+      const response = await fetch(FORMSPREE_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const responseData = await response.json().catch(() => ({}));
+
+      if (!response.ok || !responseData.ok) {
+        throw new Error(responseData.error || "Failed to submit form. Please try again.");
+      }
+
+      setLoading(false);
+      setSubmitted(true);
+
+      setTimeout(() => {
+        setSubmitted(false);
+        setFormData({ firstName: "", lastName: "", email: "", phoneCode: "+234", phone: "", travelDate: "", returnDate: "", adults: "1", children: "0", infants: "0", message: "", preferredContact: "email", ...additionalFields.reduce((acc, f) => ({ ...acc, [f.name]: "" }), {}) });
+      }, 8000);
+    } catch (err) {
+      console.error("❌ Form submission error:", err);
+      setFormError(err.message || "Failed to send enquiry. Please try again or contact us directly.");
+      setLoading(false);
+      setTimeout(() => setFormError(null), 10000);
+    }
   };
 
-  const inp = (n) => ({ ...s.input, ...(focused === n ? s.focusInput : {}), ...(formError && !formData[n] ? s.errorInput : {}) });
+  const inp = (n) => ({ ...s.input, ...(focused === n ? s.focusInput : {}), ...(formError && !formData[n] && ["firstName","lastName","email","phone","travelDate"].includes(n) ? s.errorInput : {}) });
   const phn = (n) => ({ ...s.phoneInput, ...(focused === n ? s.focusInput : {}) });
   const txa = (n) => ({ ...s.textarea, ...(focused === n ? s.focusInput : {}) });
 
   if (submitted) return (
     <div style={s.successWrapper} className="form-flex-container">
       <div style={s.successImgSide} className="form-image-side"><img src="https://images.unsplash.com/photo-1591604129939-f1efa4d9f7fa?w=600&h=900&fit=crop" alt="" style={{ ...s.formImageBg, opacity: 0.35 }} /><div style={s.formImageOverlay} /><div style={{ position: "relative", zIndex: 2, textAlign: "center" }}><CheckCircle size={48} color={brand.green} style={{ marginBottom: "16px" }} /><h3 style={{ fontSize: "clamp(16px,2vw,22px)", fontWeight: 700, color: brand.white, fontFamily: "'Manrope',sans-serif" }}>Enquiry Sent!</h3></div></div>
-      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }} style={s.successContent}><div style={s.successIcon}><CheckCircle size={36} color={brand.green} /></div><h3 style={s.successTitle}>Enquiry Submitted!</h3><p style={s.successMsg}>Thank you! Our Hajj specialist will contact you within <strong>24 hours</strong>.</p><div style={s.successDetails}><div style={s.successDetail}><Clock size={14} color={brand.gold} /><span>Response within 24h</span></div><div style={s.successDetail}><Users size={14} color={brand.gold} /><span>Consultant assigned</span></div><div style={s.successDetail}><Shield size={14} color={brand.gold} /><span>NAHCON approved</span></div></div><button onClick={() => setSubmitted(false)} style={s.successBtn} onMouseEnter={e => { e.currentTarget.style.borderColor = brand.gold; e.currentTarget.style.color = brand.goldDark; e.currentTarget.style.background = brand.goldBg; }} onMouseLeave={e => { e.currentTarget.style.borderColor = brand.gray200; e.currentTarget.style.color = brand.gray600; e.currentTarget.style.background = brand.white; }}>Submit Another</button></motion.div>
+      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }} style={s.successContent}><div style={s.successIcon}><CheckCircle size={36} color={brand.green} /></div><h3 style={s.successTitle}>Enquiry Submitted!</h3><p style={s.successMsg}>Thank you! Our Hajj specialist will contact you within <strong>24 hours</strong>.</p><div style={s.successDetails}><div style={s.successDetail}><Clock size={14} color={brand.gold} /><span>Response within 24h</span></div><div style={s.successDetail}><Users size={14} color={brand.gold} /><span>Consultant assigned</span></div><div style={s.successDetail}><Shield size={14} color={brand.gold} /><span>NAHCON approved</span></div></div>
+        <button
+          onClick={() => setSubmitted(false)}
+          style={s.successBtn}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.border = `1px solid ${brand.gold}`;
+            e.currentTarget.style.color = brand.goldDark;
+            e.currentTarget.style.background = brand.goldBg;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.border = `1px solid ${brand.gray200}`;
+            e.currentTarget.style.color = brand.gray600;
+            e.currentTarget.style.background = brand.white;
+          }}
+        >
+          Submit Another
+        </button>
+      </motion.div>
     </div>
   );
 
@@ -312,7 +403,6 @@ export default function HajjPackages() {
           <div style={s.journeyGrid}>{journeySteps.map((step, idx) => { const Icon = step.icon; return (<motion.div key={idx} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.08 }} viewport={{ once: true }} style={s.journeyCard} whileHover={!isMobile ? { transform: "translateY(-4px)", boxShadow: "0 12px 32px rgba(0,0,0,0.08)", borderColor: brand.gold } : {}}><div style={s.journeyIconWrap}><Icon size={isMobile ? 18 : 22} color={brand.goldDark} /></div><div style={s.journeyContent}><h4 style={s.journeyTitle}>{step.title}</h4><p style={s.journeyDesc}>{step.desc}</p></div></motion.div>); })}</div>
         </motion.div>
 
-        {/* ── FIXED PACKAGES GRID — 3 columns always visible ── */}
         <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} transition={{ duration: 0.6 }} viewport={{ once: true }} id="packages-section">
           <div style={s.sectionHeader}><span style={s.sectionBadge}><Star size={14} />Our Packages</span><h2 style={s.sectionTitle}>Choose Your Hajj Package</h2><p style={s.sectionSubtitle}>Three carefully designed packages to suit every budget and preference.</p></div>
           <div className="pkg-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "clamp(16px, 2vw, 24px)", marginBottom: "clamp(40px, 6vh, 80px)", alignItems: "stretch" }}>

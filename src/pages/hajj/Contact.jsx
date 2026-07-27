@@ -1,16 +1,25 @@
 // src/pages/Contact.jsx
 // ─────────────────────────────────────────────────────────────────────────────
 // RASOAF TRAVELS AND TOURS LIMITED — Contact Page
-// v3: Updated contact details · 100% Responsive · Touch optimized · All content preserved
+// v4: Formspree .env integration · Proven payload pattern · All content preserved
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Phone, Mail, MapPin, Send, Loader2, Sparkles,
-  Shield, Clock, ChevronRight, ArrowDown
+  Shield, Clock, ChevronRight, CheckCircle
 } from "lucide-react";
 import { Link } from "react-router-dom";
+
+// ══════════════════════════════════════════════════════════════════════════
+// Formspree Endpoint — from .env file
+// ══════════════════════════════════════════════════════════════════════════
+const FORMSPREE_ENDPOINT = import.meta.env.VITE_FORMSPREE_CONTACT || "";
+
+if (!FORMSPREE_ENDPOINT) {
+  console.warn("⚠️ VITE_FORMSPREE_CONTACT is not set in .env file");
+}
 
 // ── Rasoaf Brand Colors ──────────────────────────────────────────────────
 const brand = {
@@ -21,8 +30,6 @@ const brand = {
   green: "#22c55e", greenBg: "rgba(34, 197, 94, 0.1)", red: "#ef4444", redBg: "rgba(239, 68, 68, 0.1)",
 };
 
-const FORMSPREE_ENDPOINT = "https://formspree.io/f/your-form-id-here";
-
 // ── Responsive Hook ──────────────────────────────────────────────────────
 function useResponsive() {
   const [w, setW] = useState(typeof window !== "undefined" ? window.innerWidth : 1200);
@@ -30,7 +37,7 @@ function useResponsive() {
   return { isMobile: w < 640, isTablet: w >= 640 && w < 1024, isDesktop: w >= 1024 };
 }
 
-// ── Contact Details (UPDATED) ────────────────────────────────────────────
+// ── Contact Details ──────────────────────────────────────────────────────
 const contactDetails = [
   { 
     icon: Phone, 
@@ -80,6 +87,15 @@ const s = {
   contactTitle: { fontSize: "clamp(14px, 1.3vw, 16px)", fontWeight: 600, color: brand.dark, fontFamily: "'Manrope', sans-serif", marginBottom: "clamp(4px, 0.5vw, 6px)" },
   contactValue: { fontSize: "clamp(15px, 1.5vw, 18px)", fontWeight: 700, color: brand.goldDark, fontFamily: "'Manrope', sans-serif", textDecoration: "none", display: "block", marginBottom: "clamp(2px, 0.3vw, 4px)", wordBreak: "break-word" },
   contactSub: { fontSize: "clamp(10px, 0.9vw, 12px)", color: brand.mutedText, lineHeight: 1.5 },
+
+  // Success State
+  successCard: { textAlign: "center", padding: "clamp(40px, 6vw, 60px) clamp(20px, 3vw, 40px)" },
+  successIconWrap: { width: "clamp(60px, 7vw, 80px)", height: "clamp(60px, 7vw, 80px)", borderRadius: "50%", background: brand.greenBg, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto clamp(16px, 2vw, 24px)" },
+  successTitle: { fontFamily: "'Manrope', sans-serif", fontWeight: 800, fontSize: "clamp(1.3rem, 2.5vw, 1.8rem)", color: brand.dark, marginBottom: "clamp(6px, 1vw, 12px)" },
+  successMsg: { fontSize: "clamp(0.85rem, 1.1vw, 1rem)", color: brand.mutedText, lineHeight: 1.7, marginBottom: "clamp(16px, 2vw, 28px)", maxWidth: "450px", marginLeft: "auto", marginRight: "auto" },
+  successDetails: { background: brand.cream, borderRadius: "clamp(10px, 1vw, 12px)", padding: "clamp(12px, 1.5vw, 16px) clamp(14px, 2vw, 20px)", marginBottom: "clamp(16px, 2vw, 28px)", display: "flex", flexDirection: "column", gap: "clamp(4px, 0.6vw, 8px)", maxWidth: "340px", marginLeft: "auto", marginRight: "auto", textAlign: "left" },
+  successDetail: { display: "flex", alignItems: "center", gap: "clamp(4px, 0.6vw, 8px)", fontSize: "clamp(11px, 1vw, 13px)", color: brand.gray600 },
+  resetBtn: { padding: "clamp(8px, 1vw, 11px) clamp(16px, 2.5vw, 28px)", borderRadius: "clamp(8px, 0.8vw, 10px)", border: `1px solid ${brand.borderLight}`, background: brand.white, fontSize: "clamp(12px, 1.1vw, 14px)", fontWeight: 600, color: brand.gray600, cursor: "pointer", fontFamily: "'Inter', sans-serif", transition: "all 0.25s ease", minHeight: "44px" },
 
   // Form
   formWrapper: { display: "flex", background: brand.white, borderRadius: "clamp(16px, 2vw, 24px)", overflow: "hidden", boxShadow: "0 20px 60px rgba(0,0,0,0.08)", border: `1px solid ${brand.borderLight}`, minHeight: "clamp(500px, 60vh, 650px)" },
@@ -145,13 +161,61 @@ export default function Contact() {
   const handleChange = (e) => setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
 
   const handleSubmit = async (e) => {
-    e.preventDefault(); setLoading(true); setFormError(null);
+    e.preventDefault();
+
+    if (!FORMSPREE_ENDPOINT) {
+      setFormError("❌ Configuration error: Formspree endpoint not configured. Please contact support.");
+      setTimeout(() => setFormError(null), 8000);
+      return;
+    }
+
+    setLoading(true);
+    setFormError(null);
+
     try {
-      const r = await fetch(FORMSPREE_ENDPOINT, { method: "POST", headers: { "Content-Type": "application/json", "Accept": "application/json" }, body: JSON.stringify({ _subject: `New Contact Message - ${formData.name}`, "Name": formData.name, "Email": formData.email, "Phone": formData.phone || "Not provided", "Subject": formData.subject || "General Enquiry", "Message": formData.message, "Submitted At": new Date().toLocaleString(), "Page": window.location.href }) });
-      if (!r.ok) throw new Error("Failed to send. Please try again.");
-      setLoading(false); setSubmitted(true);
-      setTimeout(() => { setSubmitted(false); setFormData({ name: "", email: "", phone: "", subject: "", message: "" }); }, 6000);
-    } catch (err) { setLoading(false); setFormError(err.message); setTimeout(() => setFormError(null), 8000); }
+      const payload = {
+        email: formData.email,
+        name: formData.name,
+        phone: formData.phone || "Not provided",
+        message: `Contact Form Enquiry
+
+Name: ${formData.name}
+Email: ${formData.email}
+Phone: ${formData.phone || "Not provided"}
+Subject: ${formData.subject || "General Enquiry"}
+
+Message:
+${formData.message}`,
+      };
+
+      const response = await fetch(FORMSPREE_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const responseData = await response.json().catch(() => ({}));
+
+      if (!response.ok || !responseData.ok) {
+        throw new Error(responseData.error || "Failed to send message. Please try again.");
+      }
+
+      setLoading(false);
+      setSubmitted(true);
+
+      setTimeout(() => {
+        setSubmitted(false);
+        setFormData({ name: "", email: "", phone: "", subject: "", message: "" });
+      }, 8000);
+    } catch (err) {
+      console.error("❌ Form submission error:", err);
+      setFormError(err.message || "Failed to send message. Please try again or contact us directly.");
+      setLoading(false);
+      setTimeout(() => setFormError(null), 10000);
+    }
   };
 
   const inp = (name) => ({ ...s.input, ...(focused === name ? s.focusInput : {}), ...(formError && !formData[name] && ["name","email","message"].includes(name) ? s.errorInput : {}) });
@@ -208,16 +272,44 @@ export default function Contact() {
             </div>
 
             <div style={s.formSide} className="form-form-side">
-              <motion.form initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }} onSubmit={handleSubmit}>
-                <div style={s.formHeaderStyle}><div style={s.formHeaderIcon}><Send size={20} color={brand.gold} /></div><div><div style={s.formHeaderTitle}>Send Us a Message</div><div style={s.formHeaderSub}>We'll get back to you promptly</div></div></div>
-                {formError && <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} style={s.errorMessage}><span style={{ fontSize: "16px", flexShrink: 0 }}>⚠️</span><span>{formError}</span></motion.div>}
-                <div style={s.formRow}><div style={s.formGroup}><label style={s.label}>Full Name <span style={s.required}>*</span></label><input type="text" name="name" value={formData.name} onChange={handleChange} required placeholder="Taofik Muyideen" style={inp("name")} onFocus={() => setFocused("name")} onBlur={() => setFocused(null)} /></div></div>
-                <div style={s.formRow}><div style={s.formGroup}><label style={s.label}>Email Address <span style={s.required}>*</span></label><input type="email" name="email" value={formData.email} onChange={handleChange} required placeholder="muyideen@email.com" style={inp("email")} onFocus={() => setFocused("email")} onBlur={() => setFocused(null)} /></div><div style={s.formGroup}><label style={s.label}>Phone Number</label><input type="tel" name="phone" value={formData.phone} onChange={handleChange} placeholder="+234 800 123 4567" style={inp("phone")} onFocus={() => setFocused("phone")} onBlur={() => setFocused(null)} /></div></div>
-                <div style={s.formRow}><div style={s.formGroup}><label style={s.label}>Subject</label><select name="subject" value={formData.subject} onChange={handleChange} style={s.select}><option value="">General Enquiry</option><option value="Hajj">Hajj Packages</option><option value="Umrah">Umrah Packages</option><option value="Flight">Flight Booking</option><option value="Hotel">Hotel Reservation</option><option value="Visa">Visa Services</option><option value="Other">Other</option></select></div></div>
-                <div style={s.formRow}><div style={s.formGroup}><label style={s.label}>Message <span style={s.required}>*</span></label><textarea name="message" value={formData.message} onChange={handleChange} required rows={4} placeholder="How can we help you?" style={inp("message")} onFocus={() => setFocused("message")} onBlur={() => setFocused(null)} /></div></div>
-                <motion.button type="submit" disabled={loading} whileHover={!loading ? { scale: 1.01 } : {}} whileTap={!loading ? { scale: 0.98 } : {}} style={{ ...s.submitBtn, ...(loading ? { opacity: 0.75, cursor: "not-allowed" } : {}) }}><div style={s.btnShine} />{loading ? <><Loader2 size={18} style={{ animation: "spin 1s linear infinite" }} />Sending...</> : <><Send size={18} /><span>Send Message</span></>}</motion.button>
-                <p style={s.terms}>By submitting, you agree to our privacy policy and terms of service.</p>
-              </motion.form>
+              {submitted ? (
+                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }} style={s.successCard}>
+                  <div style={s.successIconWrap}><CheckCircle size={36} color={brand.green} /></div>
+                  <h3 style={s.successTitle}>Message Sent!</h3>
+                  <p style={s.successMsg}>Thank you for reaching out. Our team will get back to you within <strong>24 hours</strong>.</p>
+                  <div style={s.successDetails}>
+                    <div style={s.successDetail}><Clock size={14} color={brand.gold} /><span>Response within 24h</span></div>
+                    <div style={s.successDetail}><Shield size={14} color={brand.gold} /><span>Your data is secure</span></div>
+                  </div>
+                  <button
+                    onClick={() => setSubmitted(false)}
+                    style={s.resetBtn}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.border = `1px solid ${brand.gold}`;
+                      e.currentTarget.style.color = brand.goldDark;
+                      e.currentTarget.style.background = brand.goldBg;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.border = `1px solid ${brand.borderLight}`;
+                      e.currentTarget.style.color = brand.gray600;
+                      e.currentTarget.style.background = brand.white;
+                    }}
+                  >
+                    Send Another Message
+                  </button>
+                </motion.div>
+              ) : (
+                <motion.form initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }} onSubmit={handleSubmit}>
+                  <div style={s.formHeaderStyle}><div style={s.formHeaderIcon}><Send size={20} color={brand.gold} /></div><div><div style={s.formHeaderTitle}>Send Us a Message</div><div style={s.formHeaderSub}>We'll get back to you promptly</div></div></div>
+                  {formError && <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} style={s.errorMessage}><span style={{ fontSize: "16px", flexShrink: 0 }}>⚠️</span><span>{formError}</span></motion.div>}
+                  <div style={s.formRow}><div style={s.formGroup}><label style={s.label}>Full Name <span style={s.required}>*</span></label><input type="text" name="name" value={formData.name} onChange={handleChange} required placeholder="Taofik Muyideen" style={inp("name")} onFocus={() => setFocused("name")} onBlur={() => setFocused(null)} /></div></div>
+                  <div style={s.formRow}><div style={s.formGroup}><label style={s.label}>Email Address <span style={s.required}>*</span></label><input type="email" name="email" value={formData.email} onChange={handleChange} required placeholder="muyideen@email.com" style={inp("email")} onFocus={() => setFocused("email")} onBlur={() => setFocused(null)} /></div><div style={s.formGroup}><label style={s.label}>Phone Number</label><input type="tel" name="phone" value={formData.phone} onChange={handleChange} placeholder="+234 800 123 4567" style={inp("phone")} onFocus={() => setFocused("phone")} onBlur={() => setFocused(null)} /></div></div>
+                  <div style={s.formRow}><div style={s.formGroup}><label style={s.label}>Subject</label><select name="subject" value={formData.subject} onChange={handleChange} style={s.select}><option value="">General Enquiry</option><option value="Hajj">Hajj Packages</option><option value="Umrah">Umrah Packages</option><option value="Flight">Flight Booking</option><option value="Hotel">Hotel Reservation</option><option value="Visa">Visa Services</option><option value="Other">Other</option></select></div></div>
+                  <div style={s.formRow}><div style={s.formGroup}><label style={s.label}>Message <span style={s.required}>*</span></label><textarea name="message" value={formData.message} onChange={handleChange} required rows={4} placeholder="How can we help you?" style={inp("message")} onFocus={() => setFocused("message")} onBlur={() => setFocused(null)} /></div></div>
+                  <motion.button type="submit" disabled={loading} whileHover={!loading ? { scale: 1.01 } : {}} whileTap={!loading ? { scale: 0.98 } : {}} style={{ ...s.submitBtn, ...(loading ? { opacity: 0.75, cursor: "not-allowed" } : {}) }}><div style={s.btnShine} />{loading ? <><Loader2 size={18} style={{ animation: "spin 1s linear infinite" }} />Sending...</> : <><Send size={18} /><span>Send Message</span></>}</motion.button>
+                  <p style={s.terms}>By submitting, you agree to our privacy policy and terms of service.</p>
+                </motion.form>
+              )}
             </div>
           </div>
         </motion.div>

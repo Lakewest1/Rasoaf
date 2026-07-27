@@ -1,7 +1,7 @@
 // src/pages/services/UmrahPackages.jsx
 // ─────────────────────────────────────────────────────────────────────────────
 // RASOAF TRAVELS AND TOURS LIMITED — Umrah Packages Page
-// v2.1: Rating instead of price · Scroll-to-form · Full content preserved
+// v3.2: Fixed Formspree .env integration · Proper payload structure
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useState, useCallback, useEffect } from "react";
@@ -9,14 +9,27 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   Sparkles, Moon, Calendar, Hotel, Car, Utensils, Send, 
   Shield, Phone, Mail, User, Users, Baby, MapPin, 
-  ChevronDown, ArrowDown, ChevronRight, Star, Clock
+  ChevronDown, ArrowDown, CheckCircle, Loader2, Clock, Star
 } from "lucide-react";
+
+// ══════════════════════════════════════════════════════════════════════════
+// Formspree Endpoint — from .env file
+// ══════════════════════════════════════════════════════════════════════════
+const FORMSPREE_ENDPOINT = import.meta.env.VITE_FORMSPREE_UMRAH_PACKAGES || "";
+
+// Validate endpoint exists
+if (!FORMSPREE_ENDPOINT) {
+  console.warn("⚠️ VITE_FORMSPREE_UMRAH_PACKAGES is not set in .env file");
+}
 
 const brand = {
   gold: "#D4A017", goldLight: "#F7C948", goldDark: "#B8860B",
   goldBg: "rgba(212, 160, 23, 0.08)", goldBorder: "rgba(212, 160, 23, 0.2)",
   dark: "#111111", white: "#ffffff", gray50: "#fafafa", gray200: "#e5e5e5",
   gray400: "#a3a3a3", gray500: "#737373", gray600: "#525252", gray700: "#404040",
+  green: "#22c55e", greenBg: "rgba(34, 197, 94, 0.1)",
+  red: "#ef4444", redBg: "rgba(239, 68, 68, 0.1)",
+  cream: "#FFF8E6", borderLight: "#E6D5A8", mutedText: "#5F5F5F",
 };
 
 function useResponsive() {
@@ -73,6 +86,7 @@ const contactMethods = [
   { value: "email", label: "Email" }, { value: "phone", label: "Phone" }, { value: "whatsapp", label: "WhatsApp" }
 ];
 
+// ── Styles ──────────────────────────────────────────────────────────────
 const s = {
   page: { minHeight: "100vh", backgroundColor: "#FFF8E6", fontFamily: "'Inter', sans-serif", overflowX: "hidden" },
   heroSection: { position: "relative", paddingTop: "clamp(6rem, 10vh, 8rem)", paddingBottom: "clamp(3rem, 5vh, 5rem)", paddingLeft: "clamp(0.75rem, 2vw, 1rem)", paddingRight: "clamp(0.75rem, 2vw, 1rem)", background: "linear-gradient(to bottom right, #111111, #1a1a1a, #111111)", overflow: "hidden" },
@@ -103,7 +117,6 @@ const s = {
   packageHeader: { display: "flex", alignItems: "center", gap: "clamp(0.35rem, 0.5vw, 0.5rem)", marginBottom: "clamp(0.75rem, 1vw, 1rem)" },
   packageName: { fontWeight: 700, color: brand.dark, fontFamily: "'Manrope', sans-serif", fontSize: "clamp(1.1rem, 1.5vw, 1.25rem)", letterSpacing: "-0.02em" },
   packageDesc: { fontSize: "clamp(0.75rem, 1vw, 0.875rem)", lineHeight: 1.7, color: brand.gray500, marginBottom: "clamp(0.75rem, 1vw, 1rem)", fontFamily: "'Inter', sans-serif" },
-  // ── REPLACED PRICE WITH RATING ──
   packageRatingRow: { display: "flex", alignItems: "center", gap: "8px", marginBottom: "clamp(0.75rem, 1vw, 1rem)" },
   packageRating: { fontSize: "clamp(1.3rem, 1.8vw, 1.6rem)", fontWeight: 700, color: brand.goldDark, fontFamily: "'Manrope', sans-serif", lineHeight: 1 },
   packageStars: { display: "flex", gap: "2px" },
@@ -139,8 +152,24 @@ const s = {
   textarea: { width: "100%", padding: "clamp(0.6rem, 0.9vw, 0.75rem) clamp(0.75rem, 1vw, 1rem)", borderRadius: "clamp(10px, 1vw, 12px)", border: "1px solid #E6D5A8", fontSize: "clamp(0.85rem, 1vw, 0.95rem)", color: brand.dark, backgroundColor: "#FFF8E6", outline: "none", resize: "vertical", boxSizing: "border-box", transition: "border-color 200ms ease", fontFamily: "'Inter', sans-serif", minHeight: "80px" },
   submitBtn: { width: "100%", padding: "clamp(0.7rem, 1vw, 0.875rem) clamp(1rem, 2vw, 1.5rem)", borderRadius: "12px", backgroundColor: brand.goldLight, color: brand.dark, fontWeight: 600, fontSize: "clamp(0.85rem, 1vw, 0.95rem)", letterSpacing: "0.01em", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem", transition: "all 200ms ease", boxShadow: "0 2px 4px rgba(0,0,0,0.06)", fontFamily: "'Inter', sans-serif", minHeight: "48px" },
   termsText: { fontSize: "clamp(0.7rem, 0.8vw, 0.8rem)", lineHeight: 1.6, color: brand.gray500, textAlign: "center", marginTop: "clamp(0.35rem, 0.5vw, 0.5rem)", fontFamily: "'Inter', sans-serif" },
+  successCard: { textAlign: "center", padding: "clamp(2rem, 4vw, 3rem) clamp(1rem, 2vw, 2rem)" },
+  successIconWrap: { width: "clamp(52px, 6vw, 72px)", height: "clamp(52px, 6vw, 72px)", borderRadius: "50%", background: brand.greenBg, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto clamp(12px, 2vw, 20px)" },
+  successTitle: { fontFamily: "'Manrope', sans-serif", fontWeight: 800, fontSize: "clamp(1.2rem, 2vw, 1.5rem)", color: brand.dark, marginBottom: "clamp(4px, 0.8vw, 8px)" },
+  successMsg: { fontSize: "clamp(0.8rem, 1vw, 0.95rem)", color: brand.gray500, lineHeight: 1.7, marginBottom: "clamp(16px, 2vw, 24px)", fontFamily: "'Inter', sans-serif" },
+  successDetails: { background: brand.cream, borderRadius: "clamp(10px, 1vw, 12px)", padding: "clamp(12px, 1.5vw, 16px) clamp(14px, 2vw, 20px)", marginBottom: "clamp(12px, 1.5vw, 20px)", display: "flex", flexDirection: "column", gap: "clamp(4px, 0.6vw, 8px)", textAlign: "left" },
+  successDetail: { display: "flex", alignItems: "center", gap: "clamp(4px, 0.6vw, 8px)", fontSize: "clamp(11px, 1vw, 13px)", color: brand.gray600, fontFamily: "'Inter', sans-serif" },
+  resetBtn: { padding: "clamp(8px, 1vw, 11px) clamp(16px, 2.5vw, 28px)", borderRadius: "clamp(8px, 0.8vw, 10px)", border: `1px solid ${brand.borderLight}`, background: brand.white, fontSize: "clamp(12px, 1.1vw, 14px)", fontWeight: 600, color: brand.gray600, cursor: "pointer", fontFamily: "'Inter', sans-serif", transition: "all 0.25s ease", minHeight: "44px" },
+  errorMessage: { background: brand.redBg, border: `1px solid ${brand.red}30`, borderRadius: "clamp(8px, 0.8vw, 10px)", padding: "clamp(8px, 1vw, 10px) clamp(10px, 1.2vw, 14px)", fontSize: "clamp(11px, 1vw, 13px)", color: brand.red, marginBottom: "clamp(10px, 1.5vw, 16px)", display: "flex", alignItems: "center", gap: "8px", fontFamily: "'Inter', sans-serif" },
 };
 
+// ── Animations ───────────────────────────────────────────────────────────
+const keyframes = `
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+`;
+
+// ══════════════════════════════════════════════════════════════════════════
+//  COLLAPSIBLE TEXT
+// ══════════════════════════════════════════════════════════════════════════
 function CollapsibleText({ text, isMobile }) {
   const [expanded, setExpanded] = useState(false);
   const maxLength = 200;
@@ -155,6 +184,173 @@ function CollapsibleText({ text, isMobile }) {
   );
 }
 
+// ══════════════════════════════════════════════════════════════════════════
+//  BOOKING FORM — Fixed Formspree Integration
+// ══════════════════════════════════════════════════════════════════════════
+function BookingForm() {
+  const [formData, setFormData] = useState({
+    firstName: "", lastName: "", email: "", countryCode: "+234", phone: "",
+    preferredDeparture: "", returnDate: "", preferredContact: "email",
+    adults: "1", children: "0", infants: "0", umrahPackage: "", preferredMonth: "", additionalMessage: ""
+  });
+  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [formError, setFormError] = useState(null);
+  const [focused, setFocused] = useState(null);
+
+  const handleChange = (e) => setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    // Validate endpoint
+    if (!FORMSPREE_ENDPOINT) {
+      setFormError("❌ Configuration error: Formspree endpoint not configured. Please contact support.");
+      setTimeout(() => setFormError(null), 8000);
+      return;
+    }
+
+    setLoading(true);
+    setFormError(null);
+
+    try {
+      const fullPhone = `${formData.countryCode} ${formData.phone}`;
+
+      // Get package and month labels
+      const packageLabel = formData.umrahPackage
+        ? umrahPackageOptions.find(o => o.value === formData.umrahPackage)?.label || formData.umrahPackage
+        : "Not selected";
+      
+      const monthLabel = formData.preferredMonth
+        ? preferredMonthOptions.find(o => o.value === formData.preferredMonth)?.label || formData.preferredMonth
+        : "Not specified";
+
+      // Formspree-compatible payload
+      const payload = {
+        email: formData.email,
+        name: `${formData.firstName} ${formData.lastName}`,
+        phone: fullPhone,
+        message: `Umrah Packages Enquiry
+
+Name: ${formData.firstName} ${formData.lastName}
+Email: ${formData.email}
+Phone: ${fullPhone}
+Preferred Departure: ${formData.preferredDeparture}
+Return Date: ${formData.returnDate || "Not specified"}
+Preferred Contact: ${formData.preferredContact}
+Adults: ${formData.adults}
+Children (2-11): ${formData.children}
+Infants (0-2): ${formData.infants}
+Umrah Package: ${packageLabel}
+Preferred Month: ${monthLabel}
+Additional Message: ${formData.additionalMessage || "No message"}`,
+      };
+
+      const response = await fetch(FORMSPREE_ENDPOINT, {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json", 
+          "Accept": "application/json" 
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const responseData = await response.json().catch(() => ({}));
+
+      // Formspree returns 200 on success with { ok: true }
+      if (!response.ok || !responseData.ok) {
+        const errorMsg = responseData.error || 
+          `Server error: ${response.status}. ${responseData.message || "Please try again."}`;
+        throw new Error(errorMsg);
+      }
+
+      // Success!
+      setLoading(false);
+      setSubmitted(true);
+
+      // Reset form after 8 seconds
+      setTimeout(() => {
+        setSubmitted(false);
+        setFormData({
+          firstName: "", lastName: "", email: "", countryCode: "+234", phone: "",
+          preferredDeparture: "", returnDate: "", preferredContact: "email",
+          adults: "1", children: "0", infants: "0", umrahPackage: "", preferredMonth: "", additionalMessage: ""
+        });
+      }, 8000);
+    } catch (err) {
+      console.error("❌ Form submission error:", err);
+      setFormError(err.message || "Failed to send enquiry. Please try again or contact us directly.");
+      setLoading(false);
+      setTimeout(() => setFormError(null), 10000);
+    }
+  };
+
+  const handleFocus = (e) => { e.currentTarget.style.borderColor = brand.goldLight; };
+  const handleBlur = (e) => { e.currentTarget.style.borderColor = "#E6D5A8"; };
+
+  const inp = (name) => ({
+    ...s.input,
+    ...(focused === name ? { borderColor: brand.goldLight } : {}),
+    ...(formError && !formData[name] && ["firstName","lastName","email","preferredDeparture"].includes(name) ? { borderColor: brand.red, boxShadow: `0 0 0 3px ${brand.redBg}` } : {})
+  });
+
+  if (submitted) return (
+    <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }} style={s.successCard}>
+      <div style={s.successIconWrap}><CheckCircle size={36} color={brand.green} /></div>
+      <h3 style={s.successTitle}>Enquiry Submitted!</h3>
+      <p style={s.successMsg}>Thank you for your interest. Our Umrah specialist will contact you within <strong>24 hours</strong> with the best package options.</p>
+      <div style={s.successDetails}>
+        <div style={s.successDetail}><Clock size={14} color={brand.gold} /><span>Response within 24 hours</span></div>
+        <div style={s.successDetail}><Shield size={14} color={brand.gold} /><span>Your data is secure</span></div>
+        <div style={s.successDetail}><MapPin size={14} color={brand.gold} /><span>Trusted by thousands of pilgrims</span></div>
+      </div>
+      <button
+        onClick={() => setSubmitted(false)}
+        style={s.resetBtn}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.border = `1px solid ${brand.gold}`;
+          e.currentTarget.style.color = brand.goldDark;
+          e.currentTarget.style.background = brand.goldBg;
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.border = `1px solid ${brand.borderLight}`;
+          e.currentTarget.style.color = brand.gray600;
+          e.currentTarget.style.background = brand.white;
+        }}
+      >
+        Submit Another Enquiry
+      </button>
+    </motion.div>
+  );
+
+  return (
+    <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "clamp(0.75rem, 1.2vw, 1.25rem)" }}>
+      {formError && (
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} style={s.errorMessage}>
+          <span style={{ fontSize: "16px", flexShrink: 0 }}>⚠️</span><span>{formError}</span>
+        </motion.div>
+      )}
+      <div style={s.formGroup}><label htmlFor="first-name" style={s.label}>First Name <span style={s.required}>*</span></label><div style={s.inputWrapper}><User style={s.inputIcon} /><input id="first-name" type="text" name="firstName" value={formData.firstName} onChange={handleChange} placeholder="Saheed" required style={inp("firstName")} onFocus={(e) => { handleFocus(e); setFocused("firstName"); }} onBlur={(e) => { handleBlur(e); setFocused(null); }} /></div></div>
+      <div style={s.formGroup}><label htmlFor="last-name" style={s.label}>Last Name <span style={s.required}>*</span></label><div style={s.inputWrapper}><User style={s.inputIcon} /><input id="last-name" type="text" name="lastName" value={formData.lastName} onChange={handleChange} placeholder="Mohammed" required style={inp("lastName")} onFocus={(e) => { handleFocus(e); setFocused("lastName"); }} onBlur={(e) => { handleBlur(e); setFocused(null); }} /></div></div>
+      <div style={s.formGroup}><label htmlFor="email" style={s.label}>Email Address <span style={s.required}>*</span></label><div style={s.inputWrapper}><Mail style={s.inputIcon} /><input id="email" type="email" name="email" value={formData.email} onChange={handleChange} placeholder="Mohammed@example.com" required style={inp("email")} onFocus={(e) => { handleFocus(e); setFocused("email"); }} onBlur={(e) => { handleBlur(e); setFocused(null); }} /></div></div>
+      <div style={s.formGroup}><label htmlFor="phone" style={s.label}>Phone Number</label><div style={s.phoneRow}><div style={s.phoneCodeWrap}><select name="countryCode" value={formData.countryCode} onChange={handleChange} style={{ ...s.select, paddingLeft: "0.75rem" }} onFocus={handleFocus} onBlur={handleBlur}>{countryCodes.map((code) => (<option key={code.value} value={code.value}>{code.label}</option>))}</select><ChevronDown style={{ ...s.selectIcon, right: "0.5rem" }} /></div><input id="phone" type="tel" name="phone" value={formData.phone} onChange={handleChange} placeholder="800 123 4567" style={s.phoneInput} onFocus={handleFocus} onBlur={handleBlur} /></div></div>
+      <div style={s.dateRow}><div style={s.formGroup}><label htmlFor="departure" style={s.label}>Preferred Departure <span style={s.required}>*</span></label><input id="departure" type="date" name="preferredDeparture" value={formData.preferredDeparture} onChange={handleChange} required style={{ ...s.input, paddingLeft: "0.75rem" }} onFocus={handleFocus} onBlur={handleBlur} /></div><div style={s.formGroup}><label htmlFor="return-date" style={s.label}>Return Date</label><input id="return-date" type="date" name="returnDate" value={formData.returnDate} onChange={handleChange} style={{ ...s.input, paddingLeft: "0.75rem" }} onFocus={handleFocus} onBlur={handleBlur} /></div></div>
+      <div style={s.formGroup}><label htmlFor="preferred-contact" style={s.label}>Preferred Contact <span style={s.required}>*</span></label><div style={s.inputWrapper}><select id="preferred-contact" name="preferredContact" value={formData.preferredContact} onChange={handleChange} required style={s.select} onFocus={handleFocus} onBlur={handleBlur}>{contactMethods.map((method) => (<option key={method.value} value={method.value}>{method.label}</option>))}</select><ChevronDown style={s.selectIcon} /></div></div>
+      <div style={s.tripleRow}><div style={s.formGroup}><label htmlFor="adults" style={s.label}>Adults <span style={s.required}>*</span></label><div style={s.inputWrapper}><Users style={s.inputIcon} /><input id="adults" type="number" name="adults" value={formData.adults} onChange={handleChange} min="1" required style={s.input} onFocus={handleFocus} onBlur={handleBlur} /></div></div><div style={s.formGroup}><label htmlFor="children" style={s.label}>Children (2-11)</label><div style={s.inputWrapper}><Baby style={s.inputIcon} /><input id="children" type="number" name="children" value={formData.children} onChange={handleChange} min="0" style={s.input} onFocus={handleFocus} onBlur={handleBlur} /></div></div><div style={s.formGroup}><label htmlFor="infants" style={s.label}>Infants (0-2)</label><div style={s.inputWrapper}><Baby style={s.inputIcon} /><input id="infants" type="number" name="infants" value={formData.infants} onChange={handleChange} min="0" style={s.input} onFocus={handleFocus} onBlur={handleBlur} /></div></div></div>
+      <div style={s.formGroup}><label htmlFor="umrah-package" style={s.label}>Umrah Package <span style={s.required}>*</span></label><div style={s.inputWrapper}><select id="umrah-package" name="umrahPackage" value={formData.umrahPackage} onChange={handleChange} required style={s.select} onFocus={handleFocus} onBlur={handleBlur}>{umrahPackageOptions.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}</select><ChevronDown style={s.selectIcon} /></div></div>
+      <div style={s.formGroup}><label htmlFor="preferred-month" style={s.label}>Preferred Month</label><div style={s.inputWrapper}><select id="preferred-month" name="preferredMonth" value={formData.preferredMonth} onChange={handleChange} style={s.select} onFocus={handleFocus} onBlur={handleBlur}>{preferredMonthOptions.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}</select><ChevronDown style={s.selectIcon} /></div></div>
+      <div style={s.formGroup}><label htmlFor="message" style={s.label}>Additional Message</label><textarea id="message" name="additionalMessage" value={formData.additionalMessage} onChange={handleChange} placeholder="Any special requests or requirements..." rows={3} style={s.textarea} onFocus={handleFocus} onBlur={handleBlur} /></div>
+      <motion.button type="submit" disabled={loading} style={{ ...s.submitBtn, ...(loading ? { opacity: 0.75, cursor: "not-allowed" } : {}) }} whileHover={!loading ? { backgroundColor: "#FFE082", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" } : {}} whileTap={!loading ? { backgroundColor: brand.goldLight } : {}}>
+        {loading ? <><Loader2 size={18} style={{ animation: "spin 1s linear infinite" }} />Submitting...</> : <><Send style={{ width: "1.125rem", height: "1.125rem" }} />Submit Enquiry</>}
+      </motion.button>
+      <p style={s.termsText}>By submitting, you agree to our privacy policy and terms of service. We'll never share your information.</p>
+    </form>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+//  MAIN PAGE
+// ══════════════════════════════════════════════════════════════════════════
 export default function UmrahPackages() {
   const { isMobile } = useResponsive();
 
@@ -169,15 +365,14 @@ export default function UmrahPackages() {
 
   const scrollToForm = useCallback(() => scrollToSection("booking-form-section"), [scrollToSection]);
 
-  const handleFocus = (e) => { e.currentTarget.style.borderColor = brand.goldLight; };
-  const handleBlur = (e) => { e.currentTarget.style.borderColor = "#E6D5A8"; };
-
   const renderStars = (count) => Array.from({ length: 5 }, (_, i) => (
     <Star key={i} size={isMobile ? 12 : 14} color={i < Math.floor(count) ? brand.gold : brand.gray200} fill={i < Math.floor(count) ? brand.gold : "none"} />
   ));
 
   return (
     <div style={s.page}>
+      <style>{keyframes}</style>
+
       {/* HERO */}
       <section style={s.heroSection}>
         <div style={s.heroBg}>
@@ -230,7 +425,6 @@ export default function UmrahPackages() {
                   <h3 style={s.packageName}>{pkg.name}</h3>
                 </div>
                 <p style={s.packageDesc}>{pkg.description}</p>
-                {/* ── RATING ROW ── */}
                 <div style={s.packageRatingRow}>
                   <span style={s.packageRating}>{pkg.rating}</span>
                   <div style={s.packageStars}>{renderStars(ratingNum)}</div>
@@ -271,20 +465,7 @@ export default function UmrahPackages() {
           <motion.div initial={{ opacity: 0, x: isMobile ? 0 : 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} style={s.formCard}>
             <h3 style={s.formTitle}>Book Umrah Package</h3>
             <p style={s.formSubtitle}>Fill the form below to get started</p>
-            <form action="https://formspree.io/f/YOUR_FORM_ID" method="POST" style={{ display: "flex", flexDirection: "column", gap: "clamp(0.75rem, 1.2vw, 1.25rem)" }}>
-              <div style={s.formGroup}><label htmlFor="first-name" style={s.label}>First Name <span style={s.required}>*</span></label><div style={s.inputWrapper}><User style={s.inputIcon} /><input id="first-name" type="text" name="firstName" placeholder="Saheed" required style={s.input} onFocus={handleFocus} onBlur={handleBlur} /></div></div>
-              <div style={s.formGroup}><label htmlFor="last-name" style={s.label}>Last Name <span style={s.required}>*</span></label><div style={s.inputWrapper}><User style={s.inputIcon} /><input id="last-name" type="text" name="lastName" placeholder="Mohammed" required style={s.input} onFocus={handleFocus} onBlur={handleBlur} /></div></div>
-              <div style={s.formGroup}><label htmlFor="email" style={s.label}>Email Address <span style={s.required}>*</span></label><div style={s.inputWrapper}><Mail style={s.inputIcon} /><input id="email" type="email" name="email" placeholder="Mohammed@example.com" required style={s.input} onFocus={handleFocus} onBlur={handleBlur} /></div></div>
-              <div style={s.formGroup}><label htmlFor="phone" style={s.label}>Phone Number</label><div style={s.phoneRow}><div style={s.phoneCodeWrap}><select name="countryCode" defaultValue="+234" style={{ ...s.select, paddingLeft: "0.75rem" }} onFocus={handleFocus} onBlur={handleBlur}>{countryCodes.map((code) => (<option key={code.value} value={code.value}>{code.label}</option>))}</select><ChevronDown style={{ ...s.selectIcon, right: "0.5rem" }} /></div><input id="phone" type="tel" name="phone" placeholder="800 123 4567" style={s.phoneInput} onFocus={handleFocus} onBlur={handleBlur} /></div></div>
-              <div style={s.dateRow}><div style={s.formGroup}><label htmlFor="departure" style={s.label}>Preferred Departure <span style={s.required}>*</span></label><input id="departure" type="date" name="preferredDeparture" required style={{ ...s.input, paddingLeft: "0.75rem" }} onFocus={handleFocus} onBlur={handleBlur} /></div><div style={s.formGroup}><label htmlFor="return-date" style={s.label}>Return Date</label><input id="return-date" type="date" name="returnDate" style={{ ...s.input, paddingLeft: "0.75rem" }} onFocus={handleFocus} onBlur={handleBlur} /></div></div>
-              <div style={s.formGroup}><label htmlFor="preferred-contact" style={s.label}>Preferred Contact <span style={s.required}>*</span></label><div style={s.inputWrapper}><select id="preferred-contact" name="preferredContact" required defaultValue="email" style={s.select} onFocus={handleFocus} onBlur={handleBlur}>{contactMethods.map((method) => (<option key={method.value} value={method.value}>{method.label}</option>))}</select><ChevronDown style={s.selectIcon} /></div></div>
-              <div style={s.tripleRow}><div style={s.formGroup}><label htmlFor="adults" style={s.label}>Adults <span style={s.required}>*</span></label><div style={s.inputWrapper}><Users style={s.inputIcon} /><input id="adults" type="number" name="adults" min="1" defaultValue="1" required style={s.input} onFocus={handleFocus} onBlur={handleBlur} /></div></div><div style={s.formGroup}><label htmlFor="children" style={s.label}>Children (2-11)</label><div style={s.inputWrapper}><Baby style={s.inputIcon} /><input id="children" type="number" name="children" min="0" defaultValue="0" style={s.input} onFocus={handleFocus} onBlur={handleBlur} /></div></div><div style={s.formGroup}><label htmlFor="infants" style={s.label}>Infants (0-2)</label><div style={s.inputWrapper}><Baby style={s.inputIcon} /><input id="infants" type="number" name="infants" min="0" defaultValue="0" style={s.input} onFocus={handleFocus} onBlur={handleBlur} /></div></div></div>
-              <div style={s.formGroup}><label htmlFor="umrah-package" style={s.label}>Umrah Package <span style={s.required}>*</span></label><div style={s.inputWrapper}><select id="umrah-package" name="umrahPackage" required defaultValue="" style={s.select} onFocus={handleFocus} onBlur={handleBlur}>{umrahPackageOptions.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}</select><ChevronDown style={s.selectIcon} /></div></div>
-              <div style={s.formGroup}><label htmlFor="preferred-month" style={s.label}>Preferred Month</label><div style={s.inputWrapper}><select id="preferred-month" name="preferredMonth" defaultValue="" style={s.select} onFocus={handleFocus} onBlur={handleBlur}>{preferredMonthOptions.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}</select><ChevronDown style={s.selectIcon} /></div></div>
-              <div style={s.formGroup}><label htmlFor="message" style={s.label}>Additional Message</label><textarea id="message" name="additionalMessage" placeholder="Any special requests or requirements..." rows={3} style={s.textarea} onFocus={handleFocus} onBlur={handleBlur} /></div>
-              <motion.button type="submit" style={s.submitBtn} whileHover={{ backgroundColor: "#FFE082", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }} whileTap={{ backgroundColor: brand.goldLight }}><Send style={{ width: "1.125rem", height: "1.125rem" }} />Submit Enquiry</motion.button>
-              <p style={s.termsText}>By submitting, you agree to our privacy policy and terms of service. We'll never share your information.</p>
-            </form>
+            <BookingForm />
           </motion.div>
         </div>
       </section>

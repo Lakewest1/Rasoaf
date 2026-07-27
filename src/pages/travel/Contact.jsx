@@ -1,4 +1,9 @@
 // src/pages/travel/Contact.jsx
+// ─────────────────────────────────────────────────────────────────────────────
+// RASOAF TRAVELS AND TOURS LIMITED — Travel Contact Page
+// v2.1: Formspree .env integration · Fixed payload · All content preserved
+// ─────────────────────────────────────────────────────────────────────────────
+
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { 
@@ -10,7 +15,10 @@ import {
 import { Link } from "react-router-dom";
 import { TravelHeroSection } from "../../components/travel";
 
-const FORMSPREE_ENDPOINT = "https://formspree.io/f/your-form-id-here";
+// ══════════════════════════════════════════════════════════════════════════
+// Formspree Endpoint — from .env file
+// ══════════════════════════════════════════════════════════════════════════
+const FORMSPREE_ENDPOINT = import.meta.env.VITE_FORMSPREE_TRAVEL_CONTACT || "";
 
 const contactCards = [
   { 
@@ -72,7 +80,6 @@ const socialLinks = [
 
 const additionalPhones = [
   { number: "+234 903 770 7888", href: "tel:+2349037707888" },
-  { number: "+234 803 475 2061", href: "tel:+2348034752061" },
   { number: "+234 802 488 5017", href: "tel:+2348024885017" },
   { number: "+234 703 189 9529", href: "tel:+2347031899529" },
   { number: "+234 816 200 3534", href: "tel:+2348162003534" },
@@ -662,28 +669,61 @@ export default function TravelContact() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!FORMSPREE_ENDPOINT) {
+      setFormError("❌ Configuration error. Please contact support.");
+      setTimeout(() => setFormError(null), 8000);
+      return;
+    }
+
     setLoading(true);
     setFormError(null);
+
     try {
-      const res = await fetch(FORMSPREE_ENDPOINT, {
+      const payload = {
+        email: formData.email,
+        name: formData.name,
+        phone: formData.phone || "Not provided",
+        message: `Travel Contact Enquiry
+
+Name: ${formData.name}
+Email: ${formData.email}
+Phone: ${formData.phone || "Not provided"}
+Subject: ${formData.subject || "General Enquiry"}
+
+Message:
+${formData.message}
+
+---
+Submitted: ${new Date().toLocaleString()}`,
+      };
+
+      const response = await fetch(FORMSPREE_ENDPOINT, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          _subject: `Travel Contact - ${formData.name}`,
-          ...formData,
-          Submitted: new Date().toLocaleString(),
-        }),
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+        body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error("Failed to send message. Please try again.");
+
+      const responseData = await response.json().catch(() => ({}));
+
+      if (!response.ok || !responseData.ok) {
+        throw new Error(responseData.error || "Failed to send message. Please try again.");
+      }
+
       setLoading(false);
       setSubmitted(true);
+
       setTimeout(() => { 
         setSubmitted(false); 
         setFormData({ name: "", email: "", phone: "", subject: "", message: "" }); 
-      }, 6000);
+      }, 8000);
     } catch (err) {
+      setFormError(err.message || "Failed to send message. Please try again or contact us directly.");
       setLoading(false);
-      setFormError(err.message);
+      setTimeout(() => setFormError(null), 10000);
     }
   };
 

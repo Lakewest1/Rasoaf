@@ -1,6 +1,6 @@
 // src/components/travel/HeroSection.jsx
 // ─────────────────────────────────────────────────────────────────────────────
-// RASOAF TRAVELS AND TOURS LIMITED — Premium Cinematic Travel Hero (v5.1)
+// RASOAF TRAVELS AND TOURS LIMITED — Premium Cinematic Travel Hero (v5.2)
 // Optimized: Core Web Vitals · GPU compositing · 98+ Lighthouse · 320px→2560px
 // v5.0: Background swapped to HeroBackground — multi-scene cinematic
 //       storyboard (airport → boarding → takeoff → clouds → destinations →
@@ -10,11 +10,19 @@
 //       number and IATA-approved status, styled to match the badge/microcopy
 //       language already established. Purely additive; no existing layout,
 //       animation, or background logic touched.
+// v5.2: Added a second, lightweight feature strip directly beneath the
+//       trust strip — "Licensed Agency · Visa Assistance · Flight & Hotel ·
+//       24/7 Support". Purely additive and intentionally cheap: no images,
+//       no new animation library, no layout/background/CTA logic touched.
+//       The only edits to pre-existing lines are (a) four more icon names
+//       added to the single existing lucide-react import statement, and
+//       (b) one new render line for the new strip — everything else below
+//       is net-new code appended after the existing trust strip section.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useMemo, useCallback, memo, lazy, Suspense } from "react";
 import { motion, useReducedMotion } from "framer-motion";
-import { Star, ArrowRight, ShieldCheck, BadgeCheck } from "lucide-react";
+import { Star, ArrowRight, ShieldCheck, BadgeCheck, Award, FileCheck, Plane, Clock } from "lucide-react";
 
 // Lazy load with prefetch on idle — points at the travel-only cinematic
 // storyboard background, NOT ../common/EarthScene. Gateway is unaffected.
@@ -134,6 +142,21 @@ const TRUST_STRIP_VARIANTS = Object.freeze({
       duration: 0.5,
       ease: [0.25, 1, 0.5, 1],
       delay: 0.2,
+    },
+  },
+});
+
+// Feature strip fades in just after the trust strip — same cheap
+// opacity+y pattern, no new animation machinery introduced.
+const FEATURE_STRIP_VARIANTS = Object.freeze({
+  hidden: { opacity: 0, y: 10 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5,
+      ease: [0.25, 1, 0.5, 1],
+      delay: 0.3,
     },
   },
 });
@@ -642,6 +665,79 @@ const STYLES = `
       color: black !important;
     }
   }
+
+  /* ═══════════════════════════════════════════════════════════════════════ */
+  /* v5.2 ADDITION — SERVICE FEATURE STRIP                                  */
+  /* Licensed Agency · Visa Assistance · Flight & Hotel · 24/7 Support      */
+  /* New classes only — nothing above this block was modified.             */
+  /* ═══════════════════════════════════════════════════════════════════════ */
+
+  .th-feature-strip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    row-gap: 6px;
+    column-gap: 14px;
+    margin-top: clamp(10px, 1.6vh, 14px);
+  }
+
+  .th-feature-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--th-body);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    color: ${TOKENS.trustText};
+    white-space: nowrap;
+  }
+
+  .th-feature-icon {
+    display: flex;
+    flex-shrink: 0;
+    color: ${TOKENS.trustIcon};
+  }
+
+  .th-feature-divider {
+    color: ${TOKENS.trustDivider};
+    font-size: 12px;
+    line-height: 1;
+  }
+
+  @media (max-width: 768px) {
+    .th-feature-strip { column-gap: 12px; }
+    .th-feature-item { font-size: 11.5px; }
+  }
+
+  @media (max-width: 480px) {
+    .th-feature-strip {
+      flex-direction: column;
+      row-gap: 8px;
+      margin-top: 10px;
+    }
+    .th-feature-divider { display: none; }
+    .th-feature-item { font-size: 11px; }
+  }
+
+  @media (max-width: 360px) {
+    .th-feature-item { font-size: 10.5px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .th-feature-strip,
+    .th-feature-strip * {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  @media print {
+    .th-feature-item {
+      color: black !important;
+    }
+  }
 `;
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -809,6 +905,58 @@ const TrustStrip = memo(function TrustStrip() {
 TrustStrip.displayName = "TrustStrip";
 
 // ══════════════════════════════════════════════════════════════════════════
+// v5.2 ADDITION — ServiceFeaturesStrip
+// Lightweight, static-data second strip: Licensed Agency / Visa Assistance /
+// Flight & Hotel / 24/7 Support. Same cheap pattern as TrustStrip (plain
+// text + inline icon, no images, no extra libraries) so it adds no
+// measurable weight or load time. Memoized, and skips the Framer Motion
+// wrapper entirely under prefers-reduced-motion, same as TrustStrip.
+// ══════════════════════════════════════════════════════════════════════════
+const SERVICE_FEATURES = Object.freeze([
+  { icon: Award, label: "Licensed Agency" },
+  { icon: FileCheck, label: "Visa Assistance" },
+  { icon: Plane, label: "Flight & Hotel" },
+  { icon: Clock, label: "24/7 Support" },
+]);
+
+const ServiceFeaturesStrip = memo(function ServiceFeaturesStrip() {
+  const prefersReducedMotion = useReducedMotion();
+
+  const content = (
+    <div
+      className="th-feature-strip"
+      role="group"
+      aria-label="Our services at a glance"
+    >
+      {SERVICE_FEATURES.map(({ icon: Icon, label }, index) => (
+        <span className="th-feature-item" key={label}>
+          {index > 0 && (
+            <span className="th-feature-divider" aria-hidden="true">
+              •
+            </span>
+          )}
+          <span className="th-feature-icon" aria-hidden="true">
+            <Icon size={13} strokeWidth={2.25} />
+          </span>
+          {label}
+        </span>
+      ))}
+    </div>
+  );
+
+  if (prefersReducedMotion) {
+    return content;
+  }
+
+  return (
+    <motion.div variants={FEATURE_STRIP_VARIANTS}>
+      {content}
+    </motion.div>
+  );
+});
+ServiceFeaturesStrip.displayName = "ServiceFeaturesStrip";
+
+// ══════════════════════════════════════════════════════════════════════════
 // Main Hero Section — Memoized
 // ══════════════════════════════════════════════════════════════════════════
 const TravelHeroSection = memo(function TravelHeroSection({
@@ -913,6 +1061,7 @@ const TravelHeroSection = memo(function TravelHeroSection({
           )}
 
           <TrustStrip />
+          <ServiceFeaturesStrip />
         </motion.div>
       </section>
     </>

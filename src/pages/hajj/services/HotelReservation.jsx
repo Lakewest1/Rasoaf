@@ -1,7 +1,7 @@
 // src/pages/services/HotelReservation.jsx
 // ─────────────────────────────────────────────────────────────────────────────
 // RASOAF TRAVELS AND TOURS LIMITED — Hotel Reservation Page
-// v2: 100% Responsive · Collapsible sections · Touch optimized · All content preserved
+// v3.2: Fixed Formspree .env integration
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useState, useCallback, useEffect } from "react";
@@ -13,6 +13,16 @@ import {
   ChevronDown
 } from "lucide-react";
 
+// ══════════════════════════════════════════════════════════════════════════
+// Formspree Endpoint — from .env file
+// ══════════════════════════════════════════════════════════════════════════
+const FORMSPREE_ENDPOINT = import.meta.env.VITE_FORMSPREE_HOTEL_RESERVATION || "";
+
+// Validate endpoint exists
+if (!FORMSPREE_ENDPOINT) {
+  console.warn("⚠️ VITE_FORMSPREE_HOTEL_RESERVATION is not set in .env file");
+}
+
 // ── Rasoaf Brand Colors ──────────────────────────────────────────────────
 const brand = {
   gold: "#D4A017", goldLight: "#F7C948", goldDark: "#B8860B",
@@ -23,8 +33,6 @@ const brand = {
   red: "#ef4444", redBg: "rgba(239, 68, 68, 0.1)",
   cream: "#FFF8E6", borderLight: "#E6D5A8", mutedText: "#5F5F5F",
 };
-
-const FORMSPREE_ENDPOINT = "https://formspree.io/f/your-form-id-here";
 
 const COUNTRY_CODES = [
   { code: "+234", country: "Nigeria" }, { code: "+1", country: "USA" },
@@ -67,7 +75,7 @@ const introParagraphs = [
   "Our goal is to give every traveller a memorable experience by combining excellent accommodation with outstanding customer service. From the moment you arrive until your return home, RASOAF Travels and Tours Limited is dedicated to making your journey comfortable, enjoyable, and worry-free.",
 ];
 
-// ── Styles ──────────────────────────────────────────────────────────────
+// ── Styles ──────────────────────────────────────────────────────────
 const s = {
   page: { minHeight: "100vh", background: `linear-gradient(180deg, ${brand.cream} 0%, ${brand.white} 100%)`, fontFamily: "'Inter', sans-serif", overflowX: "hidden" },
 
@@ -208,7 +216,7 @@ function CollapsibleText({ text, isMobile }) {
 }
 
 // ══════════════════════════════════════════════════════════════════════════
-//  INLINE BOOKING FORM
+//  INLINE BOOKING FORM — Fixed Formspree Integration
 // ══════════════════════════════════════════════════════════════════════════
 function BookingForm({ serviceName = "Hotel Reservation", accentColor = brand.gold, additionalFields = [] }) {
   const [formData, setFormData] = useState({ firstName: "", lastName: "", email: "", phoneCode: "+234", phone: "", checkIn: "", checkOut: "", adults: "1", children: "0", message: "", preferredContact: "email", ...additionalFields.reduce((acc, f) => ({ ...acc, [f.name]: "" }), {}) });
@@ -219,16 +227,91 @@ function BookingForm({ serviceName = "Hotel Reservation", accentColor = brand.go
   const handleChange = (e) => setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
 
   const handleSubmit = async (e) => {
-    e.preventDefault(); setLoading(true); setFormError(null);
+    e.preventDefault();
+    
+    // Validate endpoint
+    if (!FORMSPREE_ENDPOINT) {
+      setFormError("❌ Configuration error: Formspree endpoint not configured. Please contact support.");
+      setTimeout(() => setFormError(null), 8000);
+      return;
+    }
+
+    setLoading(true);
+    setFormError(null);
+
     try {
-      const fp = `${formData.phoneCode} ${formData.phone}`;
-      const sd = { _subject: `New Hotel Enquiry - ${formData.firstName} ${formData.lastName}`, "First Name": formData.firstName, "Last Name": formData.lastName, "Email": formData.email, "Phone": fp, "Phone Code": formData.phoneCode, "Check-In": formData.checkIn, "Check-Out": formData.checkOut || "N/S", "Preferred Contact": formData.preferredContact, "Adults": formData.adults, "Children": formData.children, "Service": serviceName, "Message": formData.message || "N/A", "Submitted At": new Date().toLocaleString(), "Page": window.location.href };
-      additionalFields.forEach(f => { const v = formData[f.name]; if (v) sd[f.label] = f.type === "select" ? f.options.find(o => o.value === v)?.label || v : v; });
-      const r = await fetch(FORMSPREE_ENDPOINT, { method: "POST", headers: { "Content-Type": "application/json", "Accept": "application/json" }, body: JSON.stringify(sd) });
-      if (!r.ok) { const ed = await r.json().catch(() => ({})); throw new Error(ed.error || "Failed to submit."); }
-      setLoading(false); setSubmitted(true);
-      setTimeout(() => { setSubmitted(false); setFormData({ firstName: "", lastName: "", email: "", phoneCode: "+234", phone: "", checkIn: "", checkOut: "", adults: "1", children: "0", message: "", preferredContact: "email", ...additionalFields.reduce((acc, f) => ({ ...acc, [f.name]: "" }), {}) }); }, 6000);
-    } catch (err) { setLoading(false); setFormError(err.message || "Something went wrong."); setTimeout(() => setFormError(null), 8000); }
+      const fullPhone = `${formData.phoneCode} ${formData.phone}`;
+
+      // Build additional fields string
+      let additionalInfo = "";
+      additionalFields.forEach((f) => {
+        const value = formData[f.name];
+        if (value) {
+          const label = f.type === "select"
+            ? f.options.find((o) => o.value === value)?.label || value
+            : value;
+          additionalInfo += `${f.label}: ${label}\n`;
+        }
+      });
+
+      // Formspree-compatible payload
+      const payload = {
+        email: formData.email,
+        name: `${formData.firstName} ${formData.lastName}`,
+        phone: fullPhone,
+        message: `Hotel Reservation Enquiry
+
+Name: ${formData.firstName} ${formData.lastName}
+Email: ${formData.email}
+Phone: ${fullPhone}
+Check-In: ${formData.checkIn}
+Check-Out: ${formData.checkOut || "Not specified"}
+Adults: ${formData.adults}
+Children: ${formData.children}
+Preferred Contact: ${formData.preferredContact}
+${additionalInfo}
+Message: ${formData.message || "No additional message"}`,
+      };
+
+      // Submit to Formspree
+      const response = await fetch(FORMSPREE_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const responseData = await response.json().catch(() => ({}));
+
+      // Formspree returns 200 on success with { ok: true }
+      if (!response.ok || !responseData.ok) {
+        const errorMsg = responseData.error || 
+          `Server error: ${response.status}. ${responseData.message || "Please try again."}`;
+        throw new Error(errorMsg);
+      }
+
+      // Success!
+      setLoading(false);
+      setSubmitted(true);
+
+      // Reset form after 8 seconds
+      setTimeout(() => {
+        setSubmitted(false);
+        setFormData({
+          firstName: "", lastName: "", email: "", phoneCode: "+234", phone: "",
+          checkIn: "", checkOut: "", adults: "1", children: "0", message: "",
+          preferredContact: "email",
+          ...additionalFields.reduce((acc, f) => ({ ...acc, [f.name]: "" }), {}),
+        });
+      }, 8000);
+    } catch (err) {
+      console.error("❌ Form submission error:", err);
+      setFormError(err.message || "Failed to send enquiry. Please try again or contact us directly.");
+      setLoading(false);
+      setTimeout(() => setFormError(null), 10000);
+    }
   };
 
   const inp = (n) => ({ ...s.input, ...(focused === n ? s.focusInput : {}), ...(formError && !formData[n] && ["firstName","lastName","email","phone","checkIn"].includes(n) ? s.errorInput : {}) });
@@ -238,7 +321,24 @@ function BookingForm({ serviceName = "Hotel Reservation", accentColor = brand.go
   if (submitted) return (
     <div style={s.successWrapper} className="form-flex-container">
       <div style={s.successImgSide} className="form-image-side"><img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&h=900&fit=crop" alt="" style={{ ...s.formImageBg, opacity: 0.35 }} /><div style={s.formImageOverlay} /><div style={{ position: "relative", zIndex: 2, textAlign: "center" }}><CheckCircle size={48} color={brand.green} style={{ marginBottom: "16px" }} /><h3 style={{ fontSize: "clamp(16px,2vw,22px)", fontWeight: 700, color: brand.white, fontFamily: "'Manrope',sans-serif" }}>Enquiry Sent!</h3></div></div>
-      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }} style={s.successContent}><div style={s.successIcon}><CheckCircle size={36} color={brand.green} /></div><h3 style={s.successTitle}>Enquiry Submitted!</h3><p style={s.successMsg}>Thank you for your interest. Our team will contact you within <strong>24 hours</strong>.</p><div style={s.successDetails}><div style={s.successDetail}><Clock size={14} color={brand.gold} /><span>Response within 24h</span></div><div style={s.successDetail}><Users size={14} color={brand.gold} /><span>Consultant assigned</span></div><div style={s.successDetail}><Shield size={14} color={brand.gold} /><span>Data secure</span></div></div><button onClick={() => setSubmitted(false)} style={s.successBtn} onMouseEnter={e => { e.target.style.borderColor = brand.gold; e.target.style.color = brand.goldDark; e.target.style.background = brand.goldBg; }} onMouseLeave={e => { e.target.style.borderColor = brand.borderLight; e.target.style.color = brand.gray600; e.target.style.background = brand.white; }}>Submit Another</button></motion.div>
+      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }} style={s.successContent}><div style={s.successIcon}><CheckCircle size={36} color={brand.green} /></div><h3 style={s.successTitle}>Enquiry Submitted!</h3><p style={s.successMsg}>Thank you for your interest. Our team will contact you within <strong>24 hours</strong>.</p><div style={s.successDetails}><div style={s.successDetail}><Clock size={14} color={brand.gold} /><span>Response within 24h</span></div><div style={s.successDetail}><Users size={14} color={brand.gold} /><span>Consultant assigned</span></div><div style={s.successDetail}><Shield size={14} color={brand.gold} /><span>Data secure</span></div></div>
+        <button
+          onClick={() => setSubmitted(false)}
+          style={s.successBtn}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.border = `1px solid ${brand.gold}`;
+            e.currentTarget.style.color = brand.goldDark;
+            e.currentTarget.style.background = brand.goldBg;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.border = `1px solid ${brand.borderLight}`;
+            e.currentTarget.style.color = brand.gray600;
+            e.currentTarget.style.background = brand.white;
+          }}
+        >
+          Submit Another
+        </button>
+      </motion.div>
     </div>
   );
 

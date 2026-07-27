@@ -22,7 +22,10 @@ const brand = {
   green: "#22c55e", greenBg: "rgba(34, 197, 94, 0.1)", red: "#ef4444", redBg: "rgba(239, 68, 68, 0.1)",
 };
 
-const FORMSPREE_ENDPOINT = "https://formspree.io/f/your-form-id-here";
+// ══════════════════════════════════════════════════════════════════════════
+// Formspree Endpoint — from .env file
+// ══════════════════════════════════════════════════════════════════════════
+const FORMSPREE_ENDPOINT = import.meta.env.VITE_FORMSPREE_FLIGHT_BOOKING || "";
 
 const CONTACT_INFO = { phone: "+234 903 770 7888", email: "info@rasoaf.com" };
 
@@ -244,19 +247,65 @@ function DiplomaticVisaForm() {
   const [loading, setLoading] = useState(false);
   const [formError, setFormError] = useState(null);
   const [focused, setFocused] = useState(null);
-  const handleChange = (e) => setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  
+  const handleChange = useCallback((e) => {
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  }, []);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault(); setLoading(true); setFormError(null);
+  const handleSubmit = useCallback(async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setFormError(null);
+
     try {
-      const fp = `${formData.phoneCode} ${formData.phone}`;
-      const sd = { _subject: `New Diplomatic Visa - ${formData.firstName} ${formData.lastName}`, "First Name": formData.firstName, "Last Name": formData.lastName, "Email": formData.email, "Phone": fp, "Destination": formData.destination, "Applicant Type": formData.applicantType, "Organization": formData.organization || "N/P", "Position": formData.position || "N/P", "Message": formData.message || "N/A", "Submitted At": new Date().toLocaleString(), "Page": window.location.href };
-      const r = await fetch(FORMSPREE_ENDPOINT, { method: "POST", headers: { "Content-Type": "application/json", "Accept": "application/json" }, body: JSON.stringify(sd) });
-      if (!r.ok) { const ed = await r.json().catch(() => ({})); throw new Error(ed.error || "Failed to submit."); }
-      setLoading(false); setSubmitted(true);
-      setTimeout(() => { setSubmitted(false); setFormData({ firstName: "", lastName: "", email: "", phoneCode: "+234", phone: "", destination: "", applicantType: "", organization: "", position: "", message: "" }); }, 6000);
-    } catch (err) { setLoading(false); setFormError(err.message || "Something went wrong."); setTimeout(() => setFormError(null), 8000); }
-  };
+      // Build the full phone number
+      const fullPhone = `${formData.phoneCode} ${formData.phone}`;
+
+      // Send to Formspree
+      const response = await fetch(FORMSPREE_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          // Form data
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phone: fullPhone,
+          destination: formData.destination,
+          applicantType: formData.applicantType,
+          organization: formData.organization || "N/P",
+          position: formData.position || "N/P",
+          message: formData.message || "N/A",
+          // Metadata
+          _subject: `New Diplomatic Visa Enquiry from ${formData.firstName} ${formData.lastName}`,
+          _replyto: formData.email,
+          formType: "Diplomatic Visa",
+          submittedAt: new Date().toISOString(),
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.error || "Failed to submit form. Please try again.");
+      }
+
+      setLoading(false);
+      setSubmitted(true);
+
+      // Auto-reset after 6 seconds
+      setTimeout(() => {
+        setSubmitted(false);
+        setFormData({ firstName: "", lastName: "", email: "", phoneCode: "+234", phone: "", destination: "", applicantType: "", organization: "", position: "", message: "" });
+      }, 6000);
+    } catch (err) {
+      console.error("Form submission error:", err);
+      setFormError(err.message || "Something went wrong. Please try again or contact us directly.");
+      setLoading(false);
+    }
+  }, [formData]);
 
   const inp = (n) => ({ ...s.input, ...(focused === n ? s.focusInput : {}), ...(formError && !formData[n] && ["firstName","lastName","email","phone","destination","applicantType"].includes(n) ? s.errorInput : {}) });
   const phn = (n) => ({ ...s.phoneInput, ...(focused === n ? s.focusInput : {}) });
@@ -271,7 +320,7 @@ function DiplomaticVisaForm() {
   return (
     <div style={s.formWrapper} className="form-flex-container">
       <div style={s.formImageSide} className="form-image-side"><img src="https://images.unsplash.com/photo-1541872703-74c5e44368f9?w=600&h=900&fit=crop" alt="Diplomatic" style={s.formImageBg} /><div style={s.formImageOverlay} /><motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} style={s.formImageContent}><div style={s.formImageBadge}><Sparkles size={12} color={brand.gold} /><span>OFFICIAL GOVERNMENT TRAVEL</span></div><div style={s.formImageIcon}><Crown size={34} color={brand.gold} /></div><h2 style={s.formImageTitle}>Diplomatic <span style={s.formImageGold}>Visa</span><br />Application</h2><p style={s.formImageSubtitle}>For government officials, diplomats, and international representatives.</p><div style={s.formDivider} /><div style={s.formImageFeatures}>{[{ icon: Shield, text: "Confidential Handling" },{ icon: Clock, text: "Priority Processing" },{ icon: Globe, text: "Global Recognition" }].map((item, i) => { const I = item.icon; return <div key={i} style={s.formImageFeatItem}><div style={s.formImageFeatIcon}><I size={13} color={brand.gold} /></div>{item.text}</div>; })}</div></motion.div></div>
-      <div style={s.formSide} className="form-form-side"><motion.form initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }} onSubmit={handleSubmit}><div style={s.formHeaderStyle}><div style={s.formHeaderIcon}><Send size={20} color={brand.gold} /></div><div><div style={s.formHeaderTitle}>Diplomatic Visa Enquiry</div><div style={s.formHeaderSub}>Fill the form below</div></div></div>{formError && <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} style={s.errorMessage}><span style={{ fontSize: "16px", flexShrink: 0 }}>⚠️</span><span>{formError}</span></motion.div>}<div style={s.formRow}><div style={s.formGroup}><label style={s.label}>First Name <span style={s.required}>*</span></label><input type="text" name="firstName" value={formData.firstName} onChange={handleChange} required placeholder="Enter first name" style={inp("firstName")} onFocus={() => setFocused("firstName")} onBlur={() => setFocused(null)} /></div><div style={s.formGroup}><label style={s.label}>Last Name <span style={s.required}>*</span></label><input type="text" name="lastName" value={formData.lastName} onChange={handleChange} required placeholder="Enter last name" style={inp("lastName")} onFocus={() => setFocused("lastName")} onBlur={() => setFocused(null)} /></div></div><div style={s.formRow}><div style={s.formGroup}><label style={s.label}>Email <span style={s.required}>*</span></label><input type="email" name="email" value={formData.email} onChange={handleChange} required placeholder="email@example.com" style={inp("email")} onFocus={() => setFocused("email")} onBlur={() => setFocused(null)} /></div></div><div style={s.formRow}><div style={s.formGroup}><label style={s.label}>Phone <span style={s.required}>*</span></label><div style={s.phoneRow}><select name="phoneCode" value={formData.phoneCode} onChange={handleChange} style={s.phoneCode}>{countryCodes.map(c => <option key={c.code} value={c.code}>{c.code} {c.country}</option>)}</select><input type="tel" name="phone" value={formData.phone} onChange={handleChange} required placeholder="800 123 4567" style={phn("phone")} onFocus={() => setFocused("phone")} onBlur={() => setFocused(null)} /></div></div></div><div style={s.formRow}><div style={s.formGroup}><label style={s.label}>Destination <span style={s.required}>*</span></label><select name="destination" value={formData.destination} onChange={handleChange} required style={s.select}><option value="">Select...</option>{destinations.map(d => <option key={d} value={d}>{d}</option>)}</select></div></div><div style={s.formRow}><div style={s.formGroup}><label style={s.label}>Applicant Type <span style={s.required}>*</span></label><select name="applicantType" value={formData.applicantType} onChange={handleChange} required style={s.select}><option value="">Select...</option>{applicantTypes.map(t => <option key={t} value={t}>{t}</option>)}</select></div></div><div style={s.formRow}><div style={s.formGroup}><label style={s.label}>Organization / Ministry</label><input type="text" name="organization" value={formData.organization} onChange={handleChange} placeholder="Ministry, Embassy, or Organization" style={inp("organization")} onFocus={() => setFocused("organization")} onBlur={() => setFocused(null)} /></div><div style={s.formGroup}><label style={s.label}>Position / Title</label><input type="text" name="position" value={formData.position} onChange={handleChange} placeholder="Ambassador, Officer, etc." style={inp("position")} onFocus={() => setFocused("position")} onBlur={() => setFocused(null)} /></div></div><div style={s.formRow}><div style={s.formGroup}><label style={s.label}>Additional Notes</label><textarea name="message" value={formData.message} onChange={handleChange} rows={3} placeholder="Any special requirements or notes..." style={s.textarea} onFocus={() => setFocused("message")} onBlur={() => setFocused(null)} /></div></div><motion.button type="submit" disabled={loading} whileHover={!loading ? { scale: 1.01 } : {}} whileTap={!loading ? { scale: 0.98 } : {}} style={{ ...s.submitBtn, ...(loading ? { opacity: 0.75, cursor: "not-allowed" } : {}) }}><div style={s.btnShine} />{loading ? <><Loader2 size={18} style={{ animation: "spin 1s linear infinite" }} />Submitting...</> : <><Send size={18} style={{ position: "relative", zIndex: 1 }} /><span style={{ position: "relative", zIndex: 1 }}>Submit Enquiry</span></>}</motion.button><p style={s.terms}>By submitting, you agree to our privacy policy. All information is handled confidentially.</p></motion.form></div>
+      <div style={s.formSide} className="form-form-side"><motion.form initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }} onSubmit={handleSubmit} noValidate><div style={s.formHeaderStyle}><div style={s.formHeaderIcon}><Send size={20} color={brand.gold} /></div><div><div style={s.formHeaderTitle}>Diplomatic Visa Enquiry</div><div style={s.formHeaderSub}>Fill the form below</div></div></div>{formError && <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} style={s.errorMessage}><span style={{ fontSize: "16px", flexShrink: 0 }}>⚠️</span><span>{formError}</span></motion.div>}<div style={s.formRow}><div style={s.formGroup}><label style={s.label}>First Name <span style={s.required}>*</span></label><input type="text" name="firstName" value={formData.firstName} onChange={handleChange} required placeholder="Enter first name" style={inp("firstName")} onFocus={() => setFocused("firstName")} onBlur={() => setFocused(null)} /></div><div style={s.formGroup}><label style={s.label}>Last Name <span style={s.required}>*</span></label><input type="text" name="lastName" value={formData.lastName} onChange={handleChange} required placeholder="Enter last name" style={inp("lastName")} onFocus={() => setFocused("lastName")} onBlur={() => setFocused(null)} /></div></div><div style={s.formRow}><div style={s.formGroup}><label style={s.label}>Email <span style={s.required}>*</span></label><input type="email" name="email" value={formData.email} onChange={handleChange} required placeholder="email@example.com" style={inp("email")} onFocus={() => setFocused("email")} onBlur={() => setFocused(null)} /></div></div><div style={s.formRow}><div style={s.formGroup}><label style={s.label}>Phone <span style={s.required}>*</span></label><div style={s.phoneRow}><select name="phoneCode" value={formData.phoneCode} onChange={handleChange} style={s.phoneCode}>{countryCodes.map(c => <option key={c.code} value={c.code}>{c.code} {c.country}</option>)}</select><input type="tel" name="phone" value={formData.phone} onChange={handleChange} required placeholder="800 123 4567" style={phn("phone")} onFocus={() => setFocused("phone")} onBlur={() => setFocused(null)} /></div></div></div><div style={s.formRow}><div style={s.formGroup}><label style={s.label}>Destination <span style={s.required}>*</span></label><select name="destination" value={formData.destination} onChange={handleChange} required style={s.select}><option value="">Select...</option>{destinations.map(d => <option key={d} value={d}>{d}</option>)}</select></div></div><div style={s.formRow}><div style={s.formGroup}><label style={s.label}>Applicant Type <span style={s.required}>*</span></label><select name="applicantType" value={formData.applicantType} onChange={handleChange} required style={s.select}><option value="">Select...</option>{applicantTypes.map(t => <option key={t} value={t}>{t}</option>)}</select></div></div><div style={s.formRow}><div style={s.formGroup}><label style={s.label}>Organization / Ministry</label><input type="text" name="organization" value={formData.organization} onChange={handleChange} placeholder="Ministry, Embassy, or Organization" style={inp("organization")} onFocus={() => setFocused("organization")} onBlur={() => setFocused(null)} /></div><div style={s.formGroup}><label style={s.label}>Position / Title</label><input type="text" name="position" value={formData.position} onChange={handleChange} placeholder="Ambassador, Officer, etc." style={inp("position")} onFocus={() => setFocused("position")} onBlur={() => setFocused(null)} /></div></div><div style={s.formRow}><div style={s.formGroup}><label style={s.label}>Additional Notes</label><textarea name="message" value={formData.message} onChange={handleChange} rows={3} placeholder="Any special requirements or notes..." style={s.textarea} onFocus={() => setFocused("message")} onBlur={() => setFocused(null)} /></div></div><motion.button type="submit" disabled={loading} whileHover={!loading ? { scale: 1.01 } : {}} whileTap={!loading ? { scale: 0.98 } : {}} style={{ ...s.submitBtn, ...(loading ? { opacity: 0.75, cursor: "not-allowed" } : {}) }}><div style={s.btnShine} />{loading ? <><Loader2 size={18} style={{ animation: "spin 1s linear infinite" }} />Submitting...</> : <><Send size={18} style={{ position: "relative", zIndex: 1 }} /><span style={{ position: "relative", zIndex: 1 }}>Submit Enquiry</span></>}</motion.button><p style={s.terms}>By submitting, you agree to our privacy policy. All information is handled confidentially.</p></motion.form></div>
     </div>
   );
 }

@@ -350,7 +350,7 @@ export default function RasoafStats() {
               <span className="rs-h2__shimmer">Trusted Numbers</span>
             </h2>
             <p className="rs-subp">
-              We bring reality to your journey — from sacred Hajj &amp; Umrah
+              We bring reality to your journey from sacred Hajj &amp; Umrah
               pilgrimages to seamless global visa services and premium travel
               experiences. No templates, no repeated routes, no shortcuts.
             </p>
