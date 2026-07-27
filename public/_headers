@@ -1,7 +1,8 @@
 # Security Headers for Rasoaf Travels
 /*
-  # CRITICAL: HSTS (Forces HTTPS - Start with 1 day for testing)
-  Strict-Transport-Security: max-age=3600; includeSubDomains
+
+  # CRITICAL: HSTS (Forces HTTPS - 1 day for testing)
+  Strict-Transport-Security: max-age=86400; includeSubDomains
 
   # CRITICAL: CSP (Prevents XSS attacks)
   Content-Security-Policy: 
@@ -10,13 +11,14 @@
     style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
     img-src 'self' data: https://res.cloudinary.com https://images.unsplash.com;
     font-src 'self' https://fonts.gstatic.com;
-    connect-src 'self' https://api.netlify.com https://formspree.io https://formspree.io/f/*;
+    connect-src 'self' https://api.netlify.com https://formspree.io;
     frame-src 'self' https://www.google.com;
+    frame-ancestors 'self';
     base-uri 'self';
     form-action 'self' https://formspree.io;
     upgrade-insecure-requests;
 
-  # Prevent clickjacking
+  # Prevent clickjacking (redundant with frame-ancestors, but keeps compatibility)
   X-Frame-Options: DENY
 
   # Prevent MIME type sniffing
@@ -27,3 +29,20 @@
 
   # Restrict browser features
   Permissions-Policy: geolocation=(), microphone=(), camera=()
+
+  # Prevent Cross-Origin Resource Sharing abuse
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Embedder-Policy: require-corp
+  Cross-Origin-Resource-Policy: same-origin
+
+# Cache static assets aggressively
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Cache images
+*.jpg,*.jpeg,*.png,*.gif,*.webp,*.svg
+  Cache-Control: public, max-age=2592000
+
+# No cache for HTML
+*.html
+  Cache-Control: no-cache, no-store, must-revalidate
