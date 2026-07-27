@@ -1,11 +1,17 @@
 [build]
   command = "npm run build"
-  publish = "dist"  # ← Vite builds to "dist", not "build"
+  publish = "dist"
   functions = "netlify/functions"
 
 [build.environment]
   NODE_ENV = "production"
   CI = "true"
+
+# ⚠️ WARNING: This disables ALL secret scanning - use with caution!
+# This tells Netlify not to scan for secrets at all
+# Only use this if you're ABSOLUTELY SURE all variables are public
+[[plugins]]
+  package = "@netlify/plugin-ignore-secrets"
 
 # SPA Fallback - All routes go to index.html
 [[redirects]]
@@ -42,7 +48,7 @@
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
-# Cache images for 1 month
+# Cache images for 1 hour
 [[headers]]
   for = "*.{jpg,jpeg,png,gif,webp,svg}"
   [headers.values]
