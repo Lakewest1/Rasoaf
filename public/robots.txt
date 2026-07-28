@@ -1,0 +1,26 @@
+# robots.txt for Rasoaf Travels and Tours
+# https://rasoaf.com/robots.txt
+
+User-agent: *
+Allow: /
+
+# Block access to admin/backup paths
+Disallow: /admin/
+Disallow: /backup/
+Disallow: /tmp/
+Disallow: /logs/
+
+# Block access to private files
+Disallow: /*.pdf$
+Disallow: /*.doc$
+Disallow: /*.docx$
+
+# Block access to API endpoints
+Disallow: /api/
+
+# Block access to asset folders (not needed for crawlers)
+Disallow: /assets/
+Disallow: /static/
+
+# Sitemap location
+Sitemap: https://rasoaf.com/sitemap.xml
