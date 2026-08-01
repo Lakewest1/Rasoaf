@@ -1,7 +1,7 @@
 // src/pages/services/FlightBooking.jsx
 // ─────────────────────────────────────────────────────────────────────────────
 // RASOAF TRAVELS AND TOURS LIMITED — Flight Booking Page
-// v2.1: Removed prices · Rating & flight info instead · Full content preserved
+// v2.2: Formspree endpoint moved to .env · Full content preserved
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useState, useCallback, useEffect } from "react";
@@ -26,7 +26,12 @@ const brand = {
   mutedText: "#5F5F5F",
 };
 
-const FORMSPREE_ENDPOINT = "https://formspree.io/f/your-form-id-here";
+// ══════════════════════════════════════════════════════════════════════════
+// Formspree endpoint from .env — falls back to a safe placeholder
+// ══════════════════════════════════════════════════════════════════════════
+const FORMSPREE_ENDPOINT = import.meta.env.VITE_FORMSPREE_FLIGHT_BOOKING || 
+                           process.env.REACT_APP_FORMSPREE_FLIGHT_BOOKING ||
+                           "https://formspree.io/f/your-form-id-here";
 
 const COUNTRY_CODES = [
   { code: "+234", country: "Nigeria" }, { code: "+1", country: "USA" },
@@ -130,7 +135,6 @@ const s = {
   holyCityDesc: { fontSize: "clamp(12px, 1.1vw, 14px)", color: brand.mutedText, lineHeight: 1.6, marginBottom: "clamp(10px, 1.5vw, 16px)" },
   holyCityInfo: { display: "flex", gap: "clamp(10px, 1.5vw, 16px)", flexWrap: "wrap", marginBottom: "clamp(10px, 1.5vw, 16px)" },
   holyCityInfoItem: { display: "flex", alignItems: "center", gap: "6px", fontSize: "clamp(11px, 1vw, 13px)", color: brand.gray600 },
-  // ── RATING ROW (replaces price) ──
   holyCityRatingRow: { display: "flex", alignItems: "center", gap: "8px" },
   holyCityRating: { fontSize: "clamp(16px, 2vw, 20px)", fontWeight: 700, color: brand.goldDark, fontFamily: "'Manrope', sans-serif" },
   holyCityStars: { display: "flex", gap: "2px" },
@@ -147,7 +151,6 @@ const s = {
   routePath: { display: "flex", alignItems: "center", gap: "8px", fontSize: "clamp(13px, 1.2vw, 15px)", fontWeight: 600, color: brand.dark },
   routeDuration: { display: "flex", alignItems: "center", gap: "4px", fontSize: "clamp(10px, 1vw, 12px)", color: brand.gray400, marginTop: "3px" },
   routeFooter: { display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "4px" },
-  // ── RATING ROW for routes (replaces price) ──
   routeRatingRow: { display: "flex", alignItems: "center", gap: "6px" },
   routeRating: { fontSize: "clamp(14px, 1.5vw, 18px)", fontWeight: 700, color: brand.goldDark, fontFamily: "'Manrope', sans-serif" },
   routeStars: { display: "flex", gap: "1px" },
@@ -229,6 +232,9 @@ const keyframes = `
 }
 `;
 
+// ══════════════════════════════════════════════════════════════════════════
+// Collapsible Text Component
+// ══════════════════════════════════════════════════════════════════════════
 function CollapsibleText({ text, isMobile }) {
   const [expanded, setExpanded] = useState(false);
   const maxLength = 200;
@@ -243,6 +249,9 @@ function CollapsibleText({ text, isMobile }) {
   );
 }
 
+// ══════════════════════════════════════════════════════════════════════════
+// Booking Form Component
+// ══════════════════════════════════════════════════════════════════════════
 function BookingForm({ serviceName = "Holy Land Flight", accentColor = brand.gold, additionalFields = [] }) {
   const [formData, setFormData] = useState({ firstName: "", lastName: "", email: "", phoneCode: "+234", phone: "", travelDate: "", returnDate: "", adults: "1", children: "0", infants: "0", message: "", preferredContact: "email", ...additionalFields.reduce((acc, f) => ({ ...acc, [f.name]: "" }), {}) });
   const [submitted, setSubmitted] = useState(false);
@@ -250,6 +259,7 @@ function BookingForm({ serviceName = "Holy Land Flight", accentColor = brand.gol
   const [formError, setFormError] = useState(null);
   const [focused, setFocused] = useState(null);
   const handleChange = (e) => setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  
   const handleSubmit = async (e) => {
     e.preventDefault(); setLoading(true); setFormError(null);
     try {
@@ -262,6 +272,7 @@ function BookingForm({ serviceName = "Holy Land Flight", accentColor = brand.gol
       setTimeout(() => { setSubmitted(false); setFormData({ firstName: "", lastName: "", email: "", phoneCode: "+234", phone: "", travelDate: "", returnDate: "", adults: "1", children: "0", infants: "0", message: "", preferredContact: "email", ...additionalFields.reduce((acc, f) => ({ ...acc, [f.name]: "" }), {}) }); }, 6000);
     } catch (err) { setLoading(false); setFormError(err.message || "Something went wrong."); setTimeout(() => setFormError(null), 8000); }
   };
+  
   const inp = (n) => ({ ...s.input, ...(focused === n ? s.focusInput : {}), ...(formError && !formData[n] ? s.errorInput : {}) });
   const phn = (n) => ({ ...s.phoneInput, ...(focused === n ? s.focusInput : {}) });
   const txa = (n) => ({ ...s.textarea, ...(focused === n ? s.focusInput : {}) });
@@ -281,6 +292,9 @@ function BookingForm({ serviceName = "Holy Land Flight", accentColor = brand.gol
   );
 }
 
+// ══════════════════════════════════════════════════════════════════════════
+// MAIN COMPONENT
+// ══════════════════════════════════════════════════════════════════════════
 export default function FlightBooking() {
   const { isMobile } = useResponsive();
   const scrollToForm = useCallback(() => { const e = document.getElementById("booking-form"); if (e) { const o = isMobile ? 60 : 80; const t = e.getBoundingClientRect().top + window.scrollY - o; window.scrollTo({ top: t, behavior: "smooth" }); } }, [isMobile]);
