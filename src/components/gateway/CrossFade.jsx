@@ -1,43 +1,38 @@
-// src/components/gateway/CrossFade.jsx (OPTIMIZED)
+// src/components/gateway/CrossFade.jsx (INSTANT - ZERO DELAY)
 // ─────────────────────────────────────────────────────────────────────────────
-// RASOAF Gateway — Dark Crossfade Overlay (OPTIMIZED)
+// RASOAF Gateway — Instant Crossfade (No Animation)
 //
-// OPTIMIZATIONS:
-// 1. GPU-accelerated opacity animations
-// 2. Optimized animation variants
-// 3. Simplified animation keyframes
-// 4. Proper z-index handling
-// 5. Containment for isolated rendering
+// OPTIMIZATION:
+// 1. Zero animation duration (instant fade)
+// 2. Immediate black screen
+// 3. No delays before navigation
+// 4. GPU accelerated
 //
-// Result: Smooth fade-to-black at 60fps
+// Result: Users click → instant black → navigate (no waiting)
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { memo, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { COLORS, Z_INDEX } from "./constants";
 
-// OPTIMIZED: Simplified crossfade animation variants
-// Uses only opacity (GPU-accelerated)
-const OPTIMIZED_CROSSFADE_VARIANTS = {
+// ULTRA-FAST: Zero animation durations
+const INSTANT_CROSSFADE_VARIANTS = {
   hidden: {
     opacity: 0,
     transition: {
-      duration: 0.3,
-      ease: "easeIn",
+      duration: 0, // INSTANT - No delay
     },
   },
   visible: {
     opacity: 1,
     transition: {
-      duration: 0.4,
-      ease: "easeInOut",
+      duration: 0, // INSTANT - No delay
     },
   },
   exit: {
     opacity: 0,
     transition: {
-      duration: 0.2,
-      ease: "easeOut",
+      duration: 0, // INSTANT - No delay
     },
   },
 };
@@ -48,24 +43,15 @@ const OVERLAY_STYLE = {
   zIndex: Z_INDEX.CROSSFADE,
   background: COLORS.BG_DARK,
   pointerEvents: "none",
-  
-  // GPU ACCELERATION: Opacity is GPU-accelerated
   willChange: "opacity",
-  
-  // GPU ACCELERATION
   backfaceVisibility: "hidden",
   WebkitBackfaceVisibility: "hidden",
-  
-  // OPTIMIZATION: 3D rendering context
   perspective: "1000px",
-  
-  // OPTIMIZATION: Isolates this element's paint operations
   contain: "strict",
 };
 
-// OPTIMIZED: Memoized variants to prevent unnecessary re-creation
 const CrossFade = memo(function CrossFade({ visible }) {
-  const variants = useMemo(() => OPTIMIZED_CROSSFADE_VARIANTS, []);
+  const variants = useMemo(() => INSTANT_CROSSFADE_VARIANTS, []);
 
   return (
     <AnimatePresence mode="wait">

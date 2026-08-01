@@ -110,7 +110,7 @@ export default function FloatingWhatsApp() {
   };
 
   // RASAOF Travel contact details
-  const whatsappNumber = "8065246060";
+  const whatsappNumber = "+2348065246060";
   const phoneNumber = "+2348065246060";
   const emailAddress = "rasoaf24@gmail.com";
   const websiteUrl = "https://www.rasoaf.com";
