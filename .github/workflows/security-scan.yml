@@ -1,0 +1,39 @@
+name: Rasoaf Security Scan
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  schedule:
+    - cron: "0 0 * * 0"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  zap-scan:
+    name: OWASP ZAP DAST Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Run OWASP ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.15.0
+        with:
+          target: "https://www.rasoaf.com"
+          allow_issue_writing: false
+          artifact_name: zap-security-report
+
+      - name: Upload ZAP Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rasoaf-zap-report
+          path: |
+            report_html.html
+            report_md.md
+            report_json.json
+          retention-days: 30
