@@ -30,18 +30,31 @@
   # Restrict browser features
   Permissions-Policy: geolocation=(), microphone=(), camera=()
 
-  # Cross-Origin Policies - REMOVED require-corp to allow Cloudinary resources
+  # Cross-Origin Policies
   Cross-Origin-Opener-Policy: same-origin
-  # Cross-Origin-Embedder-Policy: require-corp  ← REMOVED - this was blocking Cloudinary!
-  # Cross-Origin-Resource-Policy: same-origin  ← REMOVED - this was blocking Cloudinary!
 
-# Cache static assets aggressively
+# Cache static assets
 /assets/*
-  Cache-Control: public, max-age=3600, immutable
+  Cache-Control: public, max-age=31536000, immutable
 
-# Cache images - increased to 1 year for better performance
-*.jpg,*.jpeg,*.png,*.gif,*.webp,*.svg
-  Cache-Control: public, max-age=3600, immutable
+# Cache images
+*.jpg
+  Cache-Control: public, max-age=31536000, immutable
+
+*.jpeg
+  Cache-Control: public, max-age=31536000, immutable
+
+*.png
+  Cache-Control: public, max-age=31536000, immutable
+
+*.gif
+  Cache-Control: public, max-age=31536000, immutable
+
+*.webp
+  Cache-Control: public, max-age=31536000, immutable
+
+*.svg
+  Cache-Control: public, max-age=31536000, immutable
 
 # No cache for HTML
 *.html
