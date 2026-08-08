@@ -1,7 +1,7 @@
 // src/components/common/Hero.jsx
 // ─────────────────────────────────────────────────────────────────────────────
 // RASOAF TRAVELS AND TOURS LIMITED — Unified Hero Component (v33 - FAST)
-// All content preserved · GSAP & Lenis loaded on-demand · Sections lazy loaded
+// All content preserved · GSAP loaded on-demand · Sections lazy loaded
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useState, useEffect, useRef, useCallback, lazy, Suspense, memo } from "react";
@@ -181,13 +181,11 @@ export default function Hero({
   const bgSlideBRef = useRef(null);
   const marqueeTrackRef = useRef(null);
   const gsapRef = useRef(null);
-  const lenisRef = useRef(null);
 
   const [isTvPlaying, setIsTvPlaying] = useState(false);
   const [isTvMuted, setIsTvMuted] = useState(true);
   const [tvVideoError, setTvVideoError] = useState(false);
   const [gsapLoaded, setGsapLoaded] = useState(false);
-  const [lenisLoaded, setLenisLoaded] = useState(false);
   const isMobileRef = useRef(false);
 
   const MARQUEE_PANELS = [...panels, ...panels];
@@ -206,34 +204,9 @@ export default function Hero({
       gsapRef.current = { gsap, ScrollTrigger };
       setGsapLoaded(true);
     };
-    // Delay GSAP load by 1s to prioritize hero render
     const timer = setTimeout(loadGsap, 1000);
     return () => clearTimeout(timer);
   }, [simple, gsapLoaded]);
-
-  // ── Load Lenis on-demand ──────────────────────────────────────────────
-  useEffect(() => {
-    if (simple || isMobileRef.current || lenisLoaded) return;
-    const loadLenis = async () => {
-      const Lenis = (await import("lenis")).default;
-      const lenis = new Lenis({ duration: 1.2, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -8 * t)), orientation: "vertical", smoothWheel: true });
-      lenisRef.current = lenis;
-      setLenisLoaded(true);
-    };
-    const timer = setTimeout(loadLenis, 1500);
-    return () => clearTimeout(timer);
-  }, [simple, lenisLoaded]);
-
-  // ── Lenis RAF ─────────────────────────────────────────────────────────
-  useEffect(() => {
-    if (!lenisRef.current || !gsapRef.current) return;
-    const lenis = lenisRef.current;
-    const { ScrollTrigger } = gsapRef.current;
-    let raf;
-    const tick = (time) => { lenis.raf(time); ScrollTrigger.update(); raf = requestAnimationFrame(tick); };
-    raf = requestAnimationFrame(tick);
-    return () => { cancelAnimationFrame(raf); lenis.destroy(); };
-  }, [lenisLoaded, gsapLoaded]);
 
   // ── Background cycling (only after GSAP loads) ────────────────────────
   useEffect(() => {
@@ -313,8 +286,7 @@ export default function Hero({
   const scrollTo = useCallback((id) => {
     const el = document.getElementById(id);
     if (!el) return;
-    if (lenisRef.current) lenisRef.current.scrollTo(el, { offset: -80 });
-    else el.scrollIntoView({ behavior: "smooth", block: "start" });
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
   }, []);
 
   const handlePrimaryClick = () => { if (onPrimaryCta) onPrimaryCta(); else if (onCtaClick) onCtaClick(); else scrollTo("services"); };
