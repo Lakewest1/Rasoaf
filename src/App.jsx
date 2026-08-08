@@ -1,10 +1,10 @@
-// src/App.jsx (CLEAN - NO LOADING OVERLAYS)
+// src/App.jsx (UPDATED - NO EARTH CONTEXT)
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { lazy, Suspense } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
-import { EarthProvider } from "./context/EarthContext";
+// ❌ REMOVE THIS: import { EarthProvider } from "./context/EarthContext";
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
 import FloatingWhatsApp from "./components/layout/FloatingWhatsApp";
@@ -52,7 +52,8 @@ const PageLoader = () => (
 
 export default function App() {
   return (
-    <EarthProvider>
+    // ❌ REMOVE EarthProvider wrapper
+    // <EarthProvider>
       <Router>
         <Navbar />
         <main style={{ minHeight: "100vh" }}>
@@ -89,6 +90,6 @@ export default function App() {
         <Footer />
         <FloatingWhatsApp />
       </Router>
-    </EarthProvider>
+    // ❌ REMOVE: </EarthProvider>
   );
 }
