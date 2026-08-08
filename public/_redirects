@@ -1,14 +1,6 @@
-# STATIC ASSETS - LET THEM LOAD FIRST
-/*.js /:splat.js 200
-/*.css /:splat.css 200
-/*.png /:splat.png 200
-/*.jpg /:splat.jpg 200
-/*.jpeg /:splat.jpeg 200
-/*.svg /:splat.svg 200
-/*.webp /:splat.webp 200
-/*.ico /:splat.ico 200
-/*.json /:splat.json 200
+# ============================================
+# RASOAF TRAVELS & TOURS - NETLIFY REDIRECTS
+# ============================================
 
-/assets/* /assets/:splat 200
-/textures/* /textures/:splat 200
-/* /index.html 200
+# React SPA fallback
+/*    /index.html   200
