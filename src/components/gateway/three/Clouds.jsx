@@ -8,7 +8,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useRef, useEffect } from "react";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useLoader } from "@react-three/fiber";
+import { TextureLoader } from "three";
 import { SRGBColorSpace, LinearMipmapLinearFilter, LinearFilter } from "three";
 
 const CLOUD_RADIUS = 2.55;
@@ -16,9 +17,12 @@ const CLOUD_SEGMENTS = 64;
 const CLOUD_ROTATION_SPEED = 0.12;
 const CLOUD_OPACITY = 0.28;
 
-export default function Clouds({ texture }) {
+export default function Clouds() {
   const meshRef = useRef(null);
   const materialRef = useRef(null);
+
+  // ── LOAD TEXTURE DIRECTLY ──
+  const texture = useLoader(TextureLoader, '/textures/earth-clouds.png');
 
   // ── Hooks first, always ───────────────────────────────────────────────
   useFrame((_, delta) => {

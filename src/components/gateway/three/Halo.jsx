@@ -6,8 +6,7 @@
 // Brighter at sunrise/sunset. Almost invisible at noon. Present at night.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useRef, useMemo } from "react";
-import { useFrame } from "@react-three/fiber";
+import { useRef, useMemo, useEffect } from "react";
 import { BackSide, Color, Vector3, AdditiveBlending } from "three";
 import { EARTH } from "../constants";
 
@@ -54,16 +53,23 @@ export default function Halo({ sunDirection }) {
 
   const haloRadius = EARTH.RADIUS * 1.15;
 
+  // ── Default sun direction ─────────────────────────────────────────────
+  const defaultSunDirection = useMemo(() => new Vector3(1, 0.5, 0.5).normalize(), []);
+
   const uniforms = useMemo(() => ({
-    uSunDirection: { value: new Vector3(1, 0.5, 0.5) },
+    uSunDirection: { value: defaultSunDirection.clone() },
     uHaloColor: { value: new Color("#8CCBFF") },
     uOpacity: { value: 0.22 },
-  }), []);
+  }), [defaultSunDirection]);
 
-  useFrame(() => {
-    if (!uniforms || !sunDirection) return;
-    uniforms.uSunDirection.value.copy(sunDirection).normalize();
-  });
+  // ── Update sun direction when it changes ─────────────────────────────
+  useEffect(() => {
+    if (sunDirection) {
+      uniforms.uSunDirection.value.copy(sunDirection).normalize();
+    } else {
+      uniforms.uSunDirection.value.copy(defaultSunDirection);
+    }
+  }, [sunDirection, uniforms, defaultSunDirection]);
 
   return (
     <mesh ref={meshRef}>

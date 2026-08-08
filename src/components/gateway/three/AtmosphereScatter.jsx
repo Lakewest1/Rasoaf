@@ -62,22 +62,32 @@ export default function AtmosphereScatter({ sunDirection }) {
 
   const atmosphereRadius = EARTH.RADIUS * 1.08;
 
+  // ── Default sun direction if none provided ────────────────────────────
+  const defaultSunDirection = useMemo(() => new Vector3(1, 0.5, 0.5).normalize(), []);
+
   const uniforms = useMemo(() => ({
-    uSunDirection: { value: new Vector3(1, 0.5, 0.5) },
+    uSunDirection: { value: defaultSunDirection.clone() },
     uAtmosphereColor: { value: new Color("#65AFFF") },
     uFresnelPower: { value: 3.5 },
     uOpacity: { value: 0.45 },
-  }), []);
+  }), [defaultSunDirection]);
+
+  // ── Update sun direction when it changes ─────────────────────────────
+  useEffect(() => {
+    if (sunDirection) {
+      uniforms.uSunDirection.value.copy(sunDirection).normalize();
+    } else {
+      // Fallback to default
+      uniforms.uSunDirection.value.copy(defaultSunDirection);
+    }
+  }, [sunDirection, uniforms, defaultSunDirection]);
 
   useFrame(() => {
-    if (!uniforms || !sunDirection) return;
-    uniforms.uSunDirection.value.copy(sunDirection).normalize();
+    // No-op for now, sun direction is updated via useEffect
+    // This prevents unnecessary updates every frame
   });
 
-  // The shader material and sphere geometry are created by R3F via JSX, but
-  // this cleanup is kept explicit and consistent with Earth.jsx/Clouds.jsx
-  // so disposal behavior for this "shell" family of meshes doesn't depend
-  // on which auto-dispose defaults R3F happens to apply.
+  // ── Cleanup ────────────────────────────────────────────────────────────
   useEffect(() => {
     return () => {
       materialRef.current?.dispose();

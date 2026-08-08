@@ -5,19 +5,25 @@
 // Exposes Earth group ref for tilt. Keeps backward compatibility.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useRef, forwardRef, useImperativeHandle } from "react";
+import { useRef, forwardRef, useImperativeHandle, useEffect } from "react";
 import CameraDirector from "./CameraDirector";
 import MouseParallax from "./MouseParallax";
 
-const CameraRig = forwardRef(function CameraRig({ children, currentScene, onSceneComplete }, ref) {
+const CameraRig = forwardRef(function CameraRig({ children, currentScene = 0, onSceneComplete }, ref) {
   const earthGroupRef = useRef(null);
 
-  // earthGroupRef is a stable ref object for the lifetime of this component,
-  // so the imperative handle only needs to be built once — the empty deps
-  // array avoids recreating the handle object on every render.
+  // ── Expose earth group ref to parent ──────────────────────────────────
   useImperativeHandle(ref, () => ({
     getEarthGroup: () => earthGroupRef.current,
-  }), []);
+    getCurrentScene: () => currentScene,
+  }), [currentScene]);
+
+  // ── Log for debugging ──────────────────────────────────────────────────
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`CameraRig: Scene ${currentScene} activated`);
+    }
+  }, [currentScene]);
 
   return (
     <>
@@ -31,5 +37,7 @@ const CameraRig = forwardRef(function CameraRig({ children, currentScene, onScen
     </>
   );
 });
+
+CameraRig.displayName = 'CameraRig';
 
 export default CameraRig;

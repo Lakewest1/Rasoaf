@@ -62,30 +62,37 @@ function AuroraRing({ sunDirection, position, color1, color2 }) {
   const meshRef = useRef(null);
   const ringRadius = EARTH.RADIUS * 1.04;
 
+  // ── Default sun direction ─────────────────────────────────────────────
+  const defaultSunDirection = useMemo(() => new Vector3(1, 0.5, 0.5).normalize(), []);
+
   const uniforms = useMemo(() => ({
-    uSunDirection: { value: new Vector3(1, 0.5, 0.5) },
+    uSunDirection: { value: defaultSunDirection.clone() },
     uColor1: { value: new Color(color1) },
     uColor2: { value: new Color(color2) },
     uTime: { value: 0 },
     uOpacity: { value: 0.22 },
-  }), [color1, color2]);
+  }), [color1, color2, defaultSunDirection]);
 
   const geometry = useMemo(() => {
     return new RingGeometry(ringRadius * 0.85, ringRadius * 1.05, 128, 1);
   }, [ringRadius]);
 
-  // `geometry` is constructed manually (new RingGeometry(...)) rather than
-  // as a JSX element, so React Three Fiber's automatic disposal doesn't
-  // cover it — R3F only auto-disposes objects it constructs itself via
-  // tags like <ringGeometry>. Without this, every mount/unmount of an
-  // AuroraRing leaks a 128-segment ring geometry.
+  // ── Update sun direction when it changes ─────────────────────────────
+  useEffect(() => {
+    if (sunDirection) {
+      uniforms.uSunDirection.value.copy(sunDirection).normalize();
+    } else {
+      uniforms.uSunDirection.value.copy(defaultSunDirection);
+    }
+  }, [sunDirection, uniforms, defaultSunDirection]);
+
+  // ── Cleanup ────────────────────────────────────────────────────────────
   useEffect(() => {
     return () => geometry.dispose();
   }, [geometry]);
 
   useFrame((_, delta) => {
-    if (!uniforms || !sunDirection) return;
-    uniforms.uSunDirection.value.copy(sunDirection).normalize();
+    if (!uniforms) return;
     uniforms.uTime.value += delta * 0.15;
   });
 
