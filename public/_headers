@@ -2,46 +2,47 @@
 # RASOAF TRAVELS & TOURS - SECURITY HEADERS
 # ============================================
 
-# ============================================
-# GLOBAL SECURITY HEADERS
-# ============================================
-
 /*
-  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  Strict-Transport-Security: max-age=86400; includeSubDomains
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: geolocation=(), microphone=(), camera=()
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://www.google.com https://formspree.io https://static.cloudflareinsights.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https://res.cloudinary.com https://*.cloudinary.com https://images.unsplash.com https://*.googleapis.com https://flagcdn.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://api.netlify.com https://formspree.io https://*.cloudinary.com https://static.cloudflareinsights.com; frame-src 'self' https://www.google.com; media-src 'self' https://res.cloudinary.com https://*.cloudinary.com; frame-ancestors 'self'; base-uri 'self'; form-action 'self' https://formspree.io; upgrade-insecure-requests
-  Cross-Origin-Opener-Policy: same-origin
 
 # ============================================
-# STATIC ASSETS - LONG CACHE
+# STATIC ASSETS - CACHE
 # ============================================
 
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
 
 # ============================================
-# IMAGES - LONG CACHE
+# TEXTURES - ALLOW LOADING
 # ============================================
 
-/*.jpg
+/textures/*
   Cache-Control: public, max-age=31536000, immutable
 
-/*.jpeg
+# ============================================
+# IMAGES - CACHE
+# ============================================
+
+*.jpg
   Cache-Control: public, max-age=31536000, immutable
 
-/*.png
+*.jpeg
   Cache-Control: public, max-age=31536000, immutable
 
-/*.gif
+*.png
   Cache-Control: public, max-age=31536000, immutable
 
-/*.webp
+*.gif
   Cache-Control: public, max-age=31536000, immutable
 
-/*.svg
+*.webp
+  Cache-Control: public, max-age=31536000, immutable
+
+*.svg
   Cache-Control: public, max-age=31536000, immutable
 
 # ============================================

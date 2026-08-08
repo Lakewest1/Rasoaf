@@ -9,11 +9,6 @@
 /*.ico /:splat.ico 200
 /*.json /:splat.json 200
 
-# ASSETS FOLDER
 /assets/* /assets/:splat 200
-
-# TEXTURES FOLDER
 /textures/* /textures/:splat 200
-
-# SPA FALLBACK - ONLY IF NO FILE MATCHES
 /* /index.html 200

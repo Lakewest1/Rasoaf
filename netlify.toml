@@ -7,7 +7,7 @@
   NODE_ENV = "production"
   CI = "true"
 
-# SPA Fallback - All routes go to index.html
+# SPA Fallback
 [[redirects]]
   from = "/*"
   to = "/index.html"
@@ -23,5 +23,12 @@
 [[redirects]]
   from = "/robots.txt"
   to = "/robots.txt"
+  status = 200
+  force = true
+
+# IMPORTANT: Allow textures to load
+[[redirects]]
+  from = "/textures/*"
+  to = "/textures/:splat"
   status = 200
   force = true
