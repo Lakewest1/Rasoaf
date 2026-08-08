@@ -5,7 +5,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useRef, useEffect, useMemo } from "react";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useLoader } from "@react-three/fiber";
+import { TextureLoader } from "three";
 import {
   SRGBColorSpace,
   NoColorSpace,
@@ -32,16 +33,22 @@ function configureTexture(texture, colorSpace) {
   texture.minFilter = LinearMipmapLinearFilter;
   texture.magFilter = LinearFilter;
   texture.generateMipmaps = true;
-  // Required after changing colorSpace/filtering — triggers GPU re-upload
   texture.needsUpdate = true;
 }
 
 // ══════════════════════════════════════════════════════════════════════════
 // Earth Component
 // ══════════════════════════════════════════════════════════════════════════
-export default function Earth({ textures }) {
+export default function Earth() {
   const meshRef = useRef(null);
   const materialRef = useRef(null);
+
+  // ── LOAD TEXTURES DIRECTLY ──
+  const [day, bump, specular] = useLoader(TextureLoader, [
+    '/textures/earth-day.jpg',
+    '/textures/earth-bump.png',
+    '/textures/earth-specular.jpg'
+  ]);
 
   // ── Memoized geometry — created once, shared across renders ──────────
   const geometry = useMemo(
@@ -67,13 +74,12 @@ export default function Earth({ textures }) {
 
   // ── Configure textures once when texture set changes ──────────────────
   useEffect(() => {
-    if (!textures) return;
-    configureTexture(textures.day, SRGBColorSpace);
-    configureTexture(textures.bump, NoColorSpace);
-    configureTexture(textures.specular, NoColorSpace);
-  }, [textures]);
+    configureTexture(day, SRGBColorSpace);
+    configureTexture(bump, NoColorSpace);
+    configureTexture(specular, NoColorSpace);
+  }, [day, bump, specular]);
 
-  // ── Cleanup — dispose geometry + material (textures managed by parent) ─
+  // ── Cleanup — dispose geometry + material ─────────────────────────────
   useEffect(() => {
     const material = materialRef.current;
     const mesh = meshRef.current;
@@ -81,15 +87,12 @@ export default function Earth({ textures }) {
     return () => {
       material?.dispose();
       mesh?.geometry?.dispose();
-      // Dispose the memoized geometry if mesh already cleaned up
       geometry.dispose();
     };
   }, [geometry]);
 
-  // ── Early return AFTER all hooks — never conditional ──────────────────
-  if (!textures?.day || !textures?.bump || !textures?.specular) return null;
-
-  const { day, bump, specular } = textures;
+  // ── Early return — only if textures failed to load ────────────────────
+  if (!day || !bump || !specular) return null;
 
   return (
     <mesh
