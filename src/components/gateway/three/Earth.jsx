@@ -1,98 +1,132 @@
 // src/components/gateway/three/Earth.jsx
 // ─────────────────────────────────────────────────────────────────────────────
-// RASOAF Gateway — Photorealistic Earth (v2.0)
-// Optimized: Stable frame callback · Memoized geometry · Proper cleanup
+// RASOAF Gateway — Photorealistic Earth
+// Robust texture loading + Three.js optimization
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useRef, useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useFrame, useLoader } from "@react-three/fiber";
-import { TextureLoader } from "three";
+import { TextureLoader, SphereGeometry } from "three";
 import {
   SRGBColorSpace,
   NoColorSpace,
   LinearMipmapLinearFilter,
   LinearFilter,
-  SphereGeometry,
 } from "three";
 
-// ══════════════════════════════════════════════════════════════════════════
-// Constants — Module scope
-// ══════════════════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════════════════
+// Configuration
+// ═════════════════════════════════════════════════════════════════════════════
+
 const EARTH_RADIUS = 2.5;
 const EARTH_SEGMENTS = 128;
 const EARTH_ROTATION_SPEED = 0.08;
 const INITIAL_ROTATION = 3.8;
 
-// ══════════════════════════════════════════════════════════════════════════
-// Shared texture configuration — applied once per texture set
-// ══════════════════════════════════════════════════════════════════════════
+// Cache-busting version.
+// Increase this number when replacing texture files.
+const TEXTURE_VERSION = "v2";
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Texture configuration
+// ═════════════════════════════════════════════════════════════════════════════
+
 function configureTexture(texture, colorSpace) {
   if (!texture) return;
+
   texture.colorSpace = colorSpace;
+
+  // Better quality on angled surfaces
   texture.anisotropy = 8;
+
+  // Filtering
   texture.minFilter = LinearMipmapLinearFilter;
   texture.magFilter = LinearFilter;
+
+  // Generate mipmaps
   texture.generateMipmaps = true;
+
   texture.needsUpdate = true;
 }
 
-// ══════════════════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════════════════
 // Earth Component
-// ══════════════════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════════════════
+
 export default function Earth() {
   const meshRef = useRef(null);
   const materialRef = useRef(null);
 
-  // ── LOAD TEXTURES DIRECTLY ──
-  const [day, bump, specular] = useLoader(TextureLoader, [
-    '/textures/earth-day.jpg',
-    '/textures/earth-bump.png',
-    '/textures/earth-specular.jpg'
-  ]);
+  // ─────────────────────────────────────────────────────────────────────────
+  // Load textures individually
+  //
+  // The ?v=2 prevents an old cached texture response from being reused.
+  // ─────────────────────────────────────────────────────────────────────────
 
-  // ── Memoized geometry — created once, shared across renders ──────────
-  const geometry = useMemo(
-    () => new SphereGeometry(EARTH_RADIUS, EARTH_SEGMENTS, EARTH_SEGMENTS),
-    []
+  const day = useLoader(
+    TextureLoader,
+    `/textures/earth-day.jpg?${TEXTURE_VERSION}`
   );
 
-  // ── Stable rotation speed ref — avoids recreating useFrame callback ──
-  const rotationSpeedRef = useRef(EARTH_ROTATION_SPEED);
+  const bump = useLoader(
+    TextureLoader,
+    `/textures/earth-bump.png?${TEXTURE_VERSION}`
+  );
 
-  // Update rotation speed ref if constant ever changes (hot-reload safety)
-  useEffect(() => {
-    rotationSpeedRef.current = EARTH_ROTATION_SPEED;
+  const specular = useLoader(
+    TextureLoader,
+    `/textures/earth-specular.jpg?${TEXTURE_VERSION}`
+  );
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Create Earth geometry once
+  // ─────────────────────────────────────────────────────────────────────────
+
+  const geometry = useMemo(() => {
+    return new SphereGeometry(
+      EARTH_RADIUS,
+      EARTH_SEGMENTS,
+      EARTH_SEGMENTS
+    );
   }, []);
 
-  // ── Stable useFrame callback — never recreated ───────────────────────
-  useFrame((_, delta) => {
-    const mesh = meshRef.current;
-    if (mesh) {
-      mesh.rotation.y += rotationSpeedRef.current * delta;
-    }
-  });
+  // ─────────────────────────────────────────────────────────────────────────
+  // Configure loaded textures
+  // ─────────────────────────────────────────────────────────────────────────
 
-  // ── Configure textures once when texture set changes ──────────────────
   useEffect(() => {
     configureTexture(day, SRGBColorSpace);
     configureTexture(bump, NoColorSpace);
     configureTexture(specular, NoColorSpace);
   }, [day, bump, specular]);
 
-  // ── Cleanup — dispose geometry + material ─────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────────
+  // Earth rotation
+  // ─────────────────────────────────────────────────────────────────────────
+
+  useFrame((_, delta) => {
+    if (!meshRef.current) return;
+
+    meshRef.current.rotation.y += EARTH_ROTATION_SPEED * delta;
+  });
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Cleanup
+  // ─────────────────────────────────────────────────────────────────────────
+
   useEffect(() => {
-    const material = materialRef.current;
-    const mesh = meshRef.current;
-
     return () => {
-      material?.dispose();
-      mesh?.geometry?.dispose();
       geometry.dispose();
-    };
-  }, [geometry]);
 
-  // ── Early return — only if textures failed to load ────────────────────
-  if (!day || !bump || !specular) return null;
+      day?.dispose();
+      bump?.dispose();
+      specular?.dispose();
+    };
+  }, [geometry, day, bump, specular]);
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Render
+  // ─────────────────────────────────────────────────────────────────────────
 
   return (
     <mesh
@@ -102,17 +136,14 @@ export default function Earth() {
       castShadow
       receiveShadow
     >
-      <meshPhysicalMaterial
+      <meshPhongMaterial
         ref={materialRef}
         map={day}
         bumpMap={bump}
-        bumpScale={0.06}
-        roughnessMap={specular}
-        roughness={0.6}
-        metalness={0.02}
-        clearcoat={0.05}
-        clearcoatRoughness={0.4}
-        reflectivity={0.5}
+        bumpScale={0.035}
+        specularMap={specular}
+        specular={0x555555}
+        shininess={15}
       />
     </mesh>
   );

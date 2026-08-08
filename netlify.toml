@@ -7,28 +7,8 @@
   NODE_ENV = "production"
   CI = "true"
 
-# SPA Fallback
+# SPA fallback
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
-
-# Exclude static files from SPA fallback
-[[redirects]]
-  from = "/sitemap.xml"
-  to = "/sitemap.xml"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/robots.txt"
-  to = "/robots.txt"
-  status = 200
-  force = true
-
-# IMPORTANT: Allow textures to load
-[[redirects]]
-  from = "/textures/*"
-  to = "/textures/:splat"
-  status = 200
-  force = true
